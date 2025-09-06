@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "json_type": "contact_schema",
+  "json_version": "02.00.00",
+  "type": "object",
+  "properties": {
+    "json_type": {
+      "type": "string",
+      "const": "contact",
+      "description": "legt die Art der json-Datei fest: `contact`"
+    },
+    "json_version": {
+      "type": "string",
+      "pattern": "^[0-9]{2}.[0-9]{2}.[0-9]{2}",
+      "description": "JSON-Version"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "UUID zur eindeutigen Identifizierung"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name des Unternehmens"
+    },
+    "tradeName": {
+      "type": "string",
+      "description": "Handelsname"
+    },
+    "customerNumber": {
+      "type": "string",
+      "description": "Käuferkennung"
+    },
+    "tradeId": {
+      "type": "string",
+      "description": "Registernummer"
+    },
+    "vatId": {
+      "type": "string",
+      "description": "Umsatzsteuer-ID"
+    },
+    "electronicAddress": {
+      "type": "string",
+      "description": "Elektronische Adresse"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "line1": {
+          "type": "string",
+          "description": "Straße 1"
+        },
+        "line2": {
+          "type": "string",
+          "description": "Straße 2"
+        },
+        "postCode": {
+          "type": "string",
+          "description": "Postleitzahl"
+        },
+        "city": {
+          "type": "string",
+          "description": "Ort"
+        },
+        "countryCode": {
+          "type": "string",
+          "description": "Land"
+        },
+        "required": ["line1", "line2", "postCode", "city", "countryCode"],
+        "additionalProperties": false,
+        "maxProperties": 5
+      }
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "description": "Vorname"
+        },
+        "lastName": {
+          "type": "string",
+          "description": "Nachname"
+        },
+        "email": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$|^$",
+          "description": "E-Mail"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Telefon"
+        },
+        "required": ["firstName", "lastName", "email", "phone"],
+        "additionalProperties": false,
+        "maxProperties": 4
+      }
+    }
+  },
+  "required": [
+    "json_type",
+    "json_version",
+    "id",
+    "name",
+    "tradeName",
+    "customerNumber",
+    "tradeId",
+    "vatId",
+    "electronicAddress",
+    "address",
+    "contact"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 11
+}

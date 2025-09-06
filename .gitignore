@@ -1,0 +1,23 @@
+# General
+*.log
+*.pyc
+*.settings
+*.venv
+
+# Source
+/Source/Util/git_version.py
+
+# Documentation
+/Documentation/Installation/installed_packages.txt
+
+# Executable
+/Executable/build
+/Executable/bin
+/Executable/ElsterBooks.spec
+/Executable/PyInstaller_warnings.txt
+
+# Resources
+/Resources/Tools
+
+# Data
+/Export

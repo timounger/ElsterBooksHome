@@ -1,0 +1,7 @@
+# ignore all
+*
+
+# commits
+!.gitignore
+!Data/
+!Data/**
