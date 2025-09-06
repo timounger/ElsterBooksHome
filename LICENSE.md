@@ -1,5 +1,3 @@
-\tableofcontents
-
 Describes the terms under which ElsterBooks is distributed.
 A copy of the GNU GPL is appended to this file.
 
