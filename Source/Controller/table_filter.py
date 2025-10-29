@@ -18,7 +18,7 @@ from PyQt6.QtGui import QIcon, QMouseEvent, QShortcut, QKeySequence, QAction, QS
 from Source.version import __title__
 from Source.Util.app_data import ICON_ATTACH_LIGHT, ICON_ATTACH_DARK, ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, \
     ICON_DELETE_LIGHT, ICON_DELETE_DARK, IMG_DROP_FILE, write_table_column, read_table_column, ICON_CONFIG_LIGHT, ICON_CONFIG_DARK, \
-    open_explorer, ICON_OPEN_FOLDER_LIGHT, ICON_OPEN_FOLDER_DARK
+    open_explorer, ICON_OPEN_FOLDER_LIGHT, ICON_OPEN_FOLDER_DARK, ICON_INVOICE_LIGHT, ICON_INVOICE_DARK
 from Source.Model.data_handler import DATE_FORMAT, PDF_TYPE, XML_TYPE
 from Source.Views.tabs.tab_table_filter_ui import Ui_TableFilter
 if TYPE_CHECKING:
@@ -105,10 +105,13 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     @param s_title : tab name
     @param title_folder_link : create folder link on title lable
     @param btn_1_name : name of button 1
+    @param btn_1_icon : icon paths of button 1 (light, dark)
     @param btn_1_cb : callback function for button 1
     @param btn_2_name : name of button 2
+    @param btn_2_icon : icon paths of button 2 (light, dark)
     @param btn_2_cb : callback function for button 2
     @param btn_3_name : name of button 3
+    @param btn_3_icon : icon paths of button 3 (light, dark)
     @param btn_3_cb : callback function for button 3
     @param table_double_click_fnc : callback for double click
     @param l_table_header : table header
@@ -120,17 +123,19 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     @param update_table_func : update table data function
     @param drag_fnc : drag function to import file
     @param column_setting_key : column setting key [S_KEY_CONTACTS_COLUMN, S_KEY_DOCUMENT_COLUMN, S_KEY_INCOME_COLUMN, S_KEY_EXPENDITURE_COLUMN]
+    @param b_create_invoice : create invoice status
     """
 
     def __init__(self, ui: "MainWindow", tab_widget: QTabWidget, tab_idx: int, s_title: str, title_folder_link: str = "",  # pylint: disable=keyword-arg-before-vararg
-                 btn_1_name: str = "", btn_1_cb: Optional[Callable[[], None]] = None,
-                 btn_2_name: str = "", btn_2_cb: Optional[Callable[[], None]] = None,
-                 btn_3_name: str = "", btn_3_cb: Optional[Callable[[], None]] = None,
+                 btn_1_name: str = "", btn_1_icon: Optional[tuple[str, str]] = None, btn_1_cb: Optional[Callable[[], None]] = None,
+                 btn_2_name: str = "", btn_2_icon: Optional[tuple[str, str]] = None, btn_2_cb: Optional[Callable[[], None]] = None,
+                 btn_3_name: str = "", btn_3_icon: Optional[tuple[str, str]] = None, btn_3_cb: Optional[Callable[[], None]] = None,
                  table_double_click_fnc: Optional[Callable[[int, int, str], None]] = None, l_table_header: Optional[list[str]] = None,
                  sort_idx: int = 0, pre_sort_idx: Optional[int] = None, inverse_sort: bool = False, row_fill_idx: int = 0,
                  delete_fnc: Optional[Callable[[str], None]] = None, update_table_func: Optional[Callable[[], None]] = None,
                  drag_fnc: Optional[Callable[[str], None]] = None,
                  column_setting_key: Optional[str] = None,
+                 b_create_invoice: bool = False,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.ui = ui
@@ -157,16 +162,24 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         self.update_table_func = update_table_func
         self.drag_fnc = drag_fnc
         self.column_setting_key = column_setting_key
+        self.b_create_invoice = b_create_invoice
         self.active_filter: str | None = None
         self.l_data: list[list[CellData]] = []
 
         self.lbl_title.setText(s_title)
+        b_light_theme = self.ui.model.c_monitor.is_light_theme()
         self.btn_1.setText(btn_1_name)
         self.btn_1.setVisible(bool(btn_1_name))
         self.btn_2.setText(btn_2_name)
         self.btn_2.setVisible(bool(btn_2_name))
         self.btn_3.setText(btn_3_name)
         self.btn_3.setVisible(bool(btn_3_name))
+        if btn_1_icon is not None:
+            self.btn_1.setIcon(QIcon(btn_1_icon[0] if b_light_theme else btn_1_icon[1]))
+        if btn_2_icon is not None:
+            self.btn_2.setIcon(QIcon(btn_2_icon[0] if b_light_theme else btn_2_icon[1]))
+        if btn_3_icon is not None:
+            self.btn_3.setIcon(QIcon(btn_3_icon[0] if b_light_theme else btn_3_icon[1]))
 
         if title_folder_link:
             self.btn_open_folder.setText("")
@@ -259,12 +272,17 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
             """!
             @brief Possible context menu actions
             """
+            ACTION_CREATE_INVOICE = "Rechnung erstellen"
             ACTION_DELETE_ENTRY = "Eintrag löschen"
 
         index = self.table.indexAt(point)
         if index.isValid():
+            b_light_theme = self.ui.model.c_monitor.is_light_theme()
             menu = QMenu(self.ui)
-            icon = QIcon(ICON_DELETE_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_DELETE_DARK)
+            if self.b_create_invoice:
+                icon = QIcon(ICON_INVOICE_LIGHT if b_light_theme else ICON_INVOICE_DARK)
+                menu.addAction(icon, ContextActions.ACTION_CREATE_INVOICE.value)
+            icon = QIcon(ICON_DELETE_LIGHT if b_light_theme else ICON_DELETE_DARK)
             menu.addAction(icon, ContextActions.ACTION_DELETE_ENTRY.value)
             selected_action = menu.exec(self.table.viewport().mapToGlobal(point))
             if selected_action:
@@ -273,6 +291,8 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
                 uid_index = model.index(row, len(self.l_table_header) - 1)
                 uid = model.data(uid_index, Qt.ItemDataRole.DisplayRole)
                 match selected_action.text():
+                    case ContextActions.ACTION_CREATE_INVOICE:
+                        self.ui.tab_income.create_invoice(uid)
                     case ContextActions.ACTION_DELETE_ENTRY:
                         if (self.delete_fnc is not None) and (self.update_table_func is not None):
                             self.delete_fnc(self.ui.model.data_path, uid)
@@ -439,7 +459,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         @param color : color to set
         """
         if color is None:
-            self.input_filter.setStyleSheet("")
+            self.input_filter.setStyleSheet("border: 1px solid palette(dark);")  # "" or None do not work since new pyqt6 version
         else:
             self.input_filter.setStyleSheet(f"border: 2px solid {color};")
 

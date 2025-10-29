@@ -10,7 +10,7 @@ from typing import Optional
 
 # Version
 VERSION_MAJOR = 0  # major changes/breaks at API (e.g incompatibility)
-VERSION_MINOR = 1  # minor changes/does not break the API (e.g new feature)
+VERSION_MINOR = 2  # minor changes/does not break the API (e.g new feature)
 VERSION_PATCH = 0  # Bug fixes
 VERSION_BUILD = 0  # build number (if available)
 

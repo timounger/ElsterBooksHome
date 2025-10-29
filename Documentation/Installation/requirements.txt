@@ -1,40 +1,46 @@
 # General
-pip==25.2
+pip==25.3
 requests==2.32.5
 openpyxl==3.1.3 # 3.1.4 has diagram bug
 colorama==0.4.6
 GitPython==3.1.45
-pillow==11.3.0
+pillow==12.0.0
 
 # Source
-PyQt6==6.9.1
-PyQt6-Charts==6.9.0
+PyQt6==6.10.0
+PyQt6-Charts==6.10.0
 darkdetect==0.7.1 # <0.8.0 required by pyqtdarktheme
 pyqtdarktheme==2.1.0
 Markdown==3.9
 jsonschema==4.25.1
-PyMuPDF==1.26.4
-drafthorse==2025.1.1
+PyMuPDF==1.26.5
+drafthorse==2025.2.0
 pytesseract==0.3.13
-openai==1.106.1
-ollama==0.5.3
-psutil==7.0.0
+openai==2.6.1
+ollama==0.6.0
+psutil==7.1.2
 pywin32==311
-zeep==4.3.1
+zeep==4.3.2
 tzdata==2025.2
+reportlab==4.4.4
+svglib==1.6.0
+fints==4.2.4
+qrcode==8.2
 
 # Executable
-pyinstaller==6.15.0
-beautifulsoup4==4.13.5
+pyinstaller==6.16.0
+beautifulsoup4==4.14.2
 
 # Test
 pip-audit==2.9.0
 autopep8==2.3.2
-mypy==1.17.1
-pylint==3.3.8
+mypy==1.18.2
+pylint==4.0.2
 
 # Documentation
 astunparse==1.6.3
-mkdocs-material==9.6.18
+mkdocs-material==9.6.22
+mkdocstrings-python==1.18.2
 mkdocs_puml==2.3.0
 mkdocs-minify-plugin==0.8.0
+mkdocs-api-autonav==0.4.0

@@ -54,6 +54,9 @@ L_EXCLUDE_MODULES = [
     "mypy",
     "mypy_extensions",
     "toml",
+    "cairo",
+    "freetype",
+    "rlPyCairo",
     # can not imported by PyInstaller - exclude to avoid warnings
     "serial.tools.list_ports_osx",
     "darkdetect._mac_detect"
@@ -72,6 +75,7 @@ for _config_name, (config_status, _exclude_file, exclude_packages) in D_CONFIG_D
 add_data = [
     "..\\Resources\\splash.gif;Resources\\",
     "..\\Resources\\app.ico;Resources\\",
+    "..\\Resources\\FinTS\\;Resources\\FinTS\\",
     "..\\Resources\\Git\\;Resources\\Git\\",
     "..\\Resources\\Help\\;Resources\\Help\\",
     "..\\Resources\\Icon\\;Resources\\Icon\\",

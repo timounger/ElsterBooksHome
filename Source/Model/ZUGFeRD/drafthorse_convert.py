@@ -7,7 +7,24 @@
 
 # pylint: disable=protected-access
 from typing import Any
+from decimal import Decimal, ROUND_HALF_UP
 from drafthorse.models.document import Document
+
+
+def normalize_decimal(value: Any, max_decimals: int = 4) -> Decimal:
+    """!
+    @brief Normalize decimal
+    @param value : value
+    @param max_decimals : maximal decimals
+    @return decimal value
+    """
+    d = Decimal(str(value)).quantize(Decimal("1." + "0" * max_decimals), rounding=ROUND_HALF_UP)
+    s = format(d.normalize(), 'f')  # Convert to f-format to avoid exponents
+    if '.' in s:  # If there is a decimal point, remove only superfluous decimal places.
+        s = s.rstrip('0').rstrip('.')
+    if s == '':  # If everything has been removed write 0
+        s = '0'
+    return Decimal(s)  # convert back to decimal
 
 
 def convert_to_amount(entry: Any) -> float | None:
@@ -94,7 +111,7 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     data_invoice_references.append(data_invoice)
     l_notes = []
     for child in header.notes.children:
-        l_notes += child.content.children
+        l_notes.append(str(child.content))
     data["note"] = "\n".join(l_notes)  # Freitext zur Rechnung (BT-22)
     # === Rechnungssteller ===
     seller = doc.trade.agreement.seller
@@ -152,15 +169,15 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     data_buyer_contact["email"] = str(buyer.contact.email.address)  # Kontakt E-Mail (BT-58)
     data_buyer_contact["phone"] = str(buyer.contact.telephone.number)  # Kontakt Telefon (BT-57)
     # === Zahlungsdetails ===
-    payment = doc.trade.settlement.payment_means
     data_payment = data.setdefault("payment", {})
     data_methods = data_payment.setdefault("methods", [])
-    data_method = {}
-    data_method["typeCode"] = str(payment.type_code)  # Zahlungsart (BT-81)
-    data_method["accountName"] = str(payment.payee_account.account_name)  # Kontoinhaber (BT-85)
-    data_method["iban"] = str(payment.payee_account.iban)  # IBAN (BT-84)
-    data_method["bic"] = str(payment.payee_institution.bic)  # BIC (BT-86)
-    data_methods.append(data_method)  # multiple in PDF24 but only one in facturx
+    for payment in doc.trade.settlement.payment_means.children:
+        data_method = {}
+        data_method["typeCode"] = str(payment.type_code)  # Zahlungsart (BT-81)
+        data_method["accountName"] = str(payment.payee_account.account_name)  # Kontoinhaber (BT-85)
+        data_method["iban"] = str(payment.payee_account.iban)  # IBAN (BT-84)
+        data_method["bic"] = str(payment.payee_institution.bic)  # BIC (BT-86)
+        data_methods.append(data_method)  # multiple in PDF24 but only one in facturx
     # ---
     data_payment["reference"] = str(doc.trade.settlement.payment_reference)  # Verwendungszweck (BT-83)
     if len(doc.trade.settlement.terms.children) > 0:

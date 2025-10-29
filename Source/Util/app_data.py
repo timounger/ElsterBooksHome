@@ -7,6 +7,7 @@
 
 import sys
 import os
+import io
 import logging
 import enum
 from typing import Any, TYPE_CHECKING
@@ -25,6 +26,12 @@ from PyQt6.QtGui import QActionGroup, QAction  # pylint: disable=wrong-import-po
 from Source.version import __title__, __author__, running_as_exe, DISK_TYPE, DISK_MODEL, DISK_SERIAL_NUMBER  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
+
+# Fix for PyInstaller + mt940 (stdout may be None)
+if sys.stdout is None:
+    sys.stdout = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
+if sys.stderr is None:
+    sys.stderr = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
 
 log = logging.getLogger(__title__)
 
@@ -80,6 +87,16 @@ def run_subprocess(command: list[str]) -> CompletedProcess[str]:
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
     result = subprocess.run(command, capture_output=True, text=True, check=True, startupinfo=startupinfo)
     return result
+
+
+def open_subprocess(command: list[str]) -> None:
+    """
+    @brief Open subprocess without open terminal (and without freezing the main script)
+    @param command : subprocess command
+    """
+    startupinfo = subprocess.STARTUPINFO()
+    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    subprocess.Popen(command, text=True, startupinfo=startupinfo)
 
 
 def get_computer_name() -> str:
@@ -163,6 +180,7 @@ ICON_APP_FAVICON_PATH = "Resources/favicon.ico"
 ICON_APP = resource_path(ICON_APP_PATH)
 IMG_SPLASH = resource_path("Resources/splash.gif")
 LOGO_ZUGFERD = resource_path("Resources/InvoiceImage/zugferd.png")
+LOGO_ZUGFERD_SVG = resource_path("Resources/InvoiceImage/zugferd.svg")
 IMG_DROP_FILE = resource_path("Resources/Icon/drop_file.png")
 # Menu Settings
 ICON_THEME_LIGHT = resource_path("Resources/Icon/theme_light.png")
@@ -200,6 +218,8 @@ ICON_CIRCLE_RED = resource_path("Resources/Icon/circle_red.png")
 
 ICON_DELETE_LIGHT = resource_path("Resources/Icon/delete_file_light.png")
 ICON_DELETE_DARK = resource_path("Resources/Icon/delete_file_dark.png")
+ICON_INVOICE_LIGHT = resource_path("Resources/Icon/create_invoice_light.png")
+ICON_INVOICE_DARK = resource_path("Resources/Icon/create_invoice_dark.png")
 ICON_CONFIG_LIGHT = resource_path("Resources/Icon/config_light.png")
 ICON_CONFIG_DARK = resource_path("Resources/Icon/config_dark.png")
 ICON_OPEN_FOLDER_LIGHT = resource_path("Resources/Icon/open_folder_light.png")
@@ -222,6 +242,9 @@ SCHEMATA_PATH = resource_path("Resources/schemata/")
 
 # Git
 GIT_IGNORE_FILE = resource_path("Resources/Git/template.gitignore")
+
+# FinTS
+FINTS_INSTITUTE_FILE = resource_path("Resources/FinTS/fints_institute NEU mit BIC Master.csv")
 
 # Settings Registry
 COMPANY_NAME = __author__  # **HIDDEN_LINE** COMPANY_NAME = "<COMPANY_NAME>"
@@ -275,6 +298,7 @@ class EAiType(str, enum.Enum):
 S_SECTION_SETTINGS = "SETTINGS"
 S_SECTION_TABLE_COLUMN = "TABLE_COLUMN"
 S_SECTION_AI = "AI"
+S_SECTION_FINTS = "FINTS"
 
 # keys and default values
 S_KEY_TAB = "last_tab"
@@ -287,6 +311,8 @@ S_KEY_LAST_DIR_PATH = "last_dir"
 S_DEFAULT_LAST_PATH = "./"
 S_KEY_OUTPUT_PATH = "output_path"
 S_DEFAULT_OUTPUT_PATH = "./"
+S_KEY_UPDATE_VERSION = "update_version"
+S_DEFAULT_UPDATE_VERSION = "0.0.0"
 S_KEY_INVOICE_OPTION = "invoice_option"
 E_DEFAULT_INVOICE_OPTION = EInvoiceOption.ZUGFERD
 
@@ -304,6 +330,20 @@ S_KEY_GPT_MODEL = "gpt_model"
 S_DEFAULT_GPT_MODEL = ""
 S_KEY_API_KEY = "api_key"
 S_DEFAULT_API_KEY = ""
+
+S_KEY_BLZ = "blz"
+S_DEFAULT_BLZ = ""
+S_KEY_URL = "alias"
+S_DEFAULT_URL = ""
+S_KEY_USER_ID = "user_id"
+S_DEFAULT_USER_ID = ""
+S_KEY_PIN = "pin"
+S_DEFAULT_PIN = ""
+S_KEY_IBAN = "iban"
+S_DEFAULT_IBAN = ""
+S_KEY_TAN_MECHANISM = "tan_mechanism"
+S_DEFAULT_TAN_MECHANISM = ""
+
 
 S_KEY_GEOMETRY = "window_geometry"
 S_KEY_STATE = "window_state"
@@ -463,6 +503,34 @@ def read_window_state() -> tuple[QByteArray, QByteArray]:
         o_geometry = o_state = None
         handle.endGroup()
     return o_geometry, o_state
+
+
+def write_update_version(version: str) -> None:
+    """!
+    @brief Writes the last reminded tool version for update to persistent storage.
+    @param version : last reminded version
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_SETTINGS)
+    handle.setValue(S_KEY_UPDATE_VERSION, version)
+    handle.endGroup()
+
+
+def read_update_version() -> str:
+    """!
+    @brief Reads the last reminded tool version from persistent storage
+    @return last reminded version
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_SETTINGS)
+        version = str(get_registry_value(handle, S_KEY_UPDATE_VERSION))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("Update version settings not found, using default values (%s)", str(e))
+        version = S_DEFAULT_UPDATE_VERSION
+        handle.endGroup()
+    return version
 
 
 def write_last_dir(dir_path: str) -> None:
@@ -672,3 +740,163 @@ def read_api_key() -> str:
         api_key = S_DEFAULT_API_KEY
         handle.endGroup()
     return api_key
+
+
+def write_fints_blz(s_blz: str) -> None:
+    """!
+    @brief Writes the FinTS BLZ to persistent storage
+    @param s_blz : BLZ name
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_FINTS)
+    handle.setValue(S_KEY_BLZ, s_blz)
+    handle.endGroup()
+
+
+def read_fints_blz() -> str:
+    """!
+    @brief Reads the FinTS BLZ from persistent storage
+    @return BLZ name
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_FINTS)
+        s_blz = str(get_registry_value(handle, S_KEY_BLZ))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("FinTS BLZ not found, using default values (%s)", str(e))
+        s_blz = S_DEFAULT_BLZ
+        handle.endGroup()
+    return s_blz
+
+
+def write_fints_url(s_url: str) -> None:
+    """!
+    @brief Writes the FinTS URL to persistent storage
+    @param s_url : URL
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_FINTS)
+    handle.setValue(S_KEY_URL, s_url)
+    handle.endGroup()
+
+
+def read_fints_url() -> str:
+    """!
+    @brief Reads the FinTS URL from persistent storage
+    @return URL
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_FINTS)
+        s_url = str(get_registry_value(handle, S_KEY_URL))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("FinTS URL not found, using default values (%s)", str(e))
+        s_url = S_DEFAULT_URL
+        handle.endGroup()
+    return s_url
+
+
+def write_fints_auth_data(user_id: str, pin: str) -> None:
+    """!
+    @brief Writes FinTS authentication data to persistent storage
+    @param user_id : user id
+    @param pin : pin
+    """
+    if platform.system() == 'Windows':
+        user_id_crypt = win32crypt.CryptProtectData(bytes(user_id, "utf-8")) if len(user_id) > 0 else ""
+        pin_crypt = win32crypt.CryptProtectData(bytes(pin, "utf-8")) if len(pin) > 0 else ""
+    else:
+        user_id_crypt = user_id
+        pin_crypt = pin
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_FINTS)
+    handle.setValue(S_KEY_USER_ID, user_id_crypt)
+    handle.setValue(S_KEY_PIN, pin_crypt)
+    handle.endGroup()
+
+
+def read_fints_auth_data() -> tuple[str, str]:
+    """!
+    @brief Reads the FinTS authentication data from persistent storage
+    @return user ID and pin
+    """
+    handle = get_settings_handle()
+    user_id: str
+    pin: str
+    try:
+        handle.beginGroup(S_SECTION_FINTS)
+        user_id_crypt = get_registry_value(handle, S_KEY_USER_ID)
+        pin_crypt = get_registry_value(handle, S_KEY_PIN)
+        if platform.system() == 'Windows':
+            _, bytes_user_id = win32crypt.CryptUnprotectData(user_id_crypt) if (len(user_id_crypt) > 0) else (None, bytes(user_id_crypt, "utf-8"))
+            user_id = bytes_user_id.decode("utf-8")
+            _, bytes_pin = win32crypt.CryptUnprotectData(pin_crypt) if (len(pin_crypt) > 0) else (None, bytes(pin_crypt, "utf-8"))
+            pin = bytes_pin.decode("utf-8")
+        else:
+            user_id = user_id_crypt
+            pin = pin_crypt
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("FinTS Auth data not found, using default values (%s)", str(e))
+        user_id = S_DEFAULT_USER_ID
+        pin = S_DEFAULT_PIN
+        handle.endGroup()
+    return user_id, pin
+
+
+def write_fints_iban(s_iban: str) -> None:
+    """!
+    @brief Writes the FinTS IBAN to persistent storage
+    @param s_iban : IBAN
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_FINTS)
+    handle.setValue(S_KEY_IBAN, s_iban)
+    handle.endGroup()
+
+
+def read_fints_iban() -> str:
+    """!
+    @brief Reads the FinTS IBAN from persistent storage
+    @return IBAN
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_FINTS)
+        s_iban = str(get_registry_value(handle, S_KEY_IBAN))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("FinTS IBAN not found, using default values (%s)", str(e))
+        s_iban = S_DEFAULT_IBAN
+        handle.endGroup()
+    return s_iban
+
+
+def write_fints_tan_mechanism(s_tan_mechanism: str) -> None:
+    """!
+    @brief Writes the FinTS tan mechanism to persistent storage
+    @param s_tan_mechanism : tan mechanism
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_FINTS)
+    handle.setValue(S_KEY_TAN_MECHANISM, s_tan_mechanism)
+    handle.endGroup()
+
+
+def read_fints_tan_mechanism() -> str:
+    """!
+    @brief Reads the FinTS tan mechanism from persistent storage
+    @return tan mechanism
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_FINTS)
+        s_tan_mechanism = str(get_registry_value(handle, S_KEY_TAN_MECHANISM))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("FinTS tan mechanism not found, using default values (%s)", str(e))
+        s_tan_mechanism = S_DEFAULT_TAN_MECHANISM
+        handle.endGroup()
+    return s_tan_mechanism

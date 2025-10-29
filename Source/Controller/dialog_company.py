@@ -48,7 +48,7 @@ def parse_number(s_string: str) -> float | int | None:
 
 class CompanyDialog(QDialog, Ui_DialogCompany):
     """!
-    @brief Company dialog tab.
+    @brief Company dialog.
     @param ui : main window
     @param company_data : company data
     @param uid : UID of company

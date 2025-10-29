@@ -619,10 +619,10 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         if net_price % 1 == 0:
             net_price = int(net_price)
         # reset sheet style before set new
-        self.pte_description.setStyleSheet("")
-        self.pte_description.setStyleSheet("")
-        self.dsb_gross.setStyleSheet("")
-        self.dsb_net.setStyleSheet("")
+        self.pte_description.setStyleSheet("border: 1px solid palette(dark);")
+        self.pte_description.setStyleSheet("border: 1px solid palette(dark);")
+        self.dsb_gross.setStyleSheet("border: 1px solid palette(dark);")
+        self.dsb_net.setStyleSheet("border: 1px solid palette(dark);")
         if gross_price is None:
             self.dsb_gross.setStyleSheet("border: 2px solid red;")
             self.ui.set_status("Kein Brutto Betrag vorhanden.", b_highlight=True)

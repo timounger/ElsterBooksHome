@@ -27,7 +27,7 @@ import jsonschema.exceptions  # pylint: disable=wrong-import-position
 
 from Source.version import __title__  # pylint: disable=wrong-import-position
 from Source.Util.app_data import ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE, ICON_CIRCLE_WHITE, \
-    REL_PATH, TOOLS_FOLDER, run_subprocess, CREATE_GIT_PATH  # pylint: disable=wrong-import-position
+    REL_PATH, TOOLS_FOLDER, run_subprocess, open_subprocess, CREATE_GIT_PATH  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.tab_income import TabIncome
     from Source.Controller.tab_expenditure import TabExpenditure
@@ -47,6 +47,9 @@ PORTABLE_GIT_EXE = os.path.abspath(f"{TOOLS_FOLDER}/PortableGit/bin/git.exe")
 if not B_USE_GIT_CMD:
     if os.path.isfile(PORTABLE_GIT_EXE):
         os.environ["GIT_PYTHON_GIT_EXECUTABLE"] = PORTABLE_GIT_EXE
+
+# Tortoise GIT
+TORTOISE_GIT_EXE = os.path.abspath(f"{TOOLS_FOLDER}/TortoiseGit/bin/TortoiseGitProc.exe")
 
 # LibreOffice
 LIBRE_OFFICE_EXE = f"{TOOLS_FOLDER}/LibreOfficePortable/App/libreoffice/program/soffice.exe"
@@ -164,7 +167,7 @@ def convert_xlsx_to_pdf(xls_file: str) -> None:
     libre_office_path = get_libre_office_path()
     if libre_office_path:
         out_dir, _file_name = os.path.split(xls_file)
-        _result = run_subprocess([libre_office_path, "--headless", "--convert-to", "pdf", xls_file, "--outdir", out_dir])
+        _result = run_subprocess([libre_office_path, "--headless", "--convert-to", "pdf:writer_pdf_Export:SelectPdfVersion=3", xls_file, "--outdir", out_dir])
     else:
         _result = None
 
@@ -534,7 +537,7 @@ def add_json(add: bool, data: dict[str, Any], title: str, uid: str, json_export_
     @param title : title name
     @param uid : UUID to create short id for suffix name or find file
     @param json_export_path: add JSON to this file path
-    @param id_field: field of ID [None] JSON is new
+    @param id_field : field of ID [None] JSON is new
     @param rename : status if existing file should renamed (JSON and appendix)
     """
     file_path = os.path.join(json_export_path, f"{title}{JSON_TYPE}")
@@ -562,7 +565,7 @@ def add_appendix(title: str, uid: str, appendix_export_path: str, add: bool, app
     @brief Add or rename appendix file to accounting.
     @param title : title of file to add for new naming
     @param uid : UUID to find existing file
-    @param appendix_export_path: add appendix to this file path
+    @param appendix_export_path : add appendix to this file path
     @param add : GIT add status
     @param appendix_file : appendix file to add [None] for renaming
     """
@@ -625,8 +628,8 @@ def add_receipt(d_receipt_data: dict[EReceiptFields, Any], receipt_type: str, js
     @brief Add or actualize receipt (data and appendix) to accounting.
     @param d_receipt_data : receipt data
     @param receipt_type : type parameter to write in JSON file
-    @param json_export_path: add JSON to this file path
-    @param appendix_export_path: add appendix to this file path
+    @param json_export_path : add JSON to this file path
+    @param appendix_export_path : add appendix to this file path
     @param add : GIT add status
     @param uid : UUID of receipt [None] receipt is new to add
     @param appendix_file : appendix file to add with JSON data
@@ -663,12 +666,43 @@ def add_receipt(d_receipt_data: dict[EReceiptFields, Any], receipt_type: str, js
 def remove_receipt(json_folder: str, appendix_folder: str, uid: str) -> None:
     """!
     @brief Remove receipt (data and appendix) from accounting.
-    @param json_folder: remove JSON in this file path
-    @param appendix_folder: remove appendix in this file path
+    @param json_folder : remove JSON in this file path
+    @param appendix_folder : remove appendix in this file path
     @param uid : UUID of receipt
     """
     delete_data(json_folder, uid, id_field=EReceiptFields.ID)
     delete_data(appendix_folder, uid)
+
+
+def clean_data(path: str, l_data: list, json_folder_name: str, appendix_folder_name: str,
+               id_field: str, attachment_field: str) -> None:
+    """!
+    @brief Clean data.
+    @param path : data path
+    @param l_data : data
+    @param json_folder_name : JSON folder name
+    @param appendix_folder_name : appendix folder name
+    @param id_field : field name of ID
+    @param attachment_field : field name of attachment
+    """
+    attachment_file_names = []
+    income_path = os.path.join(path, json_folder_name)
+    attachment_path = os.path.join(path, appendix_folder_name)
+    for income in l_data:
+        uid = income[id_field]
+        attachment_file = find_file(attachment_path, uid, file_name=income[attachment_field])
+        if attachment_file:
+            attachment_file_names.append(os.path.basename(attachment_file))
+        else:
+            file = find_json(income_path, uid, id_field=id_field)
+            if file:
+                git_delete(file)  # delete meta data without attachment
+    # delete attachment without meta data
+    if os.path.exists(attachment_path):
+        for actual_file in os.listdir(attachment_path):
+            if actual_file not in attachment_file_names:
+                actual_file_path = os.path.join(attachment_path, actual_file)
+                git_delete(actual_file_path)
 
 
 ###########################
@@ -864,6 +898,19 @@ def check_repo_exists() -> bool:
     else:
         success = False
     return success
+
+
+###########################
+## Tortoise GIT Actions  ##
+###########################
+
+def tortoise_git_check_for_mod() -> None:
+    """!
+    @brief Execute GIT command on cmd. Command for TortoiseGit: Check for Modifications
+    """
+    repo_path = os.path.abspath(REL_PATH)
+    command = [TORTOISE_GIT_EXE, "/command:repostatus", f"/path:{repo_path}", "/notempfile"]
+    open_subprocess(command)
 
 
 ###########################

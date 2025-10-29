@@ -5,17 +5,19 @@
 ********************************************************************************
 """
 
+import sys
 import logging
 from typing import Optional, Any
 import webbrowser
 
 from PyQt6.QtGui import QIcon, QStatusTipEvent, QCloseEvent, QResizeEvent
-from PyQt6.QtWidgets import QMainWindow, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QApplication, QCheckBox
 from PyQt6.QtCore import QObject, pyqtSignal, QEvent, QTimer
 
 from Source.version import __title__, __issue__
-from Source.Util.app_data import save_window_state, ICON_APP, group_menu, \
-    ICON_HELP_LIGHT, ICON_HELP_DARK, ETheme, read_last_tab, write_last_tab, ETab
+from Source.Util.app_data import save_window_state, ICON_APP, ETab, group_menu, \
+    ICON_HELP_LIGHT, ICON_HELP_DARK, ETheme, read_last_tab, write_last_tab, \
+    read_update_version, write_update_version
 from Source.Util.app_err_handler import UncaughtHook
 from Source.Util.app_log import LogConfig
 from Source.Views.mainwindow_ui import Ui_MainWindow
@@ -31,6 +33,7 @@ from Source.Controller.dialog_about import show_about_dialog
 from Source.Controller.dialog_commit import CommitDialog
 from Source.Model.model import Model
 from Source.Model.data_handler import check_git_changes, commit_all_changes
+from Source.Model.update_service import get_tool_update_status, compare_versions, S_UPDATE_URL
 
 log = logging.getLogger(__title__)
 
@@ -131,6 +134,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # active tab
         self.tabWidget.setCurrentIndex(read_last_tab())
 
+        newer_tool_version = get_tool_update_status()
+        if (newer_tool_version is not None) and (compare_versions(read_update_version(), newer_tool_version)):
+            self.show_update_dialog(newer_tool_version)
         self.clear_status(b_override=True)
         self.init_phase = False
         self.update_all_tabs()  # call at least for log
@@ -224,6 +230,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.gui_locked = False
         self.status_timer.stop()  # stop timer to deactivate unlock diagnostic directly after clear status
         self.clear_status()
+
+    def show_update_dialog(self, newer_tool_version: str) -> None:
+        """!
+        @brief Show Update dialog.
+        @param newer_tool_version : newest tool version
+        """
+        dialog = QMessageBox(self)
+        dialog.setWindowTitle("Update-Dienst")
+        dialog.setWindowIcon(QIcon(ICON_APP))
+        dialog.setText(f"Neue Version verfügbar! \nUpdate auf Version {newer_tool_version} durchführen?")
+        dialog.setIcon(QMessageBox.Icon.Information)
+        dialog.addButton(QMessageBox.StandardButton.Yes)
+        btn = dialog.button(QMessageBox.StandardButton.Yes)
+        if btn is not None:
+            btn.setText("Ja")
+        dialog.addButton(QMessageBox.StandardButton.No)
+        btn = dialog.button(QMessageBox.StandardButton.No)
+        if btn is not None:
+            btn.setText("Nein")
+        box = QCheckBox("Nicht mehr anzeigen")
+        dialog.setCheckBox(box)
+        dialog.close()
+        choice = dialog.exec()
+        is_checked = box.isChecked()
+        b_update = choice not in [QMessageBox.StandardButton.No, QMessageBox.StandardButton.Close, QMessageBox.StandardButton.Cancel]
+
+        if is_checked:
+            write_update_version(newer_tool_version)  # write newest version for don't remember again
+        if b_update:
+            cb = QApplication.clipboard()
+            if cb is not None:
+                cb.clear()
+                cb.setText(S_UPDATE_URL)
+            webbrowser.open_new_tab(S_UPDATE_URL)
+            sys.exit()  # exit application without close dialog
 
     def show_help_dialog(self) -> None:
         """!

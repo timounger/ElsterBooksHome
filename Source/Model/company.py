@@ -25,6 +25,7 @@ COMPANY_SCHEMA_FILE = "company_schema.json"
 COMPANY_JSON_FILE = "company_data"
 
 LOGO_BRIEF_PATH = f"{COMPANY_FOLDER}/logo.png"
+LOGO_SVG_PATH = f"{COMPANY_FOLDER}/logo.svg"
 
 COMPANY_ADDRESS_FIELD = "address"
 COMPANY_CONTACT_FIELD = "contact"

@@ -21,7 +21,7 @@ from Source.Model.contacts import EContactFields, add_contact, remove_contact, C
     CONTACT_ADDRESS_FIELD, D_CONTACT_TEMPLATE
 from Source.Model.ZUGFeRD.drafthorse_data import D_COUNTRY_CODE
 from Source.Model.ZUGFeRD.drafthorse_import import set_combo_box_items
-from Source.Worker.vat_validation import VatValidation, check_vat_format, GERMAN_VAT_PATTERN
+from Source.Worker.vat_validation import VatValidation, check_vat_format, VAT_PATTERNS
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -32,7 +32,7 @@ EMAIL_REGEX = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
 class ContactDialog(QDialog, Ui_DialogContact):
     """!
-    @brief Contact dialog tab.
+    @brief Contact dialog.
     @param ui : main window
     @param data : contact data
     @param uid : UID of contact
@@ -221,19 +221,19 @@ class ContactDialog(QDialog, Ui_DialogContact):
         mail = self.le_mail.text()
         country_code = self.cb_country.currentData()
         # check for valid data
-        self.pte_name.setStyleSheet("")
-        self.le_vat.setStyleSheet("")
-        self.le_street_1.setStyleSheet("")
-        self.le_plz.setStyleSheet("")
-        self.le_city.setStyleSheet("")
-        self.le_mail.setStyleSheet("")
+        self.pte_name.setStyleSheet("border: 1px solid palette(dark);")
+        self.le_vat.setStyleSheet("border: 1px solid palette(dark);")
+        self.le_street_1.setStyleSheet("border: 1px solid palette(dark);")
+        self.le_plz.setStyleSheet("border: 1px solid palette(dark);")
+        self.le_city.setStyleSheet("border: 1px solid palette(dark);")
+        self.le_mail.setStyleSheet("border: 1px solid palette(dark);")
         valid = False
         if not organization:
             self.pte_name.setStyleSheet("border: 2px solid red;")
             self.ui.set_status("Kein Handelspartner vorhanden.", b_highlight=True)
-        elif (len(vat_id) > 0) and (country_code == "DE") and not check_vat_format(vat_id, pattern=GERMAN_VAT_PATTERN):
+        elif (len(vat_id) > 0) and (country_code in VAT_PATTERNS) and not check_vat_format(vat_id, pattern=VAT_PATTERNS[country_code]):
             self.le_vat.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Ungültige Umsatzsteuer-ID vorhanden.", b_highlight=True)
+            self.ui.set_status("Ungültige Umsatzsteuer-ID für das gewählte Land vorhanden.", b_highlight=True)
         elif not street_1:
             self.le_street_1.setStyleSheet("border: 2px solid red;")
             self.ui.set_status("Keine Straße vorhanden.", b_highlight=True)

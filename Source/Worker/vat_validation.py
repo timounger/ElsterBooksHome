@@ -16,8 +16,6 @@ from Source.version import __title__
 
 log = logging.getLogger(__title__)
 
-GERMAN_VAT_PATTERN = r'^DE[0-9]{9}$'  # starts with DE followed by 9 digits
-
 # Rules for valid VAT see: https://de.wikipedia.org/wiki/Umsatzsteuer-Identifikationsnummer
 VAT_PATTERNS = {
     'AT': r'^ATU[0-9]{8}$',  # Österreich
@@ -25,7 +23,7 @@ VAT_PATTERNS = {
     'BG': r'^BG[0-9]{9,10}$',  # Bulgarien
     'CY': r'^CY(?!12)[013459][0-9]{7}[A-Z]$',  # Zypern
     'CZ': r'^CZ[0-9]{8,10}$',  # Tschechien
-    'DE': GERMAN_VAT_PATTERN,  # Deutschland
+    'DE': r'^DE[0-9]{9}$',  # Deutschland
     'DK': r'^DK[0-9]{8}$',  # Dänemark
     'EE': r'^EE[0-9]{9}$',  # Estland
     'GR': r'^EL[0-9]{9}$',  # Griechenland

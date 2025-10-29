@@ -14,15 +14,17 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
 
 from Source.version import __title__
-from Source.Util.app_data import S_KEY_INCOME_COLUMN
+from Source.Util.app_data import S_KEY_INCOME_COLUMN, ICON_INVOICE_LIGHT, ICON_INVOICE_DARK
 from Source.Controller.table_filter import TableFilter, CellData, L_RECEIPT_ROW_DESCRIPTION, I_ATTACH_IDX, I_DESCRIPTION_IDX, \
     I_DATE_IDX, I_INVOICE_NUMBER_IDX
 from Source.Controller.dialog_receipt import ReceiptDialog, EReceiptType
 from Source.Controller.dialog_invoice import InvoiceDialog
-from Source.Model.income import read_income, INCOME_FILE_PATH, export_income, delete_income
+from Source.Model.income import read_income, INCOME_FILE_PATH, export_income, delete_income, clean_income
+from Source.Model.income import check_payed_income
 from Source.Model.data_handler import INVOICE_FILE_TYPES, clear_dialog_data, EReceiptFields, get_status, \
     find_file, L_INVOICE_FILE_TYPES
 from Source.Model.company import ECompanyFields, COMPANY_DEFAULT_FIELD
+from Source.Model.fin_ts import Transaction
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -42,7 +44,7 @@ class TabIncome:
         ui.tabWidget.setTabText(tab_idx, s_title)
         self.ui_income = TableFilter(ui, ui.tabWidget, tab_idx, s_title, title_folder_link=INCOME_FILE_PATH,
                                      btn_1_name="Einnahme erfassen", btn_1_cb=self.new_income,
-                                     btn_2_name="Rechnung erstellen", btn_2_cb=self.create_invoice,
+                                     btn_2_name="Rechnung erstellen", btn_2_icon=(ICON_INVOICE_LIGHT, ICON_INVOICE_DARK), btn_2_cb=self.create_invoice,
                                      table_double_click_fnc=self.on_item_double_clicked, l_table_header=L_RECEIPT_ROW_DESCRIPTION,
                                      sort_idx=I_DATE_IDX, pre_sort_idx=I_INVOICE_NUMBER_IDX, inverse_sort=False, row_fill_idx=I_DESCRIPTION_IDX,
                                      delete_fnc=delete_income, update_table_func=self.set_table_data,
@@ -99,6 +101,21 @@ class TabIncome:
         if update_dashboard:
             self.ui.tab_dashboard.update_dashboard_data()
 
+    def clean_data(self) -> None:
+        """!
+        @brief Clean data
+        """
+        clean_income(self.ui.model.data_path)
+        self.set_table_data()
+
+    def check_for_payed(self, l_transaction: list[Transaction]) -> None:
+        """!
+        @brief Check for payed
+        @param l_transaction : transactions
+        """
+        check_payed_income(self.ui.model.data_path, l_transaction)
+        self.set_table_data()
+
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!
         @brief Callback for double click on table entry.
@@ -132,13 +149,14 @@ class TabIncome:
             with subprocess.Popen(["start", "", attachment_file], shell=True):
                 pass
 
-    def create_invoice(self) -> None:
+    def create_invoice(self, uid: Optional[str] = None) -> None:
         """!
         @brief Create invoice.
+        @param uid : uid of contact
         """
         invoice_dialog: Any = None
         if invoice_dialog is None:
-            invoice_dialog = InvoiceDialog(self.ui)
+            invoice_dialog = InvoiceDialog(self.ui, uid)
 
     def new_income(self, import_file: Optional[str] = None) -> None:
         """!

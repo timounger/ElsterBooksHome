@@ -13,9 +13,10 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.drawing.image import Image
 from openpyxl.styles.borders import Border, Side
 from openpyxl.utils import get_column_letter
+import qrcode
 
 from Source.version import __title__
-from Source.Util.app_data import EXPORT_PATH, LOGO_ZUGFERD, EInvoiceOption, write_invoice_option
+from Source.Util.app_data import EXPORT_PATH, LOGO_ZUGFERD, EInvoiceOption
 from Source.Util.openpyxl_util import XLSCreator
 from Source.Model.data_handler import get_file_name, convert_xlsx_to_pdf
 from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, \
@@ -30,6 +31,8 @@ COLOR_LIGHT_BLUE = "CFF1FF"
 COLOR_MIDDLE_GREY = "E0E0E0"
 WHITE_BORDER = Border(right=Side(style="medium", color="FFFFFF"))
 SECTION_KEY = "SECTION_KEY"
+
+QR_CODE_FILE_PATH = os.path.join(EXPORT_PATH, "payment_qr.png")
 
 
 def write_data_to_excel(xls_creator: XLSCreator, ws: Worksheet, i_row: int, d_data: dict[str, str], title: Optional[str] = None) -> int:
@@ -84,15 +87,66 @@ def write_data_to_excel(xls_creator: XLSCreator, ws: Worksheet, i_row: int, d_da
     return i_row
 
 
+def generate_epc_qr(invoice_data: dict[str, Any], box_size: int = 4, border: int = 2):
+    if os.path.exists(QR_CODE_FILE_PATH):
+        os.remove(QR_CODE_FILE_PATH)
+
+    data_payment = invoice_data["payment"]
+    if len(data_payment["methods"]) > 0:
+        payment_method = data_payment["methods"][0]
+        name = payment_method["accountName"]  # Name des Zahlungskontos (BT-85)
+        iban = payment_method["iban"]  # Kennung des Zahlungskontos (BT-84)
+        bic = payment_method["bic"]  # Kennung des Zahlungsdienstleisters (BT-86)
+        # d_data["Zahlungsart"] = create_value_description(payment_method["typeCode"], D_PAYMENT_METHOD)  # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
+        # d_data["Name der Bank"] = payment_method["bankName"]  # Name der Bank
+    else:
+        name = "",
+        iban = "",
+        bic = ""
+    reference = data_payment["reference"]  # Verwendungszweck (BT-83)
+    amount = invoice_data["totals"]["dueAmount"]  # Fälliger Betrag (BT-115)
+    currency_code = invoice_data["currencyCode"]
+
+    if amount:  # generate only for present amount
+        # Build EPC string
+        epc_data = [
+            "BCD",                    # Service tag (fix)
+            "002",                    # Version (001 (older) or 002)
+            "1",                      # Character set (1 = UTF-8)
+            "SCT",                    # Identification (SEPA Credit Transfer)
+            bic,                      # BIC (optional, need in version 1)
+            name,                     # Beneficiary name
+            iban,                     # IBAN
+            f"{currency_code}{amount:.2f}",  # Amount
+            "",                       # Purpose (optional)
+            reference,                # Structured reference
+            ""                        # Unstructured remittance
+        ]
+
+        epc_string = "\n".join(epc_data)
+
+        # Generate QR code
+        qr = qrcode.QRCode(version=1, box_size=box_size, border=border)
+        qr.add_data(epc_string)
+        qr.make(fit=True)
+
+        img = qr.make_image(fill_color="black", back_color="white")
+        img.save(QR_CODE_FILE_PATH)
+    else:
+        img = None
+    return img
+
+
 ###########################
 ##     Create Invoice    ##
 ###########################
 
-def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInvoiceOption) -> None | str:
+def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInvoiceOption, create_qr_code: bool = False) -> None | str:
     """!
     @brief Convert JSON to invoice.
     @param invoice_data : invoice data as JSON
     @param e_invoice_option : invoice option
+    @param create_qr_code : create QR Code status
     @return invoice file name
     """
     fill_invoice_data(invoice_data)
@@ -120,6 +174,14 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
             xls_creator.set_cell(ws, i_row, 2, f"invoice by {__title__}", bold=True, italic=True)
         ws.row_dimensions[i_row].height = 19
         i_row += 3
+        # QR code
+        if create_qr_code:
+            qr_code = generate_epc_qr(invoice_data)
+            if qr_code and os.path.exists(QR_CODE_FILE_PATH):
+                xls_creator.set_cell(ws, i_row, 1, f"Zum Bezahlen scannen")
+                i_row += 1
+                ws.add_image(Image(QR_CODE_FILE_PATH), f"A{i_row}")
+                i_row += 7
         # title
         invoice_title = invoice_data["title"] if invoice_data["title"] else "Rechnung"
         xls_creator.set_cell(ws, i_row, 1, invoice_title, font_size=24)
@@ -359,6 +421,8 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
     if b_create_excel:
         file_name_excel = f"{file_name}.xlsx"
         xls_creator.save(filename=file_name_excel)
+        if os.path.exists(QR_CODE_FILE_PATH):
+            os.remove(QR_CODE_FILE_PATH)
 
     file_to_open = None
     if b_create_xml:
@@ -383,15 +447,14 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
     return file_to_open
 
 
-def create_general_invoice(invoice_data: dict[str, Any], e_invoice_option: EInvoiceOption) -> None:
+def create_general_invoice(invoice_data: dict[str, Any], e_invoice_option: EInvoiceOption, create_qr_code: bool) -> None:
     """!
     @brief Create invoice.
     @param invoice_data : invoice data as JSON
     @param e_invoice_option : invoice option
+    @param create_qr_code : create qr code
     """
-    write_invoice_option(e_invoice_option)
-
-    file = convert_json_to_invoice(invoice_data, e_invoice_option)
+    file = convert_json_to_invoice(invoice_data, e_invoice_option, create_qr_code)
 
     if file is not None:
         with subprocess.Popen(["start", "", file], shell=True):

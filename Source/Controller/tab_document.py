@@ -17,7 +17,7 @@ from Source.version import __title__
 from Source.Util.app_data import S_KEY_DOCUMENT_COLUMN
 from Source.Controller.table_filter import TableFilter, CellData, ATTACH
 from Source.Controller.dialog_document import DocumentDialog
-from Source.Model.document import read_document, DOCUMENT_FILE_PATH, EDocumentFields, add_document, remove_document
+from Source.Model.document import read_document, DOCUMENT_FILE_PATH, EDocumentFields, add_document, remove_document, clean_documents
 from Source.Model.data_handler import PDF_FILE_TYPES, clear_dialog_data, find_file, L_INVOICE_FILE_TYPES
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -72,6 +72,13 @@ class TabDocument:
         self.ui_document.table.setColumnHidden(len(L_ROW_DESCRIPTION) - 1, True)
         if update_dashboard:
             self.ui.tab_dashboard.update_dashboard_data()
+
+    def clean_data(self) -> None:
+        """!
+        @brief Clean data
+        """
+        clean_documents(self.ui.model.data_path)
+        self.set_table_data()
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!

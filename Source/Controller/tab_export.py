@@ -27,6 +27,7 @@ from Source.Model.export import ExportReport, EReportType
 from Source.Views.tabs.tab_export_ui import Ui_Export
 from Source.Worker.tools_downloader import ToolsDownloader
 from Source.Controller.dialog_commit import CommitDialog
+from Source.Controller.dialog_banking import BankingDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -70,12 +71,14 @@ class TabExport:
         self.ui_export.btn_export.setText(EReportType.EXPORT_TOTAL)
         self.ui_export.btn_export.clicked.connect(self.export_btn_clicked)
         self.ui_export.btn_backup.clicked.connect(self.create_backup)
+        # Transactions
+        self.ui_export.btn_transactions.clicked.connect(self.transactions_btn_clicked)
         # PDF buttons
         self.ui_export.btn_pdf_combine.clicked.connect(self.pdf_combine_btn_clicked)
         # data update buttons
         self.ui_export.btn_update_data.clicked.connect(self.update_btn_clicked)
         self.ui_export.btn_update_data_rename.clicked.connect(self.update_all_btn_clicked)
-        self.ui_export.btn_data_clean.clicked.connect(self.data_clean_btn_clicked)
+        self.ui_export.btn_data_clean.clicked.connect(self.clean_data_clicked)
         # git buttons
         self.ui_export.btn_git_commit.setIcon(QIcon(ICON_GIT_COMMIT))
         self.ui_export.btn_git_push.setIcon(QIcon(ICON_GIT_PUSH))
@@ -126,7 +129,6 @@ class TabExport:
         self.ui_export.btn_git_push.hide()
         self.ui_export.btn_git_pull.hide()
         self.ui_export.line_data_update.hide()
-        self.ui_export.btn_data_clean.hide()
 
     def update_export_data(self) -> None:
         """!
@@ -282,6 +284,12 @@ class TabExport:
             os.makedirs(EXPORT_PATH)
         open_explorer(EXPORT_PATH, b_open_input=True)
 
+    def transactions_btn_clicked(self) -> None:
+        """!
+        @brief Transactions button clicked.
+        """
+        BankingDialog(self.ui)
+
     def pdf_combine_btn_clicked(self) -> None:
         """!
         @brief PDF combine button clicked.
@@ -301,12 +309,6 @@ class TabExport:
         """
         self.ui.update_all_tabs(update=True, rename=True)
         self.ui.set_status("Daten inklusive Dateiumbenennung wurden vorgenommen")
-
-    def data_clean_btn_clicked(self) -> None:
-        """!
-        @brief Data clean button clicked.
-        """
-        self.ui.set_status("TODO noch nicht implementiert", b_highlight=True)  # TODO
 
     def git_commit_btn_clicked(self) -> None:
         """!
@@ -351,6 +353,16 @@ class TabExport:
         else:
             self.ui.set_status("Repo konnte nicht erstellt werden", b_highlight=True)
         self.update_export_data()
+
+    def clean_data_clicked(self) -> None:
+        """!
+        @brief Clean data button clicked.
+        """
+        self.ui.update_all_tabs()
+        self.ui.tab_document.clean_data()
+        self.ui.tab_income.clean_data()
+        self.ui.tab_expenditure.clean_data()
+        self.ui.set_status("Daten bereinigt")
 
     def download_tools_btn_clicked(self) -> None:
         """!

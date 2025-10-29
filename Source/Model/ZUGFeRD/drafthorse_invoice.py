@@ -10,7 +10,7 @@ import os
 import logging
 from typing import Optional, Any
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal
 import copy
 from lxml import etree
 
@@ -21,12 +21,14 @@ from drafthorse.models.tradelines import LineItem
 from drafthorse.models.party import TaxRegistration
 from drafthorse.models.trade import PaymentTerms, SellerTradeParty
 from drafthorse.models.references import AdditionalReferencedDocument
+from drafthorse.models.payment import PaymentMeans
 from drafthorse.pdf import attach_xml
 
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import DATE_FORMAT_XML
 from Source.Model.ZUGFeRD.drafthorse_data import EN_16931
+from Source.Model.ZUGFeRD.drafthorse_convert import normalize_decimal
 from Source.Model.contacts import EContactFields, CONTACT_ADDRESS_FIELD, CONTACT_CONTACT_FIELD
 from Source.Model.company import ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, \
     COMPANY_PAYMENT_FIELD
@@ -89,7 +91,7 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
     if legal_notes:
         trade_party.description = legal_notes
     if electronic_address:
-        trade_party.electronic_address = electronic_address
+        trade_party.electronic_address.uri_ID = electronic_address
     if street1:
         trade_party.address.line_one = street1
     if street2:
@@ -185,9 +187,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
     if notes:
         if isinstance(notes, list):
             notes = "\n".join(notes)
-        note = IncludedNote()
-        note.content.add(notes)
-        doc.header.notes.add(note)
+        doc.header.notes.add(IncludedNote(content=notes))
 
     # Rechnungssteller
     convert_json_to_trade_party(doc.trade.agreement.seller, invoice_data["seller"])
@@ -197,11 +197,19 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
 
     # Zahlungsdetails
     payment = invoice_data["payment"]
-    payment_method = payment["methods"][0]
-    payment_type = payment_method["typeCode"]  # Zahlungsart (BT-81)
-    account_name = payment_method["accountName"]  # Kontoinhaber (BT-85)
-    iban = payment_method["iban"]  # IBAN (BT-84)
-    bic = payment_method["bic"]  # BIC (BT-86)
+    for payment_method in payment["methods"]:
+        payment_type = payment_method["typeCode"]  # Zahlungsart (BT-81)
+        account_name = payment_method["accountName"]  # Kontoinhaber (BT-85)
+        iban = payment_method["iban"]  # IBAN (BT-84)
+        bic = payment_method["bic"]  # BIC (BT-86)
+        settlement = doc.trade.settlement
+        payment_means_option = PaymentMeans()
+        payment_means_option.type_code = payment_type
+        payment_means_option.payee_account.account_name = account_name
+        payment_means_option.payee_account.iban = iban
+        payment_means_option.payee_institution.bic = bic
+        settlement.payment_means.add(payment_means_option)
+    # ---
     reference = payment.get("reference", "")  # Verwendungszweck (BT-83)
     terms = payment.get("terms", "")  # Zahlungsbedingungen (BT-20)
     payment_date = invoice_data.get("dueDate", "")
@@ -209,11 +217,6 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
         payment_terms_date = datetime.strptime(payment_date, DATE_FORMAT_XML)  # Fälligkeitsdatum (BT-9)
     else:
         payment_terms_date = None
-    settlement = doc.trade.settlement
-    settlement.payment_means.type_code = payment_type
-    settlement.payment_means.payee_account.account_name = account_name
-    settlement.payment_means.payee_account.iban = iban
-    settlement.payment_means.payee_institution.bic = bic
     if reference:
         settlement.payment_reference = reference
     if terms or payment_terms_date:
@@ -263,7 +266,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
         if description:
             li.product.description = description
         quantity = item_data["quantity"]  # Menge (BT-129)
-        normalized_quantity = Decimal(str(quantity)).quantize(Decimal("1.0000"), rounding=ROUND_HALF_UP).normalize()  # use only required floating data (up to 4)
+        normalized_quantity = normalize_decimal(quantity)  # use only required floating data (up to 4)
         quantity_unit = item_data["quantityUnit"]  # Einheit (BT-130) D_UNIT
         li.delivery.billed_quantity = (normalized_quantity, quantity_unit)
         price = item_data["netUnitPrice"]  # Einzelpreis (Netto) (BT-146)
@@ -271,7 +274,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
         li.settlement.trade_tax.type_code = TAX_TYPE
         basis_quantity = item_data.get("basisQuantity", 1)
         if basis_quantity not in [0, 1]:  # write only if required
-            normalized_basis_quantity = Decimal(str(basis_quantity)).quantize(Decimal("1.0000"), rounding=ROUND_HALF_UP).normalize()  # use only required floating data (up to 4)
+            normalized_basis_quantity = normalize_decimal(basis_quantity)  # use only required floating data (up to 4)
             li.agreement.net.basis_quantity = (normalized_basis_quantity, quantity_unit)  # Basismenge (BT-149)
         sum_price = item_data["netAmount"]  # Gesamtpreis (Netto) (BT-131)
         li.settlement.monetary_summation.total_amount = Decimal(f"{sum_price:.2f}")
@@ -427,7 +430,7 @@ def eval_factur_xml(xml_file_path: str | bytes, extended: bool = False) -> tuple
             log.info(warning_text)
     else:
         is_valid = False
-        warning_text = f"Invalid XML File: {xml_file_path}",
+        warning_text = f"Invalid XML File: {xml_file_path}"
         log.warning(warning_text)
     return is_valid, warning_text
 

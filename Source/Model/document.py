@@ -13,7 +13,8 @@ from typing import Optional, Any
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import read_json_files, get_file_names_in_folder, validate_data, read_json_file, \
-    set_general_json_data, fill_data, get_file_name, add_json, add_appendix, get_date_title, delete_data, PDF_TYPE
+    set_general_json_data, fill_data, get_file_name, add_json, add_appendix, get_date_title, delete_data, PDF_TYPE, \
+    clean_data
 
 log = logging.getLogger(__title__)
 
@@ -101,6 +102,15 @@ def add_document(path: str, add: bool, d_document_data: dict[EDocumentFields, st
     add_json(add, instance, title, s_id, os.path.join(path, DOCUMENT_FOLDER), id_field=id_field, rename=rename)
     if (appendix_file is not None) or rename:
         add_appendix(title, s_id, os.path.join(path, DOCUMENT_FILE_PATH), add, appendix_file=appendix_file)
+
+
+def clean_documents(path: str) -> None:
+    """!
+    @brief Clean documents.
+    @param path : data path
+    """
+    l_data = read_document(path)
+    clean_data(path, l_data, DOCUMENT_FOLDER, DOCUMENT_FILE_PATH, EDocumentFields.ID, EDocumentFields.ATTACHMENT)
 
 
 def remove_document(path: str, document_id: str) -> None:

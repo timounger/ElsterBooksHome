@@ -437,11 +437,13 @@ class ExportReport:
         elif self.e_type in [EReportType.EUR, EReportType.GUV]:
             sum_row = 3
             sum_row_letter = get_column_letter(sum_row)
+            special_groups = [EReceiptGroup.UST_VA, EReceiptGroup.UST]  # write special groups at end
             # income
             xls_creator.set_cell(worksheet, i_row, 1, "1. Betriebseinnahmen (einschl. steuerfreier Betriebseinnahmen)", bold=True)
             i_row += 1
             i_start = i_row
-            for income_group, income_net in self.d_income_groups.items():
+            d_income_groups_sorted = dict(sorted(self.d_income_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
+            for income_group, income_net in d_income_groups_sorted.items():
                 xls_creator.set_cell(worksheet, i_row, 1, income_group)
                 xls_creator.set_cell(worksheet, i_row, sum_row, income_net, number_format=NUMBER_FORMAT_EUR)
                 i_row += 1
@@ -456,7 +458,8 @@ class ExportReport:
             xls_creator.set_cell(worksheet, i_row, 1, "2. Betriebsausgaben (einschl. auf steuerfreie Betriebseinnahmen entfallende Betriebsausgaben)", bold=True)
             i_row += 1
             i_start = i_row
-            for expenditure_group, expenditure_net in self.d_expenditure_groups.items():
+            d_expenditure_groups_sorted = dict(sorted(self.d_expenditure_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
+            for expenditure_group, expenditure_net in d_expenditure_groups_sorted.items():
                 xls_creator.set_cell(worksheet, i_row, 1, expenditure_group)
                 xls_creator.set_cell(worksheet, i_row, sum_row, expenditure_net, number_format=NUMBER_FORMAT_EUR)
                 i_row += 1

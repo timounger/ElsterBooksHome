@@ -46,7 +46,8 @@ class TabContacts:
                                     table_double_click_fnc=self.on_item_double_clicked, l_table_header=L_ROW_DESCRIPTION,
                                     sort_idx=0, inverse_sort=True, row_fill_idx=len(L_ROW_DESCRIPTION) - 3,
                                     delete_fnc=remove_contact, update_table_func=self.set_table_data,
-                                    column_setting_key=S_KEY_CONTACTS_COLUMN)
+                                    column_setting_key=S_KEY_CONTACTS_COLUMN,
+                                    b_create_invoice=True)
         self.l_data: list[dict[EContactFields | str, str]] = []
         self.ui_table.lbl_drag.setText("")  # contacts can not drop file
 

@@ -212,6 +212,17 @@ def extract_xml_from_pdf(pdf_path: str) -> bytes | None:
             file_content = doc.embfile_get(attachment['name'])
             break
 
+    # in some cases: check for embedded x-invoice
+    if file_content is None:
+        for i in range(doc.xref_length()):
+            try:
+                obj = doc.xref_object(i, compressed=True)
+                if "/Type/EmbeddedFile" in obj:
+                    # filename = doc.xref_get_key(i, "UF")[1] or f"embedded_{i}.xml"  # get filename
+                    file_content = doc.xref_stream(i)  # extract stream
+                    break
+            except Exception as e:
+                file_content = None
     return file_content
 
 
@@ -297,7 +308,7 @@ def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: 
             description = str(child.product.name)[:100]  # limit description
             break
 
-        gross = doc.trade.settlement.monetary_summation.due_amount._value
+        gross = doc.trade.settlement.monetary_summation.grand_total._amount
         net = doc.trade.settlement.monetary_summation.tax_basis_total._amount
 
         b_success = True
@@ -558,7 +569,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
 
     data_payment = data["payment"]
     if len(data_payment["methods"]) > 0:
-        payment_method = data_payment["methods"][0]
+        payment_method = data_payment["methods"][0]  # TODO mehrere Zahlungsoptionen ermöglichen
         # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
         payment_method_code = payment_method["typeCode"]
         if payment_method_code:
@@ -858,4 +869,4 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Rundungsbetrag (BT-114)
     set_optional_entry(dialog.dsb_rounded_amount, data_totals["roundingAmount"], [dialog.lbl_rounded_amount, dialog.lbl_rounded_amount_symbol])
     # Fälliger Zahlungsbetrag (BT-115)
-    set_spin_box_read_only(dialog.dsb_amount_due, data_totals["dueAmount"])
+    set_optional_entry(dialog.dsb_amount_due, data_totals["dueAmount"], [dialog.lbl_amount_due, dialog.lbl_amount_due_symbol])

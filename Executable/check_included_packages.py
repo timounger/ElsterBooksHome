@@ -84,6 +84,24 @@ L_ALLOWED_THIRD_PARTY_PACKAGES = [
     "requests_toolbelt",
     "zeep",
     "tzdata",
+    # reportlab and svglib
+    "cryptography",
+    "cssselect2",
+    "reportlab",
+    "svglib",
+    "tinycss2",
+    "webencodings",
+    # FinTS
+    "fints",
+    "bleach",
+    "elementpath",
+    "enum_tools",
+    "mt940",
+    "sepaxml",
+    "text_unidecode",
+    "xmlschema",
+    # QR-Code
+    "qrcode",
 ]
 
 S_RELATIVE_PATH = fr"build\{__title__}\xref-{__title__}.html"

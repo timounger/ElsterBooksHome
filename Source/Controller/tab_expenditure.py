@@ -18,10 +18,12 @@ from Source.Util.app_data import S_KEY_EXPENDITURE_COLUMN
 from Source.Controller.table_filter import TableFilter, CellData, L_RECEIPT_ROW_DESCRIPTION, I_ATTACH_IDX, I_DESCRIPTION_IDX, \
     I_DATE_IDX
 from Source.Controller.dialog_receipt import ReceiptDialog, EReceiptType
-from Source.Model.expenditure import read_expenditure, EXPENDITURE_FILE_PATH, export_expenditure, delete_expenditure
+from Source.Model.expenditure import read_expenditure, EXPENDITURE_FILE_PATH, export_expenditure, delete_expenditure, clean_expenditure
+from Source.Model.expenditure import check_payed_expenditure
 from Source.Model.data_handler import INVOICE_FILE_TYPES, clear_dialog_data, EReceiptFields, get_status, \
     find_file, L_INVOICE_FILE_TYPES
 from Source.Model.company import ECompanyFields, COMPANY_DEFAULT_FIELD
+from Source.Model.fin_ts import Transaction
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -96,6 +98,21 @@ class TabExpenditure:
         self.ui_expenditure.table.setColumnHidden(len(L_RECEIPT_ROW_DESCRIPTION) - 1, True)
         if update_dashboard:
             self.ui.tab_dashboard.update_dashboard_data()
+
+    def clean_data(self) -> None:
+        """!
+        @brief Clean data
+        """
+        clean_expenditure(self.ui.model.data_path)
+        self.set_table_data()
+
+    def check_for_payed(self, l_transaction: list[Transaction]) -> None:
+        """!
+        @brief Check for payed
+        @param l_transaction : transactions
+        """
+        check_payed_expenditure(self.ui.model.data_path, l_transaction)
+        self.set_table_data()
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!

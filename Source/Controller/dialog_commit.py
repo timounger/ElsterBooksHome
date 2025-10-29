@@ -5,6 +5,7 @@
 ********************************************************************************
 """
 
+import os
 import logging
 from typing import TYPE_CHECKING, Any
 
@@ -12,6 +13,7 @@ from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt
 
 from Source.version import __title__
+from Source.Model.data_handler import tortoise_git_check_for_mod, TORTOISE_GIT_EXE
 from Source.Views.dialogs.dialog_commit_ui import Ui_CommitDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -53,6 +55,10 @@ class CommitDialog(QDialog, Ui_CommitDialog):
         self.btn_no.setStyleSheet("background-color: red; color: white;")
         self.btn_yes.clicked.connect(self.yes_clicked)
         self.btn_no.clicked.connect(self.close)
+        if os.path.exists(TORTOISE_GIT_EXE):
+            self.btn_diff.clicked.connect(self.diff_clicked)
+        else:
+            self.btn_diff.hide()
 
         self.show()
         self.exec()
@@ -69,3 +75,9 @@ class CommitDialog(QDialog, Ui_CommitDialog):
         else:
             self.pte_commit_text.setStyleSheet("border: 2px solid red;")
             self.ui.set_status("Keine Commit Message vorhanden.", b_highlight=True)
+
+    def diff_clicked(self) -> None:
+        """!
+        @brief Diff button clicked.
+        """
+        tortoise_git_check_for_mod()

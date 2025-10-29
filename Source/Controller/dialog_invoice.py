@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushBut
 
 from Source.version import __title__
 from Source.Util.app_data import EInvoiceOption, read_invoice_option, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, \
-    ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog
+    ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, write_invoice_option
 from Source.Views.dialogs.dialog_invoice_general_ui import Ui_DialogInvoice
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
 from Source.Views.widgets.invoice_item_data_ui import Ui_InvoiceItemData
@@ -114,7 +114,7 @@ def config_invoice_type_btn(dialog: Any) -> None:
                 dialog.btn_create.styleSheet() +
                 "QToolButton{border-width: 1px; border-style: solid; border-color: #3F4042;} QToolButton::menu-button{border-width: 1px; border-style: solid; border-color: #3F4042;}")
         case _:
-            dialog.btn_create.setStyleSheet("")
+            dialog.btn_create.setStyleSheet("border: 1px solid palette(dark);")
 
     if dialog.action_create_excel is not None:
         dialog.action_create_excel.triggered.connect(lambda: dialog.create_invoice(EInvoiceOption.EXCEL))
@@ -147,12 +147,13 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     """!
     @brief Invoice dialog.
     @param ui : main window
+    @param uid : UID of selected contact
     """
 
-    def __init__(self, ui: "MainWindow", *args: Any, **kwargs: Any) -> None:
+    def __init__(self, ui: "MainWindow", uid: Optional[str] = None, *args: Any, **kwargs: Any) -> None:
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
-        self.setMinimumWidth(880)
+        self.setMinimumWidth(960)
         self.setMinimumHeight(500)
         self.setWindowFlags(Qt.WindowType.Window)  # set all window buttons (e.g max window size)
         self.setWindowTitle("Rechnung erstellen")
@@ -163,6 +164,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.customer = None
         if B_DEBUG_FILL:
             self.customer = self.ui.tab_contacts.l_data[0]
+        self.default_uid = uid
         self.extended_mode = False
         self.ui_invoice_data = None
         self.lock_auto_price_edit = False
@@ -283,14 +285,22 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.expand_mode_changed()
         self.update_total_data()
 
-        for contact in self.ui.tab_contacts.l_data:
-            self.cb_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
-        self.cb_contact_template.activated.connect(self.contact_template_activated)
-        self.cb_contact_template.setCurrentIndex(-1)
-
+        # customer
         if B_DEBUG_FILL:
-            self.cb_contact_template.setCurrentIndex(3)
-            self.contact_template_activated(3)
+            index_to_set = 0
+        else:
+            index_to_set = None
+        for i, contact in enumerate(self.ui.tab_contacts.l_data):
+            self.cb_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
+            if self.default_uid:
+                if contact[EContactFields.ID] == self.default_uid:
+                    index_to_set = i
+        self.cb_contact_template.activated.connect(self.contact_template_activated)
+        if index_to_set is not None:
+            self.cb_contact_template.setCurrentIndex(index_to_set)
+            self.contact_template_activated(index_to_set)
+        else:
+            self.cb_contact_template.setCurrentIndex(-1)
 
         self.btn_import.clicked.connect(self.import_btn_clicked)
         self.btn_export.clicked.connect(self.export_btn_clicked)
@@ -361,6 +371,17 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.de_invoice_reference.setDate(actual_date)  # Datum (BT-26)
         # Freitext zur Rechnung (BT-22)
         dialog.pte_note.setPlainText("")
+        if B_DEBUG_FILL:
+            l_text = []
+            l_text.append("<b><font backColor='yellow'> Ihre Maßnahme in Hochdorf, Kirchheimer Str. 47 und 49</font></b>")
+            l_text.append("")
+            l_text.append("<b>Grundstücksneuordung Hauptstraße Straße xx / yy, Spongebob / Tadeus / Patrick</b>")
+            l_text.append("")
+            l_text.append("<u>Folgende Leistungen wurden durchgeführt:</u> Ausführungszeit: Januar - Juli 2020")
+            l_text.append("")
+            l_text.append("<b>Vertragsgestaltung und Vertragspläne</b>")
+            l_text.append("mit Besprechungen und Koordination von Notar, Büro für Stadtentwicklung und Gemeinde Abrechnung der Leistungen gemäß beiliegender Stundenliste")
+            dialog.pte_note.setPlainText("\n".join(l_text))
         # Einleitungstext
         dialog.pte_introduction_text.setPlainText("")
 
@@ -450,7 +471,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Kennung des Zahlungsdienstleisters (BT-86)
         dialog.le_bic.setText(company_payment[ECompanyFields.BANK_BIC])
         # bank name
-        dialog.lbl_bank_name.setText(company_payment[ECompanyFields.BANK_NAME])
+        dialog.le_bank_name.setText(company_payment[ECompanyFields.BANK_NAME])
         # Verwendungszweck (BT-83)
         dialog.le_payment_purpose.setText("")
         # Zahlungsbedingungen (BT-20)
@@ -642,6 +663,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         item_dialog.le_object_reference.setText("")
         # Artikelbeschreibung (BT-154)
         item_dialog.pte_item_description.setPlainText("")
+        if B_DEBUG_FILL:
+            item_dialog.pte_item_description.setPlainText("Artikelbeschreibung")
         # Menge (BT-129)
         item_dialog.dsb_item_quantity.setValue(1)
         # Einheit (BT-130) D_UNIT
@@ -1130,7 +1153,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def contact_template_activated(self, _index: int) -> None:
         """!
         @brief Contact template was selected. Update Address field.
-        @param _index : index    of selected template entry
+        @param _index : index of selected template entry
         """
         contact = self.cb_contact_template.currentData()
         self.customer = contact
@@ -1205,7 +1228,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             if date != currentDate:
                 self.ui_invoice_data.de_invoice_date.setStyleSheet("QDateEdit { background-color: red; }")
             else:
-                self.ui_invoice_data.de_invoice_date.setStyleSheet("")
+                self.ui_invoice_data.de_invoice_date.setStyleSheet("border: 1px solid palette(dark);")
         else:
             self.ui_invoice_data.le_invoice_number.setText("")
             self.ui_invoice_data.le_invoice_number.setStyleSheet("border: 2px solid red;")
@@ -1235,6 +1258,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
                 dialog.sb_due_days.setValue(new_due_days)
             self.lock_due_date_edit = False
 
+    def check_item_name(self) -> bool:
+        """!
+        @brief Check item name
+        @return valid status
+        """
+        valid_item = True
+        for item_dialog in self.ui_invoice_data.item_widgets:
+            if not item_dialog.le_item_name.text():
+                item_dialog.le_item_name.setStyleSheet("border: 2px solid red;")
+                valid_item = False
+                break
+        return valid_item
+
     def create_invoice(self, e_invoice_option: EInvoiceOption) -> None:
         """!
         @brief Create invoice.
@@ -1243,10 +1279,11 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         b_extended = self.cb_extended.isChecked()
         dialog = self.ui_invoice_data
 
-        self.cb_contact_template.setStyleSheet("")
-        dialog.le_invoice_number.setStyleSheet("")
+        self.cb_contact_template.setStyleSheet("border: 1px solid palette(dark);")
+        dialog.le_invoice_number.setStyleSheet("border: 1px solid palette(dark);")
         for item_dialog in dialog.item_widgets:
-            item_dialog.le_item_name.setStyleSheet("")
+            item_dialog.le_item_name.setStyleSheet("border: 1px solid palette(dark);")
+        dialog.le_seller_company.setStyleSheet("border: 1px solid palette(dark);")
 
         if not b_extended and self.customer is None:  # TODO bei Extended weitere Pflichtfelder prüfen
             self.cb_contact_template.setStyleSheet("border: 2px solid red;")
@@ -1254,18 +1291,20 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         elif not dialog.le_invoice_number.text():
             dialog.le_invoice_number.setStyleSheet("border: 2px solid red;")
             self.ui.set_status("Keine Rechnungsnummer vorhanden.", b_highlight=True)
+        elif not self.check_item_name():
+            # border for first missing item name was set in function
+            self.ui.set_status("Kein Artikelname vorhanden.", b_highlight=True)
+        elif b_extended and not dialog.le_seller_company.text():
+            dialog.le_seller_company.setStyleSheet("border: 2px solid red;")
+            self.ui.set_status("Kein Name des Rechnungsstellers", b_highlight=True)
         else:
-            valid_item = True
-            for item_dialog in dialog.item_widgets:
-                if not item_dialog.le_item_name.text():
-                    item_dialog.le_item_name.setStyleSheet("border: 2px solid red;")
-                    self.ui.set_status("Kein Artikelname vorhanden.", b_highlight=True)
-                    valid_item = False
-                    break
-            if valid_item:
-                invoice_data = self.read_ui_data_to_json()
-                create_general_invoice(invoice_data, e_invoice_option)
-                self.close()
+            invoice_data = self.read_ui_data_to_json()
+            write_invoice_option(e_invoice_option)
+            custom_invoice = False
+            if not custom_invoice:
+                create_qr_code = self.cb_qr_code.isChecked()
+                create_general_invoice(invoice_data, e_invoice_option, create_qr_code)
+            self.close()
 
     def read_ui_data_to_json(self) -> dict[str, Any]:
         """!
