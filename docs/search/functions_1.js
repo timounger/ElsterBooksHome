@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['accounting_5fdate_5fcheckbox_5fchanged_0',['accounting_date_checkbox_changed',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#adb1d587008b69aba3cba7e86e5a2bad8',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['accounting_5fdate_5ffrom_5fchanged_1',['accounting_date_from_changed',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#ab787e264f988097a34cca2013a217ee6',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['accounting_5fdate_5fto_5fchanged_2',['accounting_date_to_changed',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#ab5a891167b0e93be05556e8ed8dfb0d6',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['add_5fappendix_3',['add_appendix',['../namespace_source_1_1_model_1_1data__handler.html#ad33f9eab6993179ffff62774996e1de3',1,'Source::Model::data_handler']]],
+  ['add_5fcompany_4',['add_company',['../namespace_source_1_1_model_1_1company.html#a6873acda2bbfa0b436aa0157aa37afaf',1,'Source::Model::company']]],
+  ['add_5fcontact_5',['add_contact',['../namespace_source_1_1_model_1_1contacts.html#a9380f29e8c03847ee52cbff132f46160',1,'Source::Model::contacts']]],
+  ['add_5fdiscount_6',['add_discount',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a1c50a2e9a37b53d86ae81b094f35e71f',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['add_5fdocument_7',['add_document',['../namespace_source_1_1_model_1_1document.html#ac4ee25c66accd009f89eff89982d0e88',1,'Source::Model::document']]],
+  ['add_5fgithub_5fcorner_8',['add_github_corner',['../class_doxygen_creator_1_1doxygen__creator_1_1_doxygen_creator.html#af1a9bd66e5ce39f097f9532a2295f91d',1,'DoxygenCreator::doxygen_creator::DoxygenCreator']]],
+  ['add_5ficon_9',['add_icon',['../namespace_source_1_1_controller_1_1dialog__invoice.html#a40f02ba8182aae52b4cfcde4f9958e1f',1,'Source::Controller::dialog_invoice']]],
+  ['add_5fitem_10',['add_item',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a627cb4f6e35b6efd1e4e8a9753e3ee78',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['add_5fjson_11',['add_json',['../namespace_source_1_1_model_1_1data__handler.html#a7db9572960d8bcd0302989ab28aa4921',1,'Source::Model::data_handler']]],
+  ['add_5fnojekyll_5ffile_12',['add_nojekyll_file',['../class_doxygen_creator_1_1doxygen__creator_1_1_doxygen_creator.html#ac90544f2b9897e23b9a53b914595fbd3',1,'DoxygenCreator::doxygen_creator::DoxygenCreator']]],
+  ['add_5freceipt_13',['add_receipt',['../namespace_source_1_1_model_1_1data__handler.html#a38938e4e5601a12b1f31c37daff4abbb',1,'Source::Model::data_handler']]],
+  ['add_5fsurcharge_14',['add_surcharge',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#af05cb1c9819abeadd87d314170d76af6',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['add_5ftax_5fto_5foverview_5fsheet_15',['add_tax_to_overview_sheet',['../class_source_1_1_model_1_1export_1_1_export_report.html#a9c2d78efce54efa860fdc2f5b0d90975',1,'Source::Model::export::ExportReport']]],
+  ['add_5fwarnings_16',['add_warnings',['../class_doxygen_creator_1_1doxygen__creator_1_1_doxygen_creator.html#af398b22bc8d3538edf030d8c78bccddb',1,'DoxygenCreator::doxygen_creator::DoxygenCreator']]],
+  ['add_5fxml_5fto_5fpdf_17',['add_xml_to_pdf',['../namespace_source_1_1_model_1_1_z_u_g_fe_r_d_1_1drafthorse__invoice.html#a9c5222808eefa535f4416b1a365191ed',1,'Source::Model::ZUGFeRD::drafthorse_invoice']]],
+  ['ai_5fchanged_18',['ai_changed',['../class_source_1_1_controller_1_1dialog__company_1_1_company_dialog.html#a1e3467f7ad9551be479d0ceeffe6a225',1,'Source::Controller::dialog_company::CompanyDialog']]],
+  ['ask_5ffor_5ftan_19',['ask_for_tan',['../class_source_1_1_model_1_1fin__ts_1_1_fin_ts.html#a3dde6919728a34ccd37eba271a247cd7',1,'Source::Model::fin_ts::FinTs']]],
+  ['ask_5follama_20',['ask_ollama',['../class_source_1_1_worker_1_1ollama__ai_1_1_ollama_a_i.html#a56fa8cef8a2932232abbfb7fbdb33451',1,'Source::Worker::ollama_ai::OllamaAI']]],
+  ['ask_5fopenai_21',['ask_openai',['../class_source_1_1_worker_1_1open__ai_1_1_open_a_i.html#a243db82492a08274d282b2ed555f575b',1,'Source::Worker::open_ai::OpenAI']]]
+];
