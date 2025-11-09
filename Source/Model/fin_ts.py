@@ -19,19 +19,19 @@ from fints.exceptions import FinTSClientError, FinTSClientPINError, FinTSClientT
     FinTSUnsupportedOperation, FinTSNoResponseError
 from fints.hhd.flicker import terminal_flicker_unix
 
-from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QMessageBox, QInputDialog
 
 from Source.version import __title__
 from Source.Util.app_data import EXPORT_PATH, FINTS_INSTITUTE_FILE
 from Source.Util.openpyxl_util import XLSCreator, NUMBER_FORMAT_EUR, NUMBER_FORMAT_DATETIME, COLOR_RED
-from Source.Model.data_handler import DATE_FORMAT_JSON
+from Source.Model.data_handler import DATE_FORMAT_JSON, delete_file
 
 log = logging.getLogger(__title__)
 
 B_GUI_INPUT = True
 B_WRITE_SESSION_DATA = False
-DATAFILE = "fints_client.dat"
+if B_WRITE_SESSION_DATA:
+    DATAFILE = "fints_client.dat"
 
 PRODUCT_ID = "ECA9BC32B4506B9F36923DCE7"  # registered ID for ElsterBooks
 PRODUCT_VERSION = "3.0"
@@ -158,10 +158,19 @@ def create_transaction_xls_file(l_transactions: list[Transaction]) -> None:
     xls_creator.save(TRANSACTIONS_XLS_FILE_PATH)
 
 
+def delete_transaction_files() -> None:
+    """!
+    @brief Delete transactions files
+    """
+    delete_file(TRANSACTIONS_CSV_FILE_PATH)
+    delete_file(TRANSACTIONS_XLS_FILE_PATH)
+
+
 class FinTs:
     """!
     @brief Class to get transaction data via FinTS
     @param ui : main window
+    @param pte_output : text widget for result response
     """
 
     def __init__(self, ui, pte_output) -> None:
@@ -192,7 +201,7 @@ class FinTs:
         try:
             create_transaction_xls_file(l_transaction)
         except PermissionError:
-            self.ui.set_status(f"Transaktionen Datei konnte nicht erstellt werden", b_highlight=True)
+            self.ui.set_status("Transaktionen Datei konnte nicht erstellt werden", b_highlight=True)
         return l_transaction
 
     def ask_for_tan(self, client: FinTS3PinTanClient, response):
@@ -204,8 +213,9 @@ class FinTs:
         """
         self.pte_output.setPlainText(response.challenge)
         if getattr(response, 'challenge_hhduc', None):
-            if B_GUI_INPUT and False:
-                self.pte_output.setPlainText(response.challenge_hhduc)
+            if B_GUI_INPUT:
+                if False:
+                    self.pte_output.setPlainText(response.challenge_hhduc)  # TODO in GUI not work
             else:
                 try:
                     terminal_flicker_unix(response.challenge_hhduc)
@@ -250,7 +260,7 @@ class FinTs:
             )
 
             if not B_GUI_INPUT:
-                minimal_interactive_cli_bootstrap()
+                minimal_interactive_cli_bootstrap(self.client)
 
             _accounts = self.client.get_sepa_accounts()  # call account data to check connection
 
@@ -261,7 +271,7 @@ class FinTs:
             err_msg = str(e)
             match err_msg:
                 case "Couldn't establish dialog with bank, Authentication data wrong?":
-                    success_text = "Keine Internetverbindung"
+                    success_text = "FinTS Adresse kann nicht erreicht werden."
                 case "Bad status code 404":
                     success_text = "FinTS falsch"
                 case "Error during dialog initialization, PIN wrong?":

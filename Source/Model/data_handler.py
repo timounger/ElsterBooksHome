@@ -79,6 +79,8 @@ JSON_FILE_TYPES = "JSON file (*.json)"
 PDF_FILE_TYPES = "PDF file (*.pdf)"
 XML_FILE_TYPES = "XML file (*.xml)"
 INVOICE_FILE_TYPES = "PDF und XML Files (*.pdf *.xml)"
+INVOICE_TEMPLATE_FILE_TYPES = "PDF, XML, JSON Files (*.pdf *.xml *.json)"
+JSON_FILE_TYPES = "JSON file (*.json)"
 IMAGE_FILE_TYPES = "Bilder (*.png *.jpg *.jpeg *.bmp *.gif)"
 COMPANY_LOGO_TYPES = "Bilder (*.png)"
 L_INVOICE_FILE_TYPES = [PDF_TYPE, XML_TYPE, PDF_TYPE.upper(), XML_TYPE.upper()]
@@ -91,6 +93,7 @@ NO_TAX_RATE = 0  # in percent
 
 L_MONTH_NAMES_SHORT = ["Jan", "Feb", "März", "April", "Mai", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dez"]
 L_MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+I_MONTH_IN_YEAR = len(L_MONTH_NAMES)
 
 
 class EReceiptGroup(str, enum.Enum):
@@ -454,15 +457,24 @@ def write_json_file(file_path: str, data: dict[str, Any] | list[dict[str, Any]])
         log.error("File not possible to write: %s", e)
 
 
-def delete_file(file_path: str) -> None:
+def delete_file(file_path: str) -> bool:
     """!
     @brief Delete file.
     @param file_path : file to delete
+    @return success status
     """
-    try:
-        os.remove(file_path)
-    except IOError as e:
-        log.error("Delete failed %s", e)
+    b_success = False
+    if os.path.exists(file_path):
+        try:
+            os.remove(file_path)
+        except OSError as e:
+            log.error("Delete failed %s", e)
+            b_success = False
+        else:
+            b_success = True
+    else:
+        b_success = True
+    return b_success
 
 
 def find_file(path: str, uid: str, file_name: Optional[str] = None, file_type: Optional[str] = None) -> str | None:
@@ -955,4 +967,5 @@ def clear_dialog_data(dialog: "TabDocument | TabExpenditure | TabIncome") -> Non
     dialog.total_gross = 0
     dialog.total_net = 0
     dialog.l_value = []
-    dialog.l_date = []
+    dialog.l_invoice_date = []
+    dialog.l_payment_date = []

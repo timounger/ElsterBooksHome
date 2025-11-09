@@ -26,7 +26,7 @@ from drafthorse.pdf import attach_xml
 
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
-from Source.Model.data_handler import DATE_FORMAT_XML
+from Source.Model.data_handler import DATE_FORMAT_XML, delete_file
 from Source.Model.ZUGFeRD.drafthorse_data import EN_16931
 from Source.Model.ZUGFeRD.drafthorse_convert import normalize_decimal
 from Source.Model.contacts import EContactFields, CONTACT_ADDRESS_FIELD, CONTACT_CONTACT_FIELD
@@ -449,7 +449,7 @@ def create_factur_xml(doc: Document, file_name_xml: str) -> bool:
     is_valid, _warning_text = eval_factur_xml(file_name_xml)
     if not is_valid:
         log.error("Remove Invalid XMl file: %s", file_name_xml)
-        os.remove(file_name_xml)  # delete if not valid
+        delete_file(file_name_xml)  # delete if not valid
     return is_valid
 
 

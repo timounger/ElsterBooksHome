@@ -115,7 +115,8 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         self.layout().addWidget(splitter)
         splitter.setSizes([390, 610])  # set split ratio
 
-        thread_dialog(self)
+        if file_path or data:  # show only if data present
+            thread_dialog(self)
 
     def show_dialog(self) -> None:
         """!

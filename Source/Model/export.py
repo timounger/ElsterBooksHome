@@ -22,7 +22,7 @@ from Source.Util.app_data import get_computer_name
 from Source.Util.openpyxl_util import XLSCreator, NUMBER_FORMAT_EUR, NUMBER_FORMAT_PERCENT, NUMBER_FORMAT_DATETIME, \
     COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_GREY
 from Source.Model.company import LOGO_BRIEF_PATH, ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_BOOKING_FIELD
-from Source.Model.data_handler import EReceiptFields, EReceiptGroup, \
+from Source.Model.data_handler import EReceiptFields, EReceiptGroup, I_MONTH_IN_YEAR, \
     DATE_FORMAT_JSON, DATE_TIME_FORMAT, L_MONTH_NAMES_SHORT, is_date_format, calc_vat_rate
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -89,6 +89,27 @@ class ExportReport:
         self.file_name = ""
         self.d_income_vat_rate_sum_cells: dict[int | float, tuple[int, int]] = {}  # vat_value: (column_number, row_number)
         self.tax_rates = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES]
+        self.date_field = self.get_relevant_date_field()
+
+    def get_relevant_date_field(self) -> EReceiptFields:
+        """!
+        @brief Get relevant date field
+        @return relevant date field
+        """
+        match self.e_type:
+            case EReportType.UST | EReportType.UST_PRE:  # for UST is setting in Elster relevant
+                b_agreed_cost = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.AGREED_COST]
+                if b_agreed_cost:  # vereinbarte Entgeld
+                    field = EReceiptFields.INVOICE_DATE
+                else:  # vereinnahmte Entgeld
+                    field = EReceiptFields.PAYMENT_DATE
+            case EReportType.EUR:  # for EUR is payment date relevant "Zuflussprinzip"
+                field = EReceiptFields.PAYMENT_DATE
+            case EReportType.GUV:
+                field = EReceiptFields.INVOICE_DATE
+            case _:  # for other use payment date
+                field = EReceiptFields.PAYMENT_DATE
+        return field
 
     def create_xlsx_report(self, file_name: str) -> None:
         """!
@@ -148,6 +169,8 @@ class ExportReport:
             title += f" {self.i_year}"
         if self.period is not None:
             title += f" {self.period}"
+        if (self.i_year is None) and (self.period is None):
+            title += " Gesamt"
         xls_creator.set_cell(worksheet, 7, 1, title, bold=True)
 
     def get_relevant_data_status(self, data: dict[EReceiptFields, str], sheet_type: EReportSheet) -> bool:
@@ -160,19 +183,7 @@ class ExportReport:
         if sheet_type == EReportSheet.PRE_TAX:
             b_data_relevant = bool(data[EReceiptFields.DESCRIPTION].startswith(f"{EReportType.UST_PRE.value} {self.i_year}"))
         else:
-            match self.e_type:
-                case EReportType.UST | EReportType.UST_PRE:  # for UST is setting in Elster relevant
-                    b_agreed_cost = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.AGREED_COST]
-                    if b_agreed_cost:  # vereinbarte Entgeld
-                        date_string = data[EReceiptFields.INVOICE_DATE]
-                    else:  # vereinnahmte Entgeld
-                        date_string = data[EReceiptFields.PAYMENT_DATE]
-                case EReportType.EUR:  # for EUR is payment date relevant "Zuflussprinzip"
-                    date_string = data[EReceiptFields.PAYMENT_DATE]
-                case EReportType.GUV:
-                    date_string = data[EReceiptFields.INVOICE_DATE]
-                case _:  # for other use payment date
-                    date_string = data[EReceiptFields.PAYMENT_DATE]
+            date_string = data[self.date_field]
             if date_string and is_date_format(date_string):  # check date format for invalid data
                 data_date = datetime.strptime(date_string, DATE_FORMAT_JSON)
                 b_ust_report = bool(self.e_type in [EReportType.UST_PRE, EReportType.UST])
@@ -292,22 +303,23 @@ class ExportReport:
             # add group data for eur
             if self.e_type in [EReportType.EUR, EReportType.GUV, EReportType.EXPORT_TOTAL]:
                 group = entry[EReceiptFields.GROUP]
-                date_field = EReceiptFields.PAYMENT_DATE if self.e_type == EReportType.EUR else EReceiptFields.INVOICE_DATE
+                data_date = datetime.strptime(entry[self.date_field], DATE_FORMAT_JSON)
+                month = data_date.month if (data_date.year == self.i_year) else 12
+                b_data_is_ust = bool(entry[EReceiptFields.GROUP] in [EReceiptGroup.UST_VA, EReceiptGroup.UST])
+                year = data_date.year - 1 if (b_data_is_ust and (data_date.month == 1) and (data_date.day <= UST_REGULATION_DAYS)) else data_date.year
                 match sheet_type:
                     case EReportSheet.INCOME:
-                        data_date = datetime.strptime(entry[date_field], DATE_FORMAT_JSON)
                         if self.e_type in [EReportType.EUR, EReportType.GUV]:
                             self.d_income_groups[group] = self.d_income_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
-                            self.d_income_month[data_date.month] = self.d_income_month.get(data_date.month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            self.d_income_month[month] = self.d_income_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
                         if self.e_type == EReportType.EXPORT_TOTAL:
-                            self.d_income_year[data_date.year] = self.d_income_year.get(data_date.year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            self.d_income_year[year] = self.d_income_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
                     case EReportSheet.EXPENDITURE:
-                        data_date = datetime.strptime(entry[date_field], DATE_FORMAT_JSON)
                         if self.e_type in [EReportType.EUR, EReportType.GUV]:
                             self.d_expenditure_groups[group] = self.d_expenditure_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
-                            self.d_expenditure_month[data_date.month] = self.d_expenditure_month.get(data_date.month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            self.d_expenditure_month[month] = self.d_expenditure_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
                         if self.e_type == EReportType.EXPORT_TOTAL:
-                            self.d_expenditure_year[data_date.year] = self.d_expenditure_year.get(data_date.year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            self.d_expenditure_year[year] = self.d_expenditure_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
             # set data for CSV export
             if self.e_type == EReportType.DATEV:
                 l_append_data = []
@@ -389,205 +401,127 @@ class ExportReport:
         """
         worksheet = self.sheet_overview
         i_row = 9
-        if self.e_type in [EReportType.UST_PRE, EReportType.UST]:
-            sum_row = 5
-            sum_row_letter = get_column_letter(sum_row)
-            xls_creator.set_cell(worksheet, i_row, 1, "Art der Besteuerung:")
-            b_agreed_cost = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.AGREED_COST]
-            tax_method = "Soll-Versteuerung (bei Rechnungsstellung)" if b_agreed_cost else "Ist-Versteuerung (bei Eingang der Zahlung)"
-            xls_creator.set_cell(worksheet, i_row, 2, tax_method)
-            i_row += 2
-            # income
-            xls_creator.set_cell(worksheet, i_row, 1, "Steuerpflichtige Umsätze")
-            xls_creator.set_cell(worksheet, i_row, sum_row - 2, "Bemessungsgrundlage")
-            xls_creator.set_cell(worksheet, i_row, sum_row, "Steuer")
-            tax_sum_row_start = i_row + 1
-            for vat_rate, cell_position in self.d_income_vat_rate_sum_cells.items():
-                column_number, row_number = cell_position
-                i_row += 1
-                tax_sum_row_end = i_row
-                net_value_cell = f"{get_column_letter(column_number)}{row_number}"
-                tax_value_cell = f"{get_column_letter(column_number+1)}{row_number}"
-                xls_creator.set_cell(worksheet, i_row, 1, f"zum Steuersatz von {vat_rate} Prozent")
-                xls_creator.set_cell(worksheet, i_row, sum_row - 1, f"={EReportSheet.INCOME.value}!{net_value_cell}", number_format=NUMBER_FORMAT_EUR)
-                xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.INCOME.value}!{tax_value_cell}", number_format=NUMBER_FORMAT_EUR)
-            # out tax
-            i_row += 2
-            xls_creator.set_cell(worksheet, i_row, 1, "Abziehbare Vorsteuerbeträge")
-            i_row += 1
-            i_pre_tax_other = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, "Vorsteuerbeträge aus Rechnungen von anderen Unternehmern")
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            # pre pay
-            tax_name = "Umsatzsteuer-Vorauszahlung / Überschuss (Steuer)" if (self.e_type == EReportType.UST_PRE) else "Umsatzsteuer"
-            i_row += 2
-            i_ust = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, tax_name)
-            xls_creator.set_cell(worksheet, i_row, sum_row,
-                                 f"=SUM({sum_row_letter}{tax_sum_row_start}:{sum_row_letter}{tax_sum_row_end})-{sum_row_letter}{i_pre_tax_other}",
-                                 number_format=NUMBER_FORMAT_EUR)
-            if self.e_type == EReportType.UST:
+        match self.e_type:
+            case EReportType.UST_PRE | EReportType.UST:
+                sum_row = 5
+                sum_row_letter = get_column_letter(sum_row)
+                xls_creator.set_cell(worksheet, i_row, 1, "Art der Besteuerung:")
+                b_agreed_cost = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.AGREED_COST]
+                tax_method = "Soll-Versteuerung (bei Rechnungsstellung)" if b_agreed_cost else "Ist-Versteuerung (bei Eingang der Zahlung)"
+                xls_creator.set_cell(worksheet, i_row, 2, tax_method)
                 i_row += 2
-                i_ust_already = i_row
-                xls_creator.set_cell(worksheet, i_row, 1, "Bereits entrichtete Vorsteuerbeträge")
-                xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.PRE_TAX.value}!J{self.pre_tax_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                # income
+                xls_creator.set_cell(worksheet, i_row, 1, "Steuerpflichtige Umsätze")
+                xls_creator.set_cell(worksheet, i_row, sum_row - 2, "Bemessungsgrundlage")
+                xls_creator.set_cell(worksheet, i_row, sum_row, "Steuer")
+                tax_sum_row_start = i_row + 1
+                for vat_rate, cell_position in self.d_income_vat_rate_sum_cells.items():
+                    column_number, row_number = cell_position
+                    i_row += 1
+                    tax_sum_row_end = i_row
+                    net_value_cell = f"{get_column_letter(column_number)}{row_number}"
+                    tax_value_cell = f"{get_column_letter(column_number+1)}{row_number}"
+                    xls_creator.set_cell(worksheet, i_row, 1, f"zum Steuersatz von {vat_rate} Prozent")
+                    xls_creator.set_cell(worksheet, i_row, sum_row - 1, f"={EReportSheet.INCOME.value}!{net_value_cell}", number_format=NUMBER_FORMAT_EUR)
+                    xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.INCOME.value}!{tax_value_cell}", number_format=NUMBER_FORMAT_EUR)
+                # out tax
                 i_row += 2
-                xls_creator.set_cell(worksheet, i_row, 1, "Noch an die Finanzkasse zu entrichten")
-                xls_creator.set_cell(worksheet, i_row, sum_row, f"=({sum_row_letter}{i_ust}-{sum_row_letter}{i_ust_already})", number_format=NUMBER_FORMAT_EUR)
-        elif self.e_type in [EReportType.EUR, EReportType.GUV]:
-            sum_row = 3
-            sum_row_letter = get_column_letter(sum_row)
-            special_groups = [EReceiptGroup.UST_VA, EReceiptGroup.UST]  # write special groups at end
-            # income
-            xls_creator.set_cell(worksheet, i_row, 1, "1. Betriebseinnahmen (einschl. steuerfreier Betriebseinnahmen)", bold=True)
-            i_row += 1
-            i_start = i_row
-            d_income_groups_sorted = dict(sorted(self.d_income_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
-            for income_group, income_net in d_income_groups_sorted.items():
-                xls_creator.set_cell(worksheet, i_row, 1, income_group)
-                xls_creator.set_cell(worksheet, i_row, sum_row, income_net, number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 1, "Abziehbare Vorsteuerbeträge")
                 i_row += 1
-            xls_creator.set_cell(worksheet, i_row, 1, "Vereinnahmte Umsatzsteuer")
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.INCOME.value}!L{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            i_row += 1
-            i_row_income_sum = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"=SUM({sum_row_letter}{i_start}:{sum_row_letter}{i_row-1})", bold=True, number_format=NUMBER_FORMAT_EUR)
-            # expenditure
-            i_row += 2
-            xls_creator.set_cell(worksheet, i_row, 1, "2. Betriebsausgaben (einschl. auf steuerfreie Betriebseinnahmen entfallende Betriebsausgaben)", bold=True)
-            i_row += 1
-            i_start = i_row
-            d_expenditure_groups_sorted = dict(sorted(self.d_expenditure_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
-            for expenditure_group, expenditure_net in d_expenditure_groups_sorted.items():
-                xls_creator.set_cell(worksheet, i_row, 1, expenditure_group)
-                xls_creator.set_cell(worksheet, i_row, sum_row, expenditure_net, number_format=NUMBER_FORMAT_EUR)
+                i_pre_tax_other = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, "Vorsteuerbeträge aus Rechnungen von anderen Unternehmern")
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                # pre pay
+                tax_name = "Umsatzsteuer-Vorauszahlung / Überschuss (Steuer)" if (self.e_type == EReportType.UST_PRE) else "Umsatzsteuer"
+                i_row += 2
+                i_ust = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, tax_name)
+                xls_creator.set_cell(worksheet, i_row, sum_row,
+                                     f"=SUM({sum_row_letter}{tax_sum_row_start}:{sum_row_letter}{tax_sum_row_end})-{sum_row_letter}{i_pre_tax_other}",
+                                     number_format=NUMBER_FORMAT_EUR)
+                if self.e_type == EReportType.UST:
+                    i_row += 2
+                    i_ust_already = i_row
+                    xls_creator.set_cell(worksheet, i_row, 1, "Bereits entrichtete Vorsteuerbeträge")
+                    xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.PRE_TAX.value}!J{self.pre_tax_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                    i_row += 2
+                    xls_creator.set_cell(worksheet, i_row, 1, "Noch an die Finanzkasse zu entrichten")
+                    xls_creator.set_cell(worksheet, i_row, sum_row, f"=({sum_row_letter}{i_ust}-{sum_row_letter}{i_ust_already})", number_format=NUMBER_FORMAT_EUR)
+            case EReportType.EUR | EReportType.GUV:
+                sum_row = 3
+                sum_row_letter = get_column_letter(sum_row)
+                special_groups = [EReceiptGroup.UST_VA, EReceiptGroup.UST]  # write special groups at end
+                # income
+                xls_creator.set_cell(worksheet, i_row, 1, "1. Betriebseinnahmen (einschl. steuerfreier Betriebseinnahmen)", bold=True)
                 i_row += 1
-            xls_creator.set_cell(worksheet, i_row, 1, "Gezahlte Vorsteuerbeträge")
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            i_row += 1
-            i_row_expenditure_sum = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"=SUM({sum_row_letter}{i_start}:{sum_row_letter}{i_row-1})", bold=True, number_format=NUMBER_FORMAT_EUR)
-            # profit
-            i_row += 2
-            xls_creator.set_cell(worksheet, i_row, 1, "3. Ermittlung des Gewinns", bold=True)
-            i_row += 1
-            xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
-            xls_creator.set_cell(worksheet, i_row, sum_row, f"={sum_row_letter}{i_row_income_sum}-{sum_row_letter}{i_row_expenditure_sum}", bold=True, number_format=NUMBER_FORMAT_EUR)
+                i_start = i_row
+                d_income_groups_sorted = dict(sorted(self.d_income_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
+                for income_group, income_net in d_income_groups_sorted.items():
+                    xls_creator.set_cell(worksheet, i_row, 1, income_group)
+                    xls_creator.set_cell(worksheet, i_row, sum_row, income_net, number_format=NUMBER_FORMAT_EUR)
+                    i_row += 1
+                xls_creator.set_cell(worksheet, i_row, 1, "Vereinnahmte Umsatzsteuer")
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.INCOME.value}!L{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                i_row += 1
+                i_row_income_sum = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"=SUM({sum_row_letter}{i_start}:{sum_row_letter}{i_row-1})", bold=True, number_format=NUMBER_FORMAT_EUR)
+                # expenditure
+                i_row += 2
+                xls_creator.set_cell(worksheet, i_row, 1, "2. Betriebsausgaben (einschl. auf steuerfreie Betriebseinnahmen entfallende Betriebsausgaben)", bold=True)
+                i_row += 1
+                i_start = i_row
+                d_expenditure_groups_sorted = dict(sorted(self.d_expenditure_groups.items(), key=lambda item: (item[0] in special_groups, item[0].lower())))
+                for expenditure_group, expenditure_net in d_expenditure_groups_sorted.items():
+                    xls_creator.set_cell(worksheet, i_row, 1, expenditure_group)
+                    xls_creator.set_cell(worksheet, i_row, sum_row, expenditure_net, number_format=NUMBER_FORMAT_EUR)
+                    i_row += 1
+                xls_creator.set_cell(worksheet, i_row, 1, "Gezahlte Vorsteuerbeträge")
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                i_row += 1
+                i_row_expenditure_sum = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"=SUM({sum_row_letter}{i_start}:{sum_row_letter}{i_row-1})", bold=True, number_format=NUMBER_FORMAT_EUR)
+                # profit
+                i_row += 2
+                xls_creator.set_cell(worksheet, i_row, 1, "3. Ermittlung des Gewinns", bold=True)
+                i_row += 1
+                xls_creator.set_cell(worksheet, i_row, 1, "Summe", bold=True)
+                xls_creator.set_cell(worksheet, i_row, sum_row, f"={sum_row_letter}{i_row_income_sum}-{sum_row_letter}{i_row_expenditure_sum}", bold=True, number_format=NUMBER_FORMAT_EUR)
 
-            # create chart with monthly data
-            i_row += 3
-            xls_creator.set_cell(worksheet, i_row, 1, "Monat")
-            xls_creator.set_cell(worksheet, i_row, 2, "Einnahmen")
-            xls_creator.set_cell(worksheet, i_row, 3, "Ausgaben")
-            xls_creator.set_cell(worksheet, i_row, 4, "Differenz")
-            i_row += 1
-            for i_month in range(12):
-                xls_creator.set_cell(worksheet, i_row + i_month, 1, L_MONTH_NAMES_SHORT[i_month])
-                income_month_sum = self.d_income_month.get(i_month + 1, 0)
-                xls_creator.set_cell(worksheet, i_row + i_month, 2, income_month_sum, number_format=NUMBER_FORMAT_EUR)
-                expenditure_month_sum = - self.d_expenditure_month.get(i_month + 1, 0)  # use negative for diagram view
-                xls_creator.set_cell(worksheet, i_row + i_month, 3, expenditure_month_sum, number_format=NUMBER_FORMAT_EUR)
-                xls_creator.set_cell(worksheet, i_row + i_month, 4, f"=B{i_row + i_month}+C{i_row + i_month}", number_format=NUMBER_FORMAT_EUR)
-
-            chart = BarChart()
-            chart.type = "col"
-            chart.style = 10
-            chart.title = self.e_type.value
-            if chart.x_axis is not None:
-                chart.x_axis.title = "Monat"
-            if chart.y_axis is not None:
-                chart.y_axis.title = "Summe"
-            chart.height = 10
-            chart.width = 17.5
-            chart.legend = None
-
-            month_data = Reference(worksheet, min_col=1, min_row=i_row, max_row=i_row + 11, max_col=1)
-
-            income_data = Reference(worksheet, min_col=2, min_row=i_row, max_row=i_row + 11, max_col=2)
-            chart.add_data(income_data, titles_from_data=False)
-
-            expenditure_data = Reference(worksheet, min_col=3, min_row=i_row, max_row=i_row + 11, max_col=3)
-            chart.add_data(expenditure_data, titles_from_data=False)
-
-            # set color
-            income_series = chart.series[0]
-            income_series.graphicalProperties.solidFill = COLOR_GREEN
-            expenditure_series = chart.series[1]
-            expenditure_series.graphicalProperties.solidFill = COLOR_RED
-
-            chart.set_categories(month_data)
-            chart.shape = 4
-            worksheet.add_chart(chart, f"A{i_row + 12}")
-        else:
-            xls_creator.set_cell(worksheet, i_row, 2, "Brutto")
-            xls_creator.set_cell(worksheet, i_row, 3, "Netto")
-            xls_creator.set_cell(worksheet, i_row, 4, "Steuer")
-            i_row += 1
-            i_income = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, EReportSheet.INCOME.value)
-            xls_creator.set_cell(worksheet, i_row, 2, f"={EReportSheet.INCOME.value}!J{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 3, f"={EReportSheet.INCOME.value}!K{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 4, f"={EReportSheet.INCOME.value}!L{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            i_row += 1
-            i_expenditure = i_row
-            xls_creator.set_cell(worksheet, i_row, 1, EReportSheet.EXPENDITURE.value)
-            xls_creator.set_cell(worksheet, i_row, 2, f"={EReportSheet.EXPENDITURE.value}!J{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 3, f"={EReportSheet.EXPENDITURE.value}!K{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 4, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
-            i_row += 1
-            xls_creator.set_cell(worksheet, i_row, 1, "Differenz", bold=True)
-            xls_creator.set_cell(worksheet, i_row, 2, f"=B{i_income}-B{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 3, f"=C{i_income}-C{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
-            xls_creator.set_cell(worksheet, i_row, 4, f"=D{i_income}-D{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
-
-            # create chart with year data
-            if self.d_income_year or self.d_expenditure_year:
+                # create chart with monthly data
                 i_row += 3
-                xls_creator.set_cell(worksheet, i_row, 1, "Jahr")
+                xls_creator.set_cell(worksheet, i_row, 1, "Monat")
                 xls_creator.set_cell(worksheet, i_row, 2, "Einnahmen")
                 xls_creator.set_cell(worksheet, i_row, 3, "Ausgaben")
                 xls_creator.set_cell(worksheet, i_row, 4, "Differenz")
                 i_row += 1
-                income_min_year = min(self.d_income_year.keys()) if self.d_income_year else None
-                expenditure_min_year = min(self.d_expenditure_year.keys()) if self.d_expenditure_year else None
-                if income_min_year is None:
-                    income_min_year = expenditure_min_year
-                if expenditure_min_year is None:
-                    expenditure_min_year = income_min_year
-                income_max_year = max(self.d_income_year.keys()) if self.d_income_year else income_min_year
-                expenditure_max_year = max(self.d_expenditure_year.keys()) if self.d_expenditure_year else expenditure_min_year
-                min_year = min(income_min_year, expenditure_min_year)
-                max_year = max(income_max_year, expenditure_max_year)
-                i_years = 0
-                for year in range(min_year, max_year + 1):
-                    xls_creator.set_cell(worksheet, i_row + i_years, 1, year)
-                    income_year_sum = self.d_income_year.get(year, 0)
-                    xls_creator.set_cell(worksheet, i_row + i_years, 2, income_year_sum, number_format=NUMBER_FORMAT_EUR)
-                    expenditure_year_sum = - self.d_expenditure_year.get(year, 0)  # use negative for diagram view
-                    xls_creator.set_cell(worksheet, i_row + i_years, 3, expenditure_year_sum, number_format=NUMBER_FORMAT_EUR)
-                    xls_creator.set_cell(worksheet, i_row + i_years, 4, f"=B{i_row + i_years}+C{i_row + i_years}", number_format=NUMBER_FORMAT_EUR)
-                    i_years += 1
+                for i_month in range(I_MONTH_IN_YEAR):
+                    xls_creator.set_cell(worksheet, i_row + i_month, 1, L_MONTH_NAMES_SHORT[i_month])
+                    income_month_sum = self.d_income_month.get(i_month + 1, 0)
+                    xls_creator.set_cell(worksheet, i_row + i_month, 2, income_month_sum, number_format=NUMBER_FORMAT_EUR)
+                    expenditure_month_sum = - self.d_expenditure_month.get(i_month + 1, 0)  # use negative for diagram view
+                    xls_creator.set_cell(worksheet, i_row + i_month, 3, expenditure_month_sum, number_format=NUMBER_FORMAT_EUR)
+                    xls_creator.set_cell(worksheet, i_row + i_month, 4, f"=B{i_row + i_month}+C{i_row + i_month}", number_format=NUMBER_FORMAT_EUR)
 
                 chart = BarChart()
                 chart.type = "col"
                 chart.style = 10
                 chart.title = self.e_type.value
                 if chart.x_axis is not None:
-                    chart.x_axis.title = "Jahr"
+                    chart.x_axis.title = "Monat"
                 if chart.y_axis is not None:
                     chart.y_axis.title = "Summe"
-                chart.height = 15
-                chart.width = 30
+                chart.height = 10
+                chart.width = 17.5
                 chart.legend = None
 
-                month_data = Reference(worksheet, min_col=1, min_row=i_row, max_row=i_row + i_years - 1, max_col=1)
+                month_data = Reference(worksheet, min_col=1, min_row=i_row, max_row=i_row + 11, max_col=1)
 
-                income_data = Reference(worksheet, min_col=2, min_row=i_row, max_row=i_row + i_years - 1, max_col=2)
+                income_data = Reference(worksheet, min_col=2, min_row=i_row, max_row=i_row + 11, max_col=2)
                 chart.add_data(income_data, titles_from_data=False)
 
-                expenditure_data = Reference(worksheet, min_col=3, min_row=i_row, max_row=i_row + i_years - 1, max_col=3)
+                expenditure_data = Reference(worksheet, min_col=3, min_row=i_row, max_row=i_row + 11, max_col=3)
                 chart.add_data(expenditure_data, titles_from_data=False)
 
                 # set color
@@ -598,7 +532,86 @@ class ExportReport:
 
                 chart.set_categories(month_data)
                 chart.shape = 4
-                worksheet.add_chart(chart, f"A{i_row + i_years}")
+                worksheet.add_chart(chart, f"A{i_row + 12}")
+            case _:
+                xls_creator.set_cell(worksheet, i_row, 2, "Brutto")
+                xls_creator.set_cell(worksheet, i_row, 3, "Netto")
+                xls_creator.set_cell(worksheet, i_row, 4, "Steuer")
+                i_row += 1
+                i_income = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, EReportSheet.INCOME.value)
+                xls_creator.set_cell(worksheet, i_row, 2, f"={EReportSheet.INCOME.value}!J{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 3, f"={EReportSheet.INCOME.value}!K{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 4, f"={EReportSheet.INCOME.value}!L{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                i_row += 1
+                i_expenditure = i_row
+                xls_creator.set_cell(worksheet, i_row, 1, EReportSheet.EXPENDITURE.value)
+                xls_creator.set_cell(worksheet, i_row, 2, f"={EReportSheet.EXPENDITURE.value}!J{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 3, f"={EReportSheet.EXPENDITURE.value}!K{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 4, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                i_row += 1
+                xls_creator.set_cell(worksheet, i_row, 1, "Differenz", bold=True)
+                xls_creator.set_cell(worksheet, i_row, 2, f"=B{i_income}-B{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 3, f"=C{i_income}-C{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
+                xls_creator.set_cell(worksheet, i_row, 4, f"=D{i_income}-D{i_expenditure}", bold=True, number_format=NUMBER_FORMAT_EUR)
+
+                # create chart with year data
+                if self.d_income_year or self.d_expenditure_year:
+                    i_row += 3
+                    xls_creator.set_cell(worksheet, i_row, 1, "Jahr")
+                    xls_creator.set_cell(worksheet, i_row, 2, "Einnahmen")
+                    xls_creator.set_cell(worksheet, i_row, 3, "Ausgaben")
+                    xls_creator.set_cell(worksheet, i_row, 4, "Differenz")
+                    i_row += 1
+                    income_min_year = min(self.d_income_year.keys()) if self.d_income_year else None
+                    expenditure_min_year = min(self.d_expenditure_year.keys()) if self.d_expenditure_year else None
+                    if income_min_year is None:
+                        income_min_year = expenditure_min_year
+                    if expenditure_min_year is None:
+                        expenditure_min_year = income_min_year
+                    income_max_year = max(self.d_income_year.keys()) if self.d_income_year else income_min_year
+                    expenditure_max_year = max(self.d_expenditure_year.keys()) if self.d_expenditure_year else expenditure_min_year
+                    min_year = min(income_min_year, expenditure_min_year)
+                    max_year = max(income_max_year, expenditure_max_year)
+                    i_years = 0
+                    for year in range(min_year, max_year + 1):
+                        xls_creator.set_cell(worksheet, i_row + i_years, 1, year)
+                        income_year_sum = self.d_income_year.get(year, 0)
+                        xls_creator.set_cell(worksheet, i_row + i_years, 2, income_year_sum, number_format=NUMBER_FORMAT_EUR)
+                        expenditure_year_sum = - self.d_expenditure_year.get(year, 0)  # use negative for diagram view
+                        xls_creator.set_cell(worksheet, i_row + i_years, 3, expenditure_year_sum, number_format=NUMBER_FORMAT_EUR)
+                        xls_creator.set_cell(worksheet, i_row + i_years, 4, f"=B{i_row + i_years}+C{i_row + i_years}", number_format=NUMBER_FORMAT_EUR)
+                        i_years += 1
+
+                    chart = BarChart()
+                    chart.type = "col"
+                    chart.style = 10
+                    chart.title = self.e_type.value
+                    if chart.x_axis is not None:
+                        chart.x_axis.title = "Jahr"
+                    if chart.y_axis is not None:
+                        chart.y_axis.title = "Summe"
+                    chart.height = 15
+                    chart.width = 30
+                    chart.legend = None
+
+                    month_data = Reference(worksheet, min_col=1, min_row=i_row, max_row=i_row + i_years - 1, max_col=1)
+
+                    income_data = Reference(worksheet, min_col=2, min_row=i_row, max_row=i_row + i_years - 1, max_col=2)
+                    chart.add_data(income_data, titles_from_data=False)
+
+                    expenditure_data = Reference(worksheet, min_col=3, min_row=i_row, max_row=i_row + i_years - 1, max_col=3)
+                    chart.add_data(expenditure_data, titles_from_data=False)
+
+                    # set color
+                    income_series = chart.series[0]
+                    income_series.graphicalProperties.solidFill = COLOR_GREEN
+                    expenditure_series = chart.series[1]
+                    expenditure_series.graphicalProperties.solidFill = COLOR_RED
+
+                    chart.set_categories(month_data)
+                    chart.shape = 4
+                    worksheet.add_chart(chart, f"A{i_row + i_years}")
 
     def create_tool_info(self, xls_creator: XLSCreator) -> None:
         """!

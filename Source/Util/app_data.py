@@ -174,6 +174,10 @@ def group_menu(parent: "MainWindow", l_actions: list[QAction], actual_value: Any
 # Files and Paths
 # https://icons8.com/icons/fluency-systems-regular
 # https://www.flaticon.com/free-icon/list-search_7560656
+# https://compresspng.com/
+# https://ezgif.com/optimize
+# https://compress-image.net/compress-image-online/compress-ico
+# https://www.zamzar.com/compress-bmp/
 # General Icon and Images
 ICON_APP_PATH = "Resources/app.ico"
 ICON_APP_FAVICON_PATH = "Resources/favicon.ico"
@@ -234,6 +238,11 @@ ICON_ARROW_LEFT_LIGHT = resource_path("Resources/Icon/arrow_left_light.png")
 ICON_ARROW_LEFT_DARK = resource_path("Resources/Icon/arrow_left_dark.png")
 ICON_ARROW_RIGHT_LIGHT = resource_path("Resources/Icon/arrow_right_light.png")
 ICON_ARROW_RIGHT_DARK = resource_path("Resources/Icon/arrow_right_dark.png")
+
+ICON_UPDATE_LIGHT = resource_path("Resources/Icon/update_light.svg")
+ICON_UPDATE_DARK = resource_path("Resources/Icon/update_dark.svg")
+ICON_TICK_GREEN = resource_path("Resources/Icon/tick_green.png")
+ICON_CROSS_RED = resource_path("Resources/Icon/cross_red.png")
 
 ICON_WARNING = resource_path("Resources/Icon/warning.png")
 

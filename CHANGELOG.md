@@ -1,3 +1,21 @@
+## v0.3.0  Testversion Release 09.11.2025
+
+[Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0)
+
+_[compare to previous version](https://github.com/timounger/ElsterBooksHome/compare/v0.2.0...v0.3.0)_
+
+### Features
+
+- Die Rechnungsvorlage kann auch als PDF oder XML importiert werden.
+- Transaktionen: Daten löschen Button
+- Integriertes Update für zukünftige neue ElsterBooks Versionen
+
+### Bug fixes
+
+- Export Diagramme unter Berücksichtigung der 10 Tage frit für wiederkehrende Zahlungen dem Vorjahr zuordnen (identisch zu EÜR)
+- Dialog für Belege öffnen schneller (Initial Ressourcen vorladen)
+- Transaktionen abrufen: Crash fix bie Zuordnung und Löschen Button
+
 ## v0.2.0  Testversion Release 29.10.2025
 
 [Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.2.0)

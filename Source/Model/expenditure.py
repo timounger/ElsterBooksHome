@@ -110,10 +110,9 @@ def check_payed_expenditure(path: str, l_transaction: list[Transaction], b_valid
                 else:
                     print("FOUND", invoice_number, payed_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER], data[EReceiptFields.DESCRIPTION])
             else:
-                if not b_validate_only:
-                    if payed_date_low:
-                        data[EReceiptFields.PAYMENT_DATE] = payed_date_high.strftime(DATE_FORMAT_JSON)
-                        export_expenditure(path, False, data, data[EReceiptFields.ID])
+                if payed_date_low:
+                    data[EReceiptFields.PAYMENT_DATE] = payed_date_low.strftime(DATE_FORMAT_JSON)
+                    export_expenditure(path, False, data, data[EReceiptFields.ID])
 
 
 def delete_expenditure(path: str, expenditure_id: str) -> None:

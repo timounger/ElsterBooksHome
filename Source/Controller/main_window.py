@@ -5,13 +5,12 @@
 ********************************************************************************
 """
 
-import sys
 import logging
 from typing import Optional, Any
 import webbrowser
 
 from PyQt6.QtGui import QIcon, QStatusTipEvent, QCloseEvent, QResizeEvent
-from PyQt6.QtWidgets import QMainWindow, QMessageBox, QApplication, QCheckBox
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QCheckBox
 from PyQt6.QtCore import QObject, pyqtSignal, QEvent, QTimer
 
 from Source.version import __title__, __issue__
@@ -29,11 +28,13 @@ from Source.Controller.tab_document import TabDocument
 from Source.Controller.tab_export import TabExport
 from Source.Controller.tab_settings import TabSettings
 from Source.Controller.help_dialog import create_help_dialog
-from Source.Controller.dialog_about import show_about_dialog
+from Source.Controller.dialog_about import AboutDialog
 from Source.Controller.dialog_commit import CommitDialog
+from Source.Controller.dialog_receipt import ReceiptDialog
 from Source.Model.model import Model
 from Source.Model.data_handler import check_git_changes, commit_all_changes
-from Source.Model.update_service import get_tool_update_status, compare_versions, S_UPDATE_URL
+from Source.Model.update_service import get_tool_update_status, compare_versions
+from Source.Worker.update_downloader import delete_temp_update_files
 
 log = logging.getLogger(__title__)
 
@@ -117,7 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_system.triggered.connect(lambda: self.model.c_monitor.update_darkmode_status(ETheme.SYSTEM))
         # help
         self.action_help.triggered.connect(self.show_help_dialog)
-        self.action_about_app.triggered.connect(lambda: show_about_dialog(self))
+        self.action_about_app.triggered.connect(lambda: AboutDialog(self))
         self.action_support.triggered.connect(lambda: webbrowser.open(__issue__))
 
         self.menubar.installEventFilter(StatusTipFilter(self))
@@ -131,11 +132,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tab_document = TabDocument(self, ETab.DOCUMENT)
         self.tab_export = TabExport(self, ETab.EXPORT)
 
+        ReceiptDialog(self)  # init without show dialog to pre-load resources
+
         # active tab
         self.tabWidget.setCurrentIndex(read_last_tab())
 
+        delete_temp_update_files()
         newer_tool_version = get_tool_update_status()
-        if (newer_tool_version is not None) and (compare_versions(read_update_version(), newer_tool_version)):
+        if newer_tool_version and (compare_versions(read_update_version(), newer_tool_version)):
             self.show_update_dialog(newer_tool_version)
         self.clear_status(b_override=True)
         self.init_phase = False
@@ -259,12 +263,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if is_checked:
             write_update_version(newer_tool_version)  # write newest version for don't remember again
         if b_update:
-            cb = QApplication.clipboard()
-            if cb is not None:
-                cb.clear()
-                cb.setText(S_UPDATE_URL)
-            webbrowser.open_new_tab(S_UPDATE_URL)
-            sys.exit()  # exit application without close dialog
+            AboutDialog(self, auto_update=True)
 
     def show_help_dialog(self) -> None:
         """!

@@ -107,10 +107,9 @@ def check_payed_income(path: str, l_transaction: list[Transaction], b_validate_o
                     if (payed_date is None) or (payed_date > (today - timedelta(days=1.5 * 365))):
                         print(invoice_number, payed_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER])
             else:
-                if not b_validate_only:
-                    if payed_date_high:
-                        data[EReceiptFields.PAYMENT_DATE] = payed_date_high.strftime(DATE_FORMAT_JSON)
-                        export_income(path, False, data, data[EReceiptFields.ID])
+                if payed_date_high:
+                    data[EReceiptFields.PAYMENT_DATE] = payed_date_high.strftime(DATE_FORMAT_JSON)
+                    export_income(path, False, data, data[EReceiptFields.ID])
 
 
 def delete_income(path: str, income_id: str) -> None:

@@ -124,7 +124,7 @@ jobs:
           release_name: "[ElsterBooks] v${{ env.file_version }}"
           body: "Git SHA: ${{ github.sha }}\n\n${{ env.commit_message }}"
           draft: false
-          prerelease: true
+          prerelease: false
       - name: Upload Executable files to release assets
         shell: bash
         run: |

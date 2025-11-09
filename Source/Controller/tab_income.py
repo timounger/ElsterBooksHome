@@ -54,7 +54,8 @@ class TabIncome:
         self.total_gross = 0
         self.total_net = 0
         self.l_value: list[float] = []
-        self.l_date: list[str] = []
+        self.l_invoice_date: list[str] = []
+        self.l_payment_date: list[str] = []
         clear_dialog_data(self)
 
     def set_table_data(self, update: bool = False, rename: bool = False, update_dashboard: bool = True) -> None:
@@ -91,7 +92,8 @@ class TabIncome:
                 l_entry.append(CellData(text=f"{income[EReceiptFields.AMOUNT_GROSS]:.2f} EUR", right_align=True))
                 self.total_gross += income[EReceiptFields.AMOUNT_GROSS]
                 self.l_value.append(income[EReceiptFields.AMOUNT_GROSS])
-                self.l_date.append(income[EReceiptFields.INVOICE_DATE])
+                self.l_invoice_date.append(income[EReceiptFields.INVOICE_DATE])
+                self.l_payment_date.append(income[EReceiptFields.PAYMENT_DATE])
             else:
                 l_entry.append(CellData(text="", right_align=True))
             l_entry.append(CellData(text=income[EReceiptFields.ID]))

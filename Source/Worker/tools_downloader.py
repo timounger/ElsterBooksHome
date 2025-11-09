@@ -14,6 +14,7 @@ from PyQt6.QtCore import QThread, pyqtSignal
 
 from Source.version import __title__
 from Source.Util.app_data import TOOLS_FOLDER
+from Source.Model.data_handler import delete_file
 
 log = logging.getLogger(__title__)
 
@@ -65,11 +66,9 @@ class ToolsDownloader(QThread):
 
             # delete zip
             self.status_signal.emit(f"Lösche '{zip_file}'...")
-            try:
-                os.remove(zip_file)
-            except OSError as e:
+            delete_success = delete_file(zip_file)
+            if not delete_success:
                 self.status_signal.emit(f"Fehler beim Löschen der ZIP-Datei: {e}")
-                return
             self.status_signal.emit("Erfolgreich heruntergeladen")
 
     def run(self) -> None:

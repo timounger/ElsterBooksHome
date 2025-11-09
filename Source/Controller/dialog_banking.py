@@ -16,7 +16,7 @@ from Source.version import __title__
 from Source.Util.app_data import thread_dialog, write_fints_blz, read_fints_blz, write_fints_url, read_fints_url, \
     write_fints_auth_data, read_fints_auth_data, write_fints_iban, read_fints_iban, write_fints_tan_mechanism, read_fints_tan_mechanism
 from Source.Views.dialogs.dialog_banking_ui import Ui_DialogBanking
-from Source.Model.fin_ts import FinTs, FinTSInstitute
+from Source.Model.fin_ts import FinTs, FinTSInstitute, delete_transaction_files
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -97,6 +97,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
 
         # buttons
         self.btn_get_transactions.setEnabled(False)
+        self.btn_clear.clicked.connect(self.clear_btn_clicked)
         self.btn_connect.clicked.connect(self.connect_btn_clicked)
         self.btn_get_transactions.clicked.connect(self.get_transactions_btn_clicked)
         self.btn_payed_check.clicked.connect(self.confirm_btn_validate_payments)
@@ -152,6 +153,23 @@ class BankingDialog(QDialog, Ui_DialogBanking):
                         break
         if not b_found:
             self.cb_institutes.setCurrentText(UNKNOWN_INSTITUTE_NAME)
+
+    def clear_btn_clicked(self):
+        """!
+        @brief Clear button clicked.
+        """
+        blz = ""
+        url = ""
+        alias = ""
+        pin = ""
+        self.le_blz.setText(blz)
+        self.le_url.setText(url)
+        self.le_alias.setText(alias)
+        self.le_pin.setText(pin)
+        write_fints_blz(blz)
+        write_fints_url(url)
+        write_fints_auth_data(alias, pin)
+        delete_transaction_files()
 
     def connect_btn_clicked(self):
         """!

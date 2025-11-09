@@ -221,7 +221,7 @@ def extract_xml_from_pdf(pdf_path: str) -> bytes | None:
                     # filename = doc.xref_get_key(i, "UF")[1] or f"embedded_{i}.xml"  # get filename
                     file_content = doc.xref_stream(i)  # extract stream
                     break
-            except Exception as e:
+            except Exception:
                 file_content = None
     return file_content
 

@@ -28,13 +28,15 @@ from Source.Model.company import ECompanyFields, LOGO_BRIEF_PATH, COMPANY_BOOKIN
     COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, COMPANY_PAYMENT_FIELD, COMPANY_DEFAULT_FIELD
 from Source.Model.contacts import EContactFields, CONTACT_CONTACT_FIELD, CONTACT_ADDRESS_FIELD
 from Source.Model.general_invoice import create_general_invoice
-from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, \
-    DATE_FORMAT_XINVOICE, EReceiptFields, JSON_FILE_TYPES, read_json_file, write_json_file, JSON_TYPE, DATE_FORMAT_XML
+from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, INVOICE_TEMPLATE_FILE_TYPES, \
+    DATE_FORMAT_XINVOICE, EReceiptFields, JSON_FILE_TYPES, read_json_file, write_json_file, DATE_FORMAT_XML, \
+    PDF_TYPE, XML_TYPE, JSON_TYPE
 from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
     D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_CHARGE_REASON_CODE, D_EXEMPTION_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_invoice import write_customer_to_json, write_company_to_json, fill_invoice_data
 from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only, set_combo_box_items, set_line_edit_read_only, \
-    set_combo_box_value
+    set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice
+from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -1138,7 +1140,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @brief Open file dialog to select logo and setup preview and path
         @param fix_logo : set fix logo file without dialog asking
         """
-        if fix_logo:
+        if fix_logo is not None:
             logo_path = fix_logo
         else:
             logo_path, _ = QFileDialog.getOpenFileName(parent=self.ui, caption="Logo auswählen",
@@ -1181,12 +1183,30 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         """
         s_file_name_path, _ = QFileDialog.getOpenFileName(parent=self.ui, caption="Öffnen",
                                                           directory=self.ui.model.get_last_path(),
-                                                          filter=JSON_FILE_TYPES)
+                                                          filter=INVOICE_TEMPLATE_FILE_TYPES)
         if s_file_name_path:
             self.ui.model.set_last_path(os.path.dirname(s_file_name_path))
-            data = read_json_file(s_file_name_path)
-            self.write_json_data_to_ui(data)
-            self.ui.set_status("Rechnungsdaten importiert.")
+            _, file_extension = os.path.splitext(s_file_name_path)
+            if file_extension in [JSON_TYPE, JSON_TYPE.upper()]:
+                data = read_json_file(s_file_name_path)
+                self.write_json_data_to_ui(data)
+                self.ui.set_status("Rechnungsdaten importiert.")
+            elif file_extension in [PDF_TYPE, PDF_TYPE.upper()]:
+                if check_zugferd(s_file_name_path):
+                    file_content = extract_xml_from_pdf(s_file_name_path)
+                    data = convert_facturx_to_json(file_content)
+                    self.write_json_data_to_ui(data)
+                else:
+                    self.ui.set_status("NUR ZUGFeRD PDF Dateien können importiert werden.", b_highlight=True)
+            elif file_extension in [XML_TYPE, XML_TYPE.upper()]:
+                if check_xinvoice(s_file_name_path):
+                    file_content = extract_xml_from_xinvoice(s_file_name_path)
+                    data = convert_facturx_to_json(file_content)
+                    self.write_json_data_to_ui(data)
+                else:
+                    self.ui.set_status("Diese XML ist keine E-Rechnung.", b_highlight=True)
+            else:
+                self.ui.set_status("Dateityp nicht num Import geeignet.", b_highlight=True)
 
     def export_btn_clicked(self) -> None:
         """!
@@ -1768,5 +1788,5 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.update_tax_widget(data)  # update taxes to write exemption reason to UI
 
         data_totals = data.setdefault("totals", {})
-        dialog.dsb_payed_amount.setValue(data_totals.get("paidAmount", 0))  # Vorauszahlungsbetrag (BT-113)
-        dialog.dsb_rounded_amount.setValue(data_totals.get("roundingAmount", 0))  # Rundungsbetrag (BT-114)
+        dialog.dsb_payed_amount.setValue(data_totals.get("paidAmount", 0) or 0)  # Vorauszahlungsbetrag (BT-113)
+        dialog.dsb_rounded_amount.setValue(data_totals.get("roundingAmount", 0) or 0)  # Rundungsbetrag (BT-114)

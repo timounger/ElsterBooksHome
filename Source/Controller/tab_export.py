@@ -21,7 +21,7 @@ from Source.version import __title__
 from Source.Util.app_data import EXPORT_PATH, REL_PATH, open_explorer, GIT_IGNORE_FILE, CREATE_GIT_PATH, \
     ICON_OPEN_FOLDER_LIGHT, ICON_OPEN_FOLDER_DARK, ICON_GIT_COMMIT, ICON_GIT_PULL, ICON_GIT_PUSH, ICON_CREATE_REPO
 from Source.Model.data_handler import PDF_FILE_TYPES, L_MONTH_NAMES, create_repo, check_git_changes, commit_all_changes, \
-    PORTABLE_GIT_EXE, check_repo_exists, git_add
+    PORTABLE_GIT_EXE, check_repo_exists, git_add, I_MONTH_IN_YEAR
 from Source.Model.company import LOGO_BRIEF_PATH, COMPANY_BOOKING_FIELD, COMPANY_DEFAULT_FIELD, ECompanyFields
 from Source.Model.export import ExportReport, EReportType
 from Source.Views.tabs.tab_export_ui import Ui_Export
@@ -94,7 +94,7 @@ class TabExport:
         current_year = datetime.now().year
         current_month = datetime.now().month
         current_day = datetime.now().day
-        max_month = len(L_MONTH_NAMES)
+        max_month = I_MONTH_IN_YEAR
         max_quarter = len(L_QUARTER)
         # set period values
         self.ui_export.cb_period.addItem(S_NO_SPEC, None)

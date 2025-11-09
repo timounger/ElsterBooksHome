@@ -18,11 +18,12 @@ from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
 
 from Source.version import __title__
 from Source.Model.company import LOGO_BRIEF_PATH, validate_company, COMPANY_BOOKING_FIELD, ECompanyFields
-from Source.Model.data_handler import EReceiptFields, DATE_FORMAT_JSON, L_MONTH_NAMES_SHORT
+from Source.Model.data_handler import EReceiptFields, DATE_FORMAT_JSON, L_MONTH_NAMES_SHORT, I_MONTH_IN_YEAR
 from Source.Model.income import get_income_files, validate_income
 from Source.Model.expenditure import get_expenditure_files, validate_expenditure
 from Source.Model.contacts import EContactFields, validate_contact
 from Source.Model.document import EDocumentFields, get_document_files, validate_document
+from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only
 from Source.Views.tabs.tab_dashboard_ui import Ui_Dashboard
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -49,17 +50,17 @@ def round_to_nearest_integer(number: float, round_len: int = 2) -> int:
     return rounded_number
 
 
-def calc_chart_data(l_date: list[str], l_value: list[float]) -> list[float]:
+def calc_chart_data(l_invoice_date: list[str], l_value: list[float]) -> list[float]:
     """!
     @brief Calculate chart data.
-    @param l_date : list with data
+    @param l_invoice_date : list with data
     @param l_value : list with values
     @return list with data of last 12 months
     """
     today = datetime.today()
     monthly_sums: defaultdict[tuple[int, int], float] = defaultdict(int)
 
-    for date, amount in zip(l_date, l_value):
+    for date, amount in zip(l_invoice_date, l_value):
         try:
             date_obj = datetime.strptime(date, DATE_FORMAT_JSON)
         except ValueError:
@@ -70,11 +71,11 @@ def calc_chart_data(l_date: list[str], l_value: list[float]) -> list[float]:
                 monthly_sums[key] += amount
 
     last_12_months = []
-    for i in range(12):
+    for i in range(I_MONTH_IN_YEAR):
         month = today.month - i
         year = today.year
         if month <= 0:
-            month += 12
+            month += I_MONTH_IN_YEAR
             year -= 1
         last_12_months.append(monthly_sums.get((year, month), 0))
 
@@ -109,10 +110,10 @@ class TabDashboard:
         self.ui_dashboard = Ui_Dashboard()
         self.ui_dashboard.setupUi(tab)
         self.ui_dashboard.lbl_title.setText(s_title)
-        self.ui_dashboard.data.setFont(QFont("Consolas", 14))
+        self.ui_dashboard.dashboard_text.setFont(QFont("Consolas", 14))
         ui.tabWidget.setTabText(tab_idx, s_title)
 
-        self.ui_dashboard.data.setReadOnly(True)
+        self.ui_dashboard.dashboard_text.setReadOnly(True)
         self.l_warnings: list[str] = []
 
     def update_dashboard_data(self) -> None:
@@ -126,30 +127,24 @@ class TabDashboard:
         expenditure_net = self.ui.tab_expenditure.total_net
         diff_gross = income_gross - expenditure_gross
         diff_net = income_net - expenditure_net
-        fill_len = 15
-        s_income_gross = f"{income_gross:.2f} EUR".rjust(fill_len)
-        s_income_net = f"{income_net:.2f} EUR".rjust(fill_len)
-        s_expenditure_gross = f"{expenditure_gross:.2f} EUR".rjust(fill_len)
-        s_expenditure_net = f"{expenditure_net:.2f} EUR".rjust(fill_len)
-        s_diff_gross = f"{diff_gross:.2f} EUR".rjust(fill_len)
-        s_diff_net = f"{diff_net:.2f} EUR".rjust(fill_len)
-        s_gross_title = "Brutto".rjust(fill_len)
-        s_net_title = "Netto".rjust(fill_len)
-        data = f"           {s_gross_title}{s_net_title}"
-        data += f"\nEinnahmen: {s_income_gross}{s_income_net}"
-        data += f"\nAusgaben:  {s_expenditure_gross}{s_expenditure_net}"
-        data += f"\nGewinn:    {s_diff_gross}{s_diff_net}"
-        # add possible warnings
-        data += "\n"
+        set_spin_box_read_only(self.ui_dashboard.dsb_income_gross, income_gross)
+        set_spin_box_read_only(self.ui_dashboard.dsb_expenditure_gross, expenditure_gross)
+        set_spin_box_read_only(self.ui_dashboard.dsb_profit_gross, diff_gross)
+        set_spin_box_read_only(self.ui_dashboard.dsb_income_net, income_net)
+        set_spin_box_read_only(self.ui_dashboard.dsb_expenditure_net, expenditure_net)
+        set_spin_box_read_only(self.ui_dashboard.dsb_profit_net, diff_net)
+        data = ""
         for warning in self.l_warnings:
             data += f"\n{warning}"
         if len(self.l_warnings) > 0:
-            self.ui_dashboard.data.setTextColor(QColor("orange"))
+            self.ui_dashboard.dashboard_text.setTextColor(QColor("orange"))
             self.ui.set_status("Falsche Daten vorhanden.", b_warning=True)
         else:
             color = "black" if self.ui.model.c_monitor.is_light_theme() else "white"
-            self.ui_dashboard.data.setTextColor(QColor(color))
-        self.ui_dashboard.data.setText(data)
+            self.ui_dashboard.dashboard_text.setTextColor(QColor(color))
+        if not data:
+            data = "✅ Alles in Ordnung!"
+        self.ui_dashboard.dashboard_text.setText(data)
         self.update_chart()
 
     def update_chart(self) -> None:
@@ -157,8 +152,8 @@ class TabDashboard:
         @brief Update chart.
         """
         # data
-        l_income = calc_chart_data(self.ui.tab_income.l_date, self.ui.tab_income.l_value)
-        l_expenditure = calc_chart_data(self.ui.tab_expenditure.l_date, self.ui.tab_expenditure.l_value)
+        l_income = calc_chart_data(self.ui.tab_income.l_invoice_date, self.ui.tab_income.l_value)
+        l_expenditure = calc_chart_data(self.ui.tab_expenditure.l_invoice_date, self.ui.tab_expenditure.l_value)
         l_expenditure = [-x for x in l_expenditure]  # expenditure are negative
         d_data = {
             "Einnahmen": l_income,
@@ -167,11 +162,11 @@ class TabDashboard:
 
         today = datetime.today()
         month_names = []
-        for i in range(0, 12):
+        for i in range(0, I_MONTH_IN_YEAR):
             month = today.month - i
             year = today.year
             if month <= 0:
-                month += 12
+                month += I_MONTH_IN_YEAR
                 year -= 1
             month_names.append(L_MONTH_NAMES_SHORT[month - 1])
         month_names.reverse()
@@ -237,7 +232,7 @@ class TabDashboard:
                 widget.deleteLater()
 
         # Set central widget
-        self.ui_dashboard.gridLayout_2.addWidget(chart_view, 0, 0, 1, 1)
+        self.ui_dashboard.gridLayout_2.addWidget(chart_view, 0, 0, 1, self.ui_dashboard.gridLayout_2.columnCount())
 
     def check_data(self) -> None:
         """!

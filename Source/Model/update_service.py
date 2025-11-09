@@ -73,13 +73,13 @@ def get_newest_tool_version() -> str | None:
 def get_tool_update_status() -> str | None:
     """!
     @brief Get tool update status
-    @return tool status: None: not update required or no connection; else newest version
+    @return tool status: None: no connection; False: not update required; else newest version
     """
     current_version = __version__
     latest_release = get_newest_tool_version()
     if latest_release is not None:
         b_newer_version = compare_versions(current_version, latest_release)
-        update_to_version = latest_release if b_newer_version else None
+        update_to_version = latest_release if b_newer_version else False
     else:
         update_to_version = None
     return update_to_version
