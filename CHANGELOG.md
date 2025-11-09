@@ -1,3 +1,5 @@
+\page CHANGELOG Changelog 📋️
+
 ## v0.3.0  Testversion Release 09.11.2025
 
 [Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0)
