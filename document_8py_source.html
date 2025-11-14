@@ -1,0 +1,314 @@
+<!-- HTML header for doxygen 1.14.0-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.14.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ElsterBooks: document.py Quellcode</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="app.ico"/></td>
+  <td id="projectalign">
+   <div id="projectname">ElsterBooks<span id="projectnumber">&#160;v0.3.0</span>
+   </div>
+   <div id="projectbrief">Buchhaltungssoftware</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<html>
+    <head>
+        <!-- ... other metadata & script includes ... -->
+        <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+        <script type="text/javascript">
+            DoxygenAwesomeDarkModeToggle.init()
+        </script>
+    </head>
+    <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeFragmentCopyButton.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeParagraphLink.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeInteractiveToc.init()
+	   </script>
+   </head>
+   <body>
+  <html>
+   <head>
+       <!-- ... other metadata & script includes ... -->
+       <script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+       <script type="text/javascript">
+           DoxygenAwesomeTabs.init()
+       </script>
+   </head>
+   <body>
+<!-- Erzeugt von Doxygen 1.14.0 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Suchen',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('document_8py_source.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Lade ...</div>
+<div class="SRStatus" id="Searching">Suche ...</div>
+<div class="SRStatus" id="NoMatches">Keine Treffer</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">document.py</div></div>
+</div><!--header-->
+<div class="contents">
+<a href="document_8py.html">gehe zur Dokumentation dieser Datei</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html">    1</a></span><span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="stringliteral">********************************************************************************</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="stringliteral">@file   document.py</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="stringliteral">@brief  document</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="stringliteral">********************************************************************************</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="stringliteral">&quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="keyword">import</span> os</div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">import</span> logging</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="keyword">import</span> enum</div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">from</span> typing <span class="keyword">import</span> Optional, Any</div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="keyword">from</span> <a class="code hl_namespace" href="namespace_source_1_1version.html">Source.version</a> <span class="keyword">import</span> __title__</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="keyword">from</span> <a class="code hl_namespace" href="namespace_source_1_1_util_1_1app__data.html">Source.Util.app_data</a> <span class="keyword">import</span> SCHEMATA_PATH</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">from</span> <a class="code hl_namespace" href="namespace_source_1_1_model_1_1data__handler.html">Source.Model.data_handler</a> <span class="keyword">import</span> read_json_files, get_file_names_in_folder, validate_data, read_json_file, \</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    set_general_json_data, fill_data, get_file_name, add_json, add_appendix, get_date_title, delete_data, PDF_TYPE, \</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    clean_data</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#ab09a63eb35b270b5cdbead1983ebdccb">   19</a></span>log = logging.getLogger(__title__)</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span> </div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a870b1aa975dd343d7c6b6aa061ceb30c">   21</a></span>JSON_VERSION_DOCUMENT = <span class="stringliteral">&quot;01.00.00&quot;</span></div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span> </div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#ab6c902d3b52f114ca30b04443da5ba92">   23</a></span>DOCUMENT_FOLDER = <span class="stringliteral">&quot;document&quot;</span></div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a38c060d05c5dd118998fd33fed688f30">   24</a></span>DOCUMENT_FILE_PATH = DOCUMENT_FOLDER + <span class="stringliteral">&quot;/files&quot;</span></div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a115c561f747dcd5fc2874426ec6c0087">   25</a></span>DOCUMENT_TYPE = <span class="stringliteral">&quot;document&quot;</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a1538b11a05db8ce5c8ed06e1712ca02e">   26</a></span>DOCUMENT_SCHEMA_FILE = <span class="stringliteral">&quot;document_schema.json&quot;</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span> </div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span> </div>
+<div class="foldopen" id="foldopen00029" data-start="" data-end="">
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html">   29</a></span><span class="keyword">class </span><a class="code hl_class" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html">EDocumentFields</a>(str, enum.Enum):</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span><span class="stringliteral">    @brief Document fields.</span></div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#ad0ceb507e0abb6a64ecb31ad3ac8d400">   33</a></span>    JSON_TYPE = <span class="stringliteral">&quot;json_type&quot;</span></div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#a6ddd68338dfaef81a7a5d14e909a8717">   34</a></span>    JSON_VERSION = <span class="stringliteral">&quot;json_version&quot;</span></div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#aa03ec9e8f97678078b4d437c64e3fb5b">   35</a></span>    ID = <span class="stringliteral">&quot;id&quot;</span></div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#a473d20e1492ec1fbedef22f58b35b730">   36</a></span>    DESCRIPTION = <span class="stringliteral">&quot;description&quot;</span></div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#aef173061e960dfd55718b7c8dfcd20cc">   37</a></span>    DOCUMENT_DATE = <span class="stringliteral">&quot;document_date&quot;</span></div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno"><a class="line" href="class_source_1_1_model_1_1document_1_1_e_document_fields.html#a1cdb6a9bdee5b1b9813f85064198ad86">   38</a></span>    ATTACHMENT = <span class="stringliteral">&quot;attachment&quot;</span></div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span> </div>
+</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a5347d3a5e70c1c07e43a01150e55b1f7">   41</a></span>D_DOCUMENT_TEMPLATE = {</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    EDocumentFields.JSON_TYPE: <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    EDocumentFields.JSON_VERSION: <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>    EDocumentFields.ID: <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>    EDocumentFields.DESCRIPTION: <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>    EDocumentFields.DOCUMENT_DATE: <span class="stringliteral">&quot;&quot;</span>,</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>    EDocumentFields.ATTACHMENT: <span class="stringliteral">&quot;&quot;</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>}</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
+<div class="foldopen" id="foldopen00051" data-start="" data-end="">
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a43e35358bc827933e45f46634fccccb4">   51</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a43e35358bc827933e45f46634fccccb4">validate_document</a>(data: dict[EDocumentFields, Any]) -&gt; list[str]:</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="stringliteral">    @brief Validate document data.</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="stringliteral">    @param data : data to validate</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="stringliteral">    @return found error at validation</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    schemata_path = os.path.join(SCHEMATA_PATH, DOCUMENT_SCHEMA_FILE)</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    schemata = read_json_file(schemata_path)</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    _is_valid, error = validate_data(data, schemata)</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordflow">return</span> error</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+</div>
+<div class="foldopen" id="foldopen00063" data-start="" data-end="">
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a8e249ab71a3f9aa9cf983cd71a2b7d6d">   63</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a8e249ab71a3f9aa9cf983cd71a2b7d6d">read_document</a>(path: str) -&gt; list[dict[EDocumentFields, str]]:</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="stringliteral">    @brief Read all documents</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="stringliteral">    @param path : read in this path</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="stringliteral">    @return list with existing documents JSON data</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    l_document = read_json_files(os.path.join(path, DOCUMENT_FOLDER), D_DOCUMENT_TEMPLATE)</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordflow">return</span> l_document</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+</div>
+<div class="foldopen" id="foldopen00073" data-start="" data-end="">
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#ac4ee25c66accd009f89eff89982d0e88">   73</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#ac4ee25c66accd009f89eff89982d0e88">add_document</a>(path: str, add: bool, d_document_data: dict[EDocumentFields, str], document_id: Optional[str] = <span class="keywordtype">None</span>,</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>                 appendix_file: Optional[str] = <span class="keywordtype">None</span>, rename: bool = <span class="keyword">False</span>) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="stringliteral">    @brief Add or actualize document (data and appendix).</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="stringliteral">    @param path : export to this path</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="stringliteral">    @param add : GIT add status</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="stringliteral">    @param d_document_data : document data to export</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="stringliteral">    @param document_id : document ID</span></div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="stringliteral">    @param appendix_file : document file</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="stringliteral">    @param rename : status if file name should renamed depend on actual data</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    s_id = set_general_json_data(d_document_data, DOCUMENT_TYPE, EDocumentFields.JSON_TYPE,</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>                                 EDocumentFields.JSON_VERSION, JSON_VERSION_DOCUMENT,</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>                                 EDocumentFields.ID, document_id)</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>    date = d_document_data[EDocumentFields.DOCUMENT_DATE]</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    title = get_file_name([get_date_title(date), d_document_data[EDocumentFields.DESCRIPTION]], s_id)</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordflow">if</span> (appendix_file <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>) <span class="keywordflow">or</span> rename:</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        <span class="keywordflow">if</span> appendix_file <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>            <span class="keywordflow">if</span> d_document_data[EDocumentFields.ATTACHMENT]:</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>                _, file_extension = os.path.splitext(d_document_data[EDocumentFields.ATTACHMENT])</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>                file_extension = file_extension.lower()</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>                file_extension = PDF_TYPE  <span class="comment"># only for compatible with old version without existing attachment</span></div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>            _, file_extension = os.path.splitext(appendix_file)</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>            file_extension = file_extension.lower()</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        d_document_data[EDocumentFields.ATTACHMENT] = f<span class="stringliteral">&quot;{title}{file_extension}&quot;</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    id_field = EDocumentFields.ID <span class="keywordflow">if</span> (document_id <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>) <span class="keywordflow">else</span> <span class="keywordtype">None</span></div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>    instance = fill_data(D_DOCUMENT_TEMPLATE, d_document_data)</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    add_json(add, instance, title, s_id, os.path.join(path, DOCUMENT_FOLDER), id_field=id_field, rename=rename)</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">if</span> (appendix_file <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>) <span class="keywordflow">or</span> rename:</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        add_appendix(title, s_id, os.path.join(path, DOCUMENT_FILE_PATH), add, appendix_file=appendix_file)</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
+</div>
+<div class="foldopen" id="foldopen00107" data-start="" data-end="">
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a38ed8ff88254912fb777b0af5610843d">  107</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a38ed8ff88254912fb777b0af5610843d">clean_documents</a>(path: str) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span><span class="stringliteral">    @brief Clean documents.</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span><span class="stringliteral">    @param path : data path</span></div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    l_data = <a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a8e249ab71a3f9aa9cf983cd71a2b7d6d">read_document</a>(path)</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    clean_data(path, l_data, DOCUMENT_FOLDER, DOCUMENT_FILE_PATH, EDocumentFields.ID, EDocumentFields.ATTACHMENT)</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span> </div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
+</div>
+<div class="foldopen" id="foldopen00116" data-start="" data-end="">
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a204a23c3a7441883000531f75c21d2fd">  116</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a204a23c3a7441883000531f75c21d2fd">remove_document</a>(path: str, document_id: str) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span><span class="stringliteral">    @brief Remove document (data and appendix).</span></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span><span class="stringliteral">    @param path : delete in this path</span></div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="stringliteral">    @param document_id : document ID</span></div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span>    delete_data(os.path.join(path, DOCUMENT_FOLDER), document_id, id_field=EDocumentFields.ID)</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span>    delete_data(os.path.join(path, DOCUMENT_FILE_PATH), document_id)</div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
+</div>
+<div class="foldopen" id="foldopen00126" data-start="" data-end="">
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno"><a class="line" href="namespace_source_1_1_model_1_1document.html#a3d551f404763827ce88f9b69b8dfa006">  126</a></span><span class="keyword">def </span><a class="code hl_function" href="namespace_source_1_1_model_1_1document.html#a3d551f404763827ce88f9b69b8dfa006">get_document_files</a>(path: str) -&gt; list[str]:</div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span>    <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="stringliteral">    @brief Get document files.</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="stringliteral">    @param path : get document in this path</span></div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="stringliteral">    @return list with all document files</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="stringliteral">    &quot;&quot;&quot;</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span>    <span class="keywordflow">return</span> get_file_names_in_folder(os.path.join(path, DOCUMENT_FILE_PATH))</div>
+</div>
+<div class="ttc" id="aclass_source_1_1_model_1_1document_1_1_e_document_fields_html"><div class="ttname"><a href="class_source_1_1_model_1_1document_1_1_e_document_fields.html">Source.Model.document.EDocumentFields</a></div><div class="ttdoc">Document fields.</div><div class="ttdef"><b>Definition</b> <a href="#l00029">document.py:29</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1data__handler_html"><div class="ttname"><a href="namespace_source_1_1_model_1_1data__handler.html">Source.Model.data_handler</a></div><div class="ttdef"><b>Definition</b> <a href="data__handler_8py_source.html#l00001">data_handler.py:1</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_a204a23c3a7441883000531f75c21d2fd"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#a204a23c3a7441883000531f75c21d2fd">Source.Model.document.remove_document</a></div><div class="ttdeci">None remove_document(str path, str document_id)</div><div class="ttdoc">Remove document (data and appendix).</div><div class="ttdef"><b>Definition</b> <a href="#l00116">document.py:116</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_a38ed8ff88254912fb777b0af5610843d"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#a38ed8ff88254912fb777b0af5610843d">Source.Model.document.clean_documents</a></div><div class="ttdeci">None clean_documents(str path)</div><div class="ttdoc">Clean documents.</div><div class="ttdef"><b>Definition</b> <a href="#l00107">document.py:107</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_a3d551f404763827ce88f9b69b8dfa006"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#a3d551f404763827ce88f9b69b8dfa006">Source.Model.document.get_document_files</a></div><div class="ttdeci">list[str] get_document_files(str path)</div><div class="ttdoc">Get document files.</div><div class="ttdef"><b>Definition</b> <a href="#l00126">document.py:126</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_a43e35358bc827933e45f46634fccccb4"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#a43e35358bc827933e45f46634fccccb4">Source.Model.document.validate_document</a></div><div class="ttdeci">list[str] validate_document(dict[EDocumentFields, Any] data)</div><div class="ttdoc">Validate document data.</div><div class="ttdef"><b>Definition</b> <a href="#l00051">document.py:51</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_a8e249ab71a3f9aa9cf983cd71a2b7d6d"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#a8e249ab71a3f9aa9cf983cd71a2b7d6d">Source.Model.document.read_document</a></div><div class="ttdeci">list[dict[EDocumentFields, str]] read_document(str path)</div><div class="ttdoc">Read all documents.</div><div class="ttdef"><b>Definition</b> <a href="#l00063">document.py:63</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_model_1_1document_html_ac4ee25c66accd009f89eff89982d0e88"><div class="ttname"><a href="namespace_source_1_1_model_1_1document.html#ac4ee25c66accd009f89eff89982d0e88">Source.Model.document.add_document</a></div><div class="ttdeci">None add_document(str path, bool add, dict[EDocumentFields, str] d_document_data, Optional[str] document_id=None, Optional[str] appendix_file=None, bool rename=False)</div><div class="ttdoc">Add or actualize document (data and appendix).</div><div class="ttdef"><b>Definition</b> <a href="#l00073">document.py:74</a></div></div>
+<div class="ttc" id="anamespace_source_1_1_util_1_1app__data_html"><div class="ttname"><a href="namespace_source_1_1_util_1_1app__data.html">Source.Util.app_data</a></div><div class="ttdef"><b>Definition</b> <a href="app__data_8py_source.html#l00001">app_data.py:1</a></div></div>
+<div class="ttc" id="anamespace_source_1_1version_html"><div class="ttname"><a href="namespace_source_1_1version.html">Source.version</a></div><div class="ttdef"><b>Definition</b> <a href="version_8py_source.html#l00001">version.py:1</a></div></div>
+</div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
+</div><!-- container -->
+<!-- HTML footer for doxygen 1.14.0-->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="dir_74389ed8173ad57b461b9d623a1f3867.html">Source</a></li><li class="navelem"><a href="dir_4d2cd150aff3df625ebb7431566b7a26.html">Model</a></li><li class="navelem"><a href="document_8py.html">document.py</a></li>
+    <li class="footer">Copyright © 2023-2025 Timo Unger</li>
+  </ul>
+</div>
+</body>
+</html>
+<a href=https://github.com/timounger/ElsterBooksHome class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>

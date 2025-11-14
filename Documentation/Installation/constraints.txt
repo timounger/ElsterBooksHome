@@ -1,2 +1,0 @@
-# Specific versions of subpackages
-setuptools==80.9.0 # pip-audit finding, python version uses older version at default

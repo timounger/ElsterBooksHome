@@ -1,0 +1,1842 @@
+<!-- HTML header for doxygen 1.14.0-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.14.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ElsterBooks: ReceiptDialog Klassenreferenz</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="app.ico"/></td>
+  <td id="projectalign">
+   <div id="projectname">ElsterBooks<span id="projectnumber">&#160;v0.3.0</span>
+   </div>
+   <div id="projectbrief">Buchhaltungssoftware</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<html>
+    <head>
+        <!-- ... other metadata & script includes ... -->
+        <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+        <script type="text/javascript">
+            DoxygenAwesomeDarkModeToggle.init()
+        </script>
+    </head>
+    <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeFragmentCopyButton.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeParagraphLink.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeInteractiveToc.init()
+	   </script>
+   </head>
+   <body>
+  <html>
+   <head>
+       <!-- ... other metadata & script includes ... -->
+       <script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+       <script type="text/javascript">
+           DoxygenAwesomeTabs.init()
+       </script>
+   </head>
+   <body>
+<!-- Erzeugt von Doxygen 1.14.0 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Suchen',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html','','class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog-members'); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Lade ...</div>
+<div class="SRStatus" id="Searching">Suche ...</div>
+<div class="SRStatus" id="NoMatches">Keine Treffer</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">ReceiptDialog Klassenreferenz</div></div>
+</div><!--header-->
+<div class="contents">
+
+<p>Receipt dialog.  
+ <a href="#details">Mehr ...</a></p>
+<div id="dynsection-0" onclick="return dynsection.toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;"><span class="dynarrow"><span class="arrowhead closed"></span></span>Klassendiagramm für ReceiptDialog:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+ <div class="center">
+  <img src="class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.png" alt=""/>
+ </div></div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
+Öffentliche Methoden</h2></td></tr>
+<tr class="memitem:a1efc940f6b538249f19b57a0071e23a3" id="r_a1efc940f6b538249f19b57a0071e23a3"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1efc940f6b538249f19b57a0071e23a3">__init__</a> (self, &quot;MainWindow&quot; <a class="el" href="#ac492f8de2d00b6c4282e766bfadaf2e7">ui</a>, Optional[dict[<a class="el" href="class_source_1_1_model_1_1data__handler_1_1_e_receipt_fields.html">EReceiptFields</a>, Any]] <a class="el" href="#a511ae0b1c13f95e5f08f1a0dd3da3d93">data</a>=None, Optional[str] <a class="el" href="#aa948347617c685883662e97a6964ae6e">uid</a>=None, Optional[str] <a class="el" href="#a8aa55c8aa2346c2358ce68869a197088">file_path</a>=None, <a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_e_receipt_type.html">EReceiptType</a> <a class="el" href="#a36bb9382c5de6e69318bb82e27c9e68c">receipt_type</a>=<a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_e_receipt_type.html#a2702af00906428c19762dd43e0823616">EReceiptType.GENERAL</a>, *Any args, **Any kwargs)</td></tr>
+<tr class="memitem:a2af64cf1cb3570a0de2ba3d92cbd6353" id="r_a2af64cf1cb3570a0de2ba3d92cbd6353"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2af64cf1cb3570a0de2ba3d92cbd6353">closeEvent</a> (self, Optional[QCloseEvent] event)</td></tr>
+<tr class="memdesc:a2af64cf1cb3570a0de2ba3d92cbd6353"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default close Event Method to handle application close.  <br /></td></tr>
+<tr class="memitem:aa952897aad646ed98bfd9460b5654ef9" id="r_aa952897aad646ed98bfd9460b5654ef9"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa952897aad646ed98bfd9460b5654ef9">delete_clicked</a> (self)</td></tr>
+<tr class="memdesc:aa952897aad646ed98bfd9460b5654ef9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Delete button clicked.  <br /></td></tr>
+<tr class="memitem:afe73001f02ae605e5e659fda181666f5" id="r_afe73001f02ae605e5e659fda181666f5"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afe73001f02ae605e5e659fda181666f5">detect_data</a> (self)</td></tr>
+<tr class="memdesc:afe73001f02ae605e5e659fda181666f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Detect data.  <br /></td></tr>
+<tr class="memitem:adaaaee576e18fb4f009f43c5e339dd6d" id="r_adaaaee576e18fb4f009f43c5e339dd6d"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adaaaee576e18fb4f009f43c5e339dd6d">doc_view_changed</a> (self, <a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_doc_view.html">DocView</a> doc_view)</td></tr>
+<tr class="memdesc:adaaaee576e18fb4f009f43c5e339dd6d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Doc view changed.  <br /></td></tr>
+<tr class="memitem:ac3cd54282e45773d0bf07f7c5063314c" id="r_ac3cd54282e45773d0bf07f7c5063314c"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac3cd54282e45773d0bf07f7c5063314c">gross_changed</a> (self)</td></tr>
+<tr class="memdesc:ac3cd54282e45773d0bf07f7c5063314c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gross changed.  <br /></td></tr>
+<tr class="memitem:acf79d615935641275473accd7a8cc444" id="r_acf79d615935641275473accd7a8cc444"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf79d615935641275473accd7a8cc444">net_changed</a> (self)</td></tr>
+<tr class="memdesc:acf79d615935641275473accd7a8cc444"><td class="mdescLeft">&#160;</td><td class="mdescRight">Net changed.  <br /></td></tr>
+<tr class="memitem:a0ed637580885dfe6f6d88bd794a2763b" id="r_a0ed637580885dfe6f6d88bd794a2763b"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0ed637580885dfe6f6d88bd794a2763b">on_invoice_data_changed</a> (self, QDate date)</td></tr>
+<tr class="memdesc:a0ed637580885dfe6f6d88bd794a2763b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Invoice date changed.  <br /></td></tr>
+<tr class="memitem:a9680c0910477f4b8344589a33ef8f94b" id="r_a9680c0910477f4b8344589a33ef8f94b"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9680c0910477f4b8344589a33ef8f94b">on_pay_data_changed</a> (self, QDate _date)</td></tr>
+<tr class="memdesc:a9680c0910477f4b8344589a33ef8f94b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pay date changed.  <br /></td></tr>
+<tr class="memitem:af2cd64d60445df219409abd118654455" id="r_af2cd64d60445df219409abd118654455"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2cd64d60445df219409abd118654455">on_payed_changed</a> (self, bool state)</td></tr>
+<tr class="memdesc:af2cd64d60445df219409abd118654455"><td class="mdescLeft">&#160;</td><td class="mdescRight">Payed setting changed.  <br /></td></tr>
+<tr class="memitem:aea5916f6bbdab67db6c61b8877d3a526" id="r_aea5916f6bbdab67db6c61b8877d3a526"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aea5916f6bbdab67db6c61b8877d3a526">open_xml_warnings</a> (self)</td></tr>
+<tr class="memdesc:aea5916f6bbdab67db6c61b8877d3a526"><td class="mdescLeft">&#160;</td><td class="mdescRight">Open xml warning dialog.  <br /></td></tr>
+<tr class="memitem:a31807cc1fc71a9b477b1995cad535a49" id="r_a31807cc1fc71a9b477b1995cad535a49"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a31807cc1fc71a9b477b1995cad535a49">preview_clicked</a> (self, str attachment_file)</td></tr>
+<tr class="memdesc:a31807cc1fc71a9b477b1995cad535a49"><td class="mdescLeft">&#160;</td><td class="mdescRight">On preview clicked.  <br /></td></tr>
+<tr class="memitem:a7656e17ab49df2a6ccbc1847c346f4cc" id="r_a7656e17ab49df2a6ccbc1847c346f4cc"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7656e17ab49df2a6ccbc1847c346f4cc">save_clicked</a> (self)</td></tr>
+<tr class="memdesc:a7656e17ab49df2a6ccbc1847c346f4cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save button clicked.  <br /></td></tr>
+<tr class="memitem:a7178e55d55c323b4b7c264c43361f6ae" id="r_a7178e55d55c323b4b7c264c43361f6ae"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7178e55d55c323b4b7c264c43361f6ae">set_data</a> (self)</td></tr>
+<tr class="memdesc:a7178e55d55c323b4b7c264c43361f6ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set receipt data.  <br /></td></tr>
+<tr class="memitem:ad3bb181ac99391493585a24fb788a9b4" id="r_ad3bb181ac99391493585a24fb788a9b4"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad3bb181ac99391493585a24fb788a9b4">set_detected_invoice_data</a> (self, <a class="el" href="class_source_1_1_model_1_1ai__data_1_1_invoice_data.html">InvoiceData</a> invoice_data)</td></tr>
+<tr class="memdesc:ad3bb181ac99391493585a24fb788a9b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set detected invoice data.  <br /></td></tr>
+<tr class="memitem:ae4cae07903009aa1dff00a1454e86149" id="r_ae4cae07903009aa1dff00a1454e86149"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae4cae07903009aa1dff00a1454e86149">set_vat_rate</a> (self)</td></tr>
+<tr class="memdesc:ae4cae07903009aa1dff00a1454e86149"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set VAT rate.  <br /></td></tr>
+<tr class="memitem:a660e9ed12bbb6a262d5e338edb523142" id="r_a660e9ed12bbb6a262d5e338edb523142"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a660e9ed12bbb6a262d5e338edb523142">show_dialog</a> (self)</td></tr>
+<tr class="memdesc:a660e9ed12bbb6a262d5e338edb523142"><td class="mdescLeft">&#160;</td><td class="mdescRight">Show dialog.  <br /></td></tr>
+<tr class="memitem:a18aa87ba0d3bd3d64e65a609e4d31ea6" id="r_a18aa87ba0d3bd3d64e65a609e4d31ea6"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18aa87ba0d3bd3d64e65a609e4d31ea6">show_group_dialog</a> (self)</td></tr>
+<tr class="memdesc:a18aa87ba0d3bd3d64e65a609e4d31ea6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shows the dialog for selection of the group.  <br /></td></tr>
+<tr class="memitem:a0d96194b73194987698103cac66f43b1" id="r_a0d96194b73194987698103cac66f43b1"><td class="memItemLeft" align="right" valign="top">None&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d96194b73194987698103cac66f43b1">update_pdf_page</a> (self, bool|None direction)</td></tr>
+<tr class="memdesc:a0d96194b73194987698103cac66f43b1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update PDF page.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Öffentliche Attribute</h2></td></tr>
+<tr class="memitem:abe2c9eb53c74cb8680237db8f8816f9a" id="r_abe2c9eb53c74cb8680237db8f8816f9a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe2c9eb53c74cb8680237db8f8816f9a">b_gross_changed</a> = False</td></tr>
+<tr class="memitem:add927b9e7fb54fdfeba07ea43fb61621" id="r_add927b9e7fb54fdfeba07ea43fb61621"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add927b9e7fb54fdfeba07ea43fb61621">b_lock_auto_payed_data</a> = False</td></tr>
+<tr class="memitem:a09a17f4b2ca1bd16e2c36c54f4f390d3" id="r_a09a17f4b2ca1bd16e2c36c54f4f390d3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a09a17f4b2ca1bd16e2c36c54f4f390d3">b_net_changed</a> = False</td></tr>
+<tr class="memitem:a4697d1bfab17d7dde199d4c5d5daae92" id="r_a4697d1bfab17d7dde199d4c5d5daae92"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4697d1bfab17d7dde199d4c5d5daae92">b_pay_data_changed</a> = False</td></tr>
+<tr class="memitem:a12e1f53c847d07ce9e58df470087c0fa" id="r_a12e1f53c847d07ce9e58df470087c0fa"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a12e1f53c847d07ce9e58df470087c0fa">close</a></td></tr>
+<tr class="memitem:a511ae0b1c13f95e5f08f1a0dd3da3d93" id="r_a511ae0b1c13f95e5f08f1a0dd3da3d93"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a511ae0b1c13f95e5f08f1a0dd3da3d93">data</a> = data</td></tr>
+<tr class="memitem:a08bc143deb1d1e38e39926dd1b5bcc40" id="r_a08bc143deb1d1e38e39926dd1b5bcc40"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a08bc143deb1d1e38e39926dd1b5bcc40">default_tax_rate</a> = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][<a class="el" href="class_source_1_1_model_1_1company_1_1_e_company_fields.html#a1cf6ca971b230e7706ce011525e28482">ECompanyFields.TAX_RATES</a>][0]</td></tr>
+<tr class="memitem:a224b110fe520e8536a35adb1d46a17b4" id="r_a224b110fe520e8536a35adb1d46a17b4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a224b110fe520e8536a35adb1d46a17b4">delete_clicked</a></td></tr>
+<tr class="memitem:a8aa55c8aa2346c2358ce68869a197088" id="r_a8aa55c8aa2346c2358ce68869a197088"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8aa55c8aa2346c2358ce68869a197088">file_path</a> = file_path</td></tr>
+<tr class="memitem:a16bcde32f28f7756e7885d5fd1ac53ce" id="r_a16bcde32f28f7756e7885d5fd1ac53ce"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a16bcde32f28f7756e7885d5fd1ac53ce">gross_changed</a></td></tr>
+<tr class="memitem:a429c9e09501aae74ec29663bde11b7d6" id="r_a429c9e09501aae74ec29663bde11b7d6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a429c9e09501aae74ec29663bde11b7d6">groupBox</a></td></tr>
+<tr class="memitem:a1cebb1b2c98167b4d6575dd84bbf2b55" id="r_a1cebb1b2c98167b4d6575dd84bbf2b55"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1cebb1b2c98167b4d6575dd84bbf2b55">net_changed</a></td></tr>
+<tr class="memitem:a0b065be2fb394b3384934b0e0c9c7033" id="r_a0b065be2fb394b3384934b0e0c9c7033"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0b065be2fb394b3384934b0e0c9c7033">on_invoice_data_changed</a></td></tr>
+<tr class="memitem:aec791a8c3fa1b2d1435ae44615b4f75a" id="r_aec791a8c3fa1b2d1435ae44615b4f75a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aec791a8c3fa1b2d1435ae44615b4f75a">on_pay_data_changed</a></td></tr>
+<tr class="memitem:af2cfc0fbfaf9beb30dfc62ab02dc5f1b" id="r_af2cfc0fbfaf9beb30dfc62ab02dc5f1b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2cfc0fbfaf9beb30dfc62ab02dc5f1b">on_payed_changed</a></td></tr>
+<tr class="memitem:a8ee71c24e90636d7b2191265ad0b5c64" id="r_a8ee71c24e90636d7b2191265ad0b5c64"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ee71c24e90636d7b2191265ad0b5c64">open_xml_warnings</a></td></tr>
+<tr class="memitem:a7226b92c5e1f4f89000b27dd725ed26b" id="r_a7226b92c5e1f4f89000b27dd725ed26b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7226b92c5e1f4f89000b27dd725ed26b">page_xml</a></td></tr>
+<tr class="memitem:acb93fa681729bc6a6ae51dfd7bb9b68f" id="r_acb93fa681729bc6a6ae51dfd7bb9b68f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb93fa681729bc6a6ae51dfd7bb9b68f">pdf_document</a> = QPdfDocument(self)</td></tr>
+<tr class="memitem:acb1ede75fd6f5e66f8acdce497000561" id="r_acb1ede75fd6f5e66f8acdce497000561"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb1ede75fd6f5e66f8acdce497000561">pdf_view</a> = QPdfView(self)</td></tr>
+<tr class="memitem:a36bb9382c5de6e69318bb82e27c9e68c" id="r_a36bb9382c5de6e69318bb82e27c9e68c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a36bb9382c5de6e69318bb82e27c9e68c">receipt_type</a> = receipt_type</td></tr>
+<tr class="memitem:ae0e254f409004bae1aeb1dcdad15ec4c" id="r_ae0e254f409004bae1aeb1dcdad15ec4c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae0e254f409004bae1aeb1dcdad15ec4c">save_clicked</a></td></tr>
+<tr class="memitem:a6041ea02ea535fd87760b8cc08e7ddcf" id="r_a6041ea02ea535fd87760b8cc08e7ddcf"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6041ea02ea535fd87760b8cc08e7ddcf">scroll_area</a></td></tr>
+<tr class="memitem:a459f4fabc57bceb4e6535b8186621b80" id="r_a459f4fabc57bceb4e6535b8186621b80"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a459f4fabc57bceb4e6535b8186621b80">set_detected_invoice_data</a></td></tr>
+<tr class="memitem:a18dd5892f26b781e60d1f0f3258468f0" id="r_a18dd5892f26b781e60d1f0f3258468f0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a18dd5892f26b781e60d1f0f3258468f0">show_group_dialog</a></td></tr>
+<tr class="memitem:ac492f8de2d00b6c4282e766bfadaf2e7" id="r_ac492f8de2d00b6c4282e766bfadaf2e7"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac492f8de2d00b6c4282e766bfadaf2e7">ui</a> = ui</td></tr>
+<tr class="memitem:a25790f30953738d05f1d81dd2cbf27b9" id="r_a25790f30953738d05f1d81dd2cbf27b9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25790f30953738d05f1d81dd2cbf27b9">ui_invoice_data</a> = Ui_InvoiceData()</td></tr>
+<tr class="memitem:aa948347617c685883662e97a6964ae6e" id="r_aa948347617c685883662e97a6964ae6e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa948347617c685883662e97a6964ae6e">uid</a> = uid</td></tr>
+<tr class="memitem:a2301432f1e5b2f2c9b704b4b736fd564" id="r_a2301432f1e5b2f2c9b704b4b736fd564"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2301432f1e5b2f2c9b704b4b736fd564">widget_right</a></td></tr>
+<tr class="memitem:ac706dda0cac46e733a7dd975209bc6f1" id="r_ac706dda0cac46e733a7dd975209bc6f1"><td class="memItemLeft" align="right" valign="top">str&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac706dda0cac46e733a7dd975209bc6f1">xml_warnings</a> = &quot;&quot;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Ausführliche Beschreibung</h2>
+<div class="textblock"><p>Receipt dialog. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ui</td><td>: main window </td></tr>
+    <tr><td class="paramname">data</td><td>: document data </td></tr>
+    <tr><td class="paramname">uid</td><td>: UID of receipt </td></tr>
+    <tr><td class="paramname">file_path</td><td>: receipt file </td></tr>
+    <tr><td class="paramname">receipt_type</td><td>: receipt type </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00060">60</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Beschreibung der Konstruktoren und Destruktoren</h2>
+<a id="a1efc940f6b538249f19b57a0071e23a3" name="a1efc940f6b538249f19b57a0071e23a3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1efc940f6b538249f19b57a0071e23a3">&#9670;&#160;</a></span>__init__()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None __init__ </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&quot;MainWindow&quot;</td>          <td class="paramname"><span class="paramname"><em>ui</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[dict[<a class="el" href="class_source_1_1_model_1_1data__handler_1_1_e_receipt_fields.html">EReceiptFields</a>, Any]] </td>          <td class="paramname"><span class="paramname"><em>data</em></span><span class="paramdefsep"> = </span><span class="paramdefval">None</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[str] </td>          <td class="paramname"><span class="paramname"><em>uid</em></span><span class="paramdefsep"> = </span><span class="paramdefval">None</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[str] </td>          <td class="paramname"><span class="paramname"><em>file_path</em></span><span class="paramdefsep"> = </span><span class="paramdefval">None</span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_e_receipt_type.html">EReceiptType</a> </td>          <td class="paramname"><span class="paramname"><em>receipt_type</em></span><span class="paramdefsep"> = </span><span class="paramdefval"><a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_e_receipt_type.html#a2702af00906428c19762dd43e0823616">EReceiptType.GENERAL</a></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">*Any</td>          <td class="paramname"><span class="paramname"><em>args</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">**Any</td>          <td class="paramname"><span class="paramname"><em>kwargs</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00070">70</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">   71</span>                 receipt_type: EReceiptType = EReceiptType.GENERAL, *args: Any, **kwargs: Any) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">   72</span>        super().__init__(parent=ui, *args, **kwargs)  <span class="comment"># type: ignore</span></div>
+<div class="line"><span class="lineno">   73</span>        self.setupUi(self)</div>
+<div class="line"><span class="lineno">   74</span>        self.setMinimumWidth(900)</div>
+<div class="line"><span class="lineno">   75</span>        self.setMinimumHeight(500)</div>
+<div class="line"><span class="lineno">   76</span>        self.setWindowFlags(Qt.WindowType.Window)  <span class="comment"># set all window buttons (e.g max window size)</span></div>
+<div class="line"><span class="lineno">   77</span>        self.ui = ui</div>
+<div class="line"><span class="lineno">   78</span>        self.data = data</div>
+<div class="line"><span class="lineno">   79</span>        self.uid = uid</div>
+<div class="line"><span class="lineno">   80</span>        self.file_path = file_path  <span class="comment"># only set for new receipt</span></div>
+<div class="line"><span class="lineno">   81</span>        self.b_gross_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">   82</span>        self.b_net_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">   83</span>        self.b_pay_data_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">   84</span>        self.b_lock_auto_payed_data = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">   85</span>        self.receipt_type = receipt_type</div>
+<div class="line"><span class="lineno">   86</span>        self.xml_warnings = <span class="stringliteral">&quot;&quot;</span></div>
+<div class="line"><span class="lineno">   87</span>        self.default_tax_rate = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES][0]</div>
+<div class="line"><span class="lineno">   88</span> </div>
+<div class="line"><span class="lineno">   89</span>        <span class="comment"># PDF view</span></div>
+<div class="line"><span class="lineno">   90</span>        self.pdf_document = QPdfDocument(self)</div>
+<div class="line"><span class="lineno">   91</span>        self.pdf_view = QPdfView(self)</div>
+<div class="line"><span class="lineno">   92</span>        self.pdf_view.setDocument(self.pdf_document)</div>
+<div class="line"><span class="lineno">   93</span>        layout = QVBoxLayout(self.page_pdf)  <span class="comment"># set layout for QFrame</span></div>
+<div class="line"><span class="lineno">   94</span>        layout.setContentsMargins(0, 0, 0, 0)  <span class="comment"># no border</span></div>
+<div class="line"><span class="lineno">   95</span>        layout.addWidget(self.pdf_view)</div>
+<div class="line"><span class="lineno">   96</span> </div>
+<div class="line"><span class="lineno">   97</span>        <span class="comment"># XML view</span></div>
+<div class="line"><span class="lineno">   98</span>        container_widget = QWidget()</div>
+<div class="line"><span class="lineno">   99</span>        self.ui_invoice_data = Ui_InvoiceData()</div>
+<div class="line"><span class="lineno">  100</span>        self.ui_invoice_data.setupUi(container_widget)</div>
+<div class="line"><span class="lineno">  101</span>        self.scroll_area.setWidgetResizable(<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  102</span>        self.scroll_area.setWidget(container_widget)</div>
+<div class="line"><span class="lineno">  103</span>        layout = QVBoxLayout(self.page_xml)  <span class="comment"># layout for full size of scroll area in xml page</span></div>
+<div class="line"><span class="lineno">  104</span>        layout.addWidget(self.scroll_area)</div>
+<div class="line"><span class="lineno">  105</span> </div>
+<div class="line"><span class="lineno">  106</span>        <span class="comment"># document view toggle PDF/XML</span></div>
+<div class="line"><span class="lineno">  107</span>        self.btn_view_pdf.clicked.connect(<span class="keyword">lambda</span>: self.doc_view_changed(DocView.PDF))</div>
+<div class="line"><span class="lineno">  108</span>        self.btn_view_xml.clicked.connect(<span class="keyword">lambda</span>: self.doc_view_changed(DocView.XML))</div>
+<div class="line"><span class="lineno">  109</span>        self.doc_view_changed(DocView.PDF)  <span class="comment"># set default view</span></div>
+<div class="line"><span class="lineno">  110</span> </div>
+<div class="line"><span class="lineno">  111</span>        <span class="comment"># add splitter for left/right distance</span></div>
+<div class="line"><span class="lineno">  112</span>        splitter = QSplitter(Qt.Orientation.Horizontal)</div>
+<div class="line"><span class="lineno">  113</span>        splitter.addWidget(self.groupBox)</div>
+<div class="line"><span class="lineno">  114</span>        splitter.addWidget(self.widget_right)</div>
+<div class="line"><span class="lineno">  115</span>        self.layout().addWidget(splitter)</div>
+<div class="line"><span class="lineno">  116</span>        splitter.setSizes([390, 610])  <span class="comment"># set split ratio</span></div>
+<div class="line"><span class="lineno">  117</span> </div>
+<div class="line"><span class="lineno">  118</span>        <span class="keywordflow">if</span> file_path <span class="keywordflow">or</span> data:  <span class="comment"># show only if data present</span></div>
+<div class="line"><span class="lineno">  119</span>            thread_dialog(self)</div>
+<div class="line"><span class="lineno">  120</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Dokumentation der Elementfunktionen</h2>
+<a id="a2af64cf1cb3570a0de2ba3d92cbd6353" name="a2af64cf1cb3570a0de2ba3d92cbd6353"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2af64cf1cb3570a0de2ba3d92cbd6353">&#9670;&#160;</a></span>closeEvent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None closeEvent </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Optional[QCloseEvent]</td>          <td class="paramname"><span class="paramname"><em>event</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Default close Event Method to handle application close. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>: arrived event </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00358">358</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  358</span>    <span class="keyword">def </span>closeEvent(self, event: Optional[QCloseEvent]) -&gt; <span class="keywordtype">None</span>:  <span class="comment"># pylint: disable=invalid-name</span></div>
+<div class="line"><span class="lineno">  359</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  360</span><span class="stringliteral">        @brief Default close Event Method to handle application close</span></div>
+<div class="line"><span class="lineno">  361</span><span class="stringliteral">        @param event : arrived event</span></div>
+<div class="line"><span class="lineno">  362</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  363</span>        self.ui.model.c_open_ai.terminate()</div>
+<div class="line"><span class="lineno">  364</span>        self.ui.model.c_ollama_ai.terminate()</div>
+<div class="line"><span class="lineno">  365</span>        <span class="keywordflow">if</span> event <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  366</span>            event.accept()</div>
+<div class="line"><span class="lineno">  367</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aa952897aad646ed98bfd9460b5654ef9" name="aa952897aad646ed98bfd9460b5654ef9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa952897aad646ed98bfd9460b5654ef9">&#9670;&#160;</a></span>delete_clicked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None delete_clicked </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Delete button clicked. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00568">568</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  568</span>    <span class="keyword">def </span>delete_clicked(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  569</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  570</span><span class="stringliteral">        @brief Delete button clicked.</span></div>
+<div class="line"><span class="lineno">  571</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  572</span>        <span class="keywordflow">if</span> self.uid <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  573</span>            match self.receipt_type:</div>
+<div class="line"><span class="lineno">  574</span>                case EReceiptType.INCOME:</div>
+<div class="line"><span class="lineno">  575</span>                    delete_income(self.ui.model.data_path, self.uid)</div>
+<div class="line"><span class="lineno">  576</span>                case EReceiptType.EXPENDITURE:</div>
+<div class="line"><span class="lineno">  577</span>                    delete_expenditure(self.ui.model.data_path, self.uid)</div>
+<div class="line"><span class="lineno">  578</span>                case _:</div>
+<div class="line"><span class="lineno">  579</span>                    <span class="keywordflow">pass</span></div>
+<div class="line"><span class="lineno">  580</span>            self.ui.set_status(f<span class="stringliteral">&quot;{self.receipt_type.value} gelöscht&quot;</span>)</div>
+<div class="line"><span class="lineno">  581</span>            self.close()</div>
+<div class="line"><span class="lineno">  582</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  583</span>            log.warning(<span class="stringliteral">&quot;Delete file clicked without UID&quot;</span>)</div>
+<div class="line"><span class="lineno">  584</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="afe73001f02ae605e5e659fda181666f5" name="afe73001f02ae605e5e659fda181666f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe73001f02ae605e5e659fda181666f5">&#9670;&#160;</a></span>detect_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None detect_data </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Detect data. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00300">300</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  300</span>    <span class="keyword">def </span>detect_data(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  301</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  302</span><span class="stringliteral">        @brief Detect data.</span></div>
+<div class="line"><span class="lineno">  303</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  304</span>        is_income = bool(self.receipt_type == EReceiptType.INCOME)</div>
+<div class="line"><span class="lineno">  305</span>        file_path = self.file_path</div>
+<div class="line"><span class="lineno">  306</span>        company = self.ui.tab_settings.company_data</div>
+<div class="line"><span class="lineno">  307</span>        company_default = company[COMPANY_DEFAULT_FIELD]</div>
+<div class="line"><span class="lineno">  308</span>        b_german = bool(company[COMPANY_ADDRESS_FIELD][ECompanyFields.COUNTRY] == <span class="stringliteral">&quot;DE&quot;</span>)</div>
+<div class="line"><span class="lineno">  309</span>        <span class="keywordflow">if</span> file_path.lower().endswith(PDF_TYPE.lower()):</div>
+<div class="line"><span class="lineno">  310</span>            <span class="comment"># check for auto import</span></div>
+<div class="line"><span class="lineno">  311</span>            <span class="keywordflow">if</span> is_income:</div>
+<div class="line"><span class="lineno">  312</span>                b_custom_detect = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  313</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  314</span>                b_custom_detect = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  315</span>            <span class="keywordflow">if</span> <span class="keywordflow">not</span> b_custom_detect:</div>
+<div class="line"><span class="lineno">  316</span>                <span class="keywordflow">if</span> b_german <span class="keywordflow">and</span> check_pre_tax(file_path):</div>
+<div class="line"><span class="lineno">  317</span>                    data = import_pre_tax(file_path, is_income=is_income)</div>
+<div class="line"><span class="lineno">  318</span>                    <span class="keywordflow">if</span> data:</div>
+<div class="line"><span class="lineno">  319</span>                        self.data = data</div>
+<div class="line"><span class="lineno">  320</span>                        self.lbl_ai_assist_status.setText(f<span class="stringliteral">&quot;{EReceiptGroup.UST_VA.value} erkannt!&quot;</span>)</div>
+<div class="line"><span class="lineno">  321</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  322</span>                    <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  323</span>                        self.lbl_ai_assist_status.setText(f<span class="stringliteral">&quot;{EReceiptGroup.UST_VA.value} ist keine Ausgabe&quot;</span>)</div>
+<div class="line"><span class="lineno">  324</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  325</span>                <span class="keywordflow">elif</span> b_german <span class="keywordflow">and</span> check_ust(file_path):</div>
+<div class="line"><span class="lineno">  326</span>                    data = import_ust(file_path, is_income=is_income)</div>
+<div class="line"><span class="lineno">  327</span>                    <span class="keywordflow">if</span> data:</div>
+<div class="line"><span class="lineno">  328</span>                        self.data = data</div>
+<div class="line"><span class="lineno">  329</span>                        self.lbl_ai_assist_status.setText(f<span class="stringliteral">&quot;{EReceiptGroup.UST.value} erkannt!&quot;</span>)</div>
+<div class="line"><span class="lineno">  330</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  331</span>                    <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  332</span>                        self.lbl_ai_assist_status.setText(f<span class="stringliteral">&quot;{EReceiptGroup.UST.value} ist keine Ausgabe&quot;</span>)</div>
+<div class="line"><span class="lineno">  333</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  334</span>                <span class="keywordflow">elif</span> check_zugferd(file_path):</div>
+<div class="line"><span class="lineno">  335</span>                    data = import_zugferd(file_path, is_income=is_income,</div>
+<div class="line"><span class="lineno">  336</span>                                          income_group=company_default[ECompanyFields.INCOME_GROUP],</div>
+<div class="line"><span class="lineno">  337</span>                                          expenditure_group=company_default[ECompanyFields.EXPENDITURE_GROUP])</div>
+<div class="line"><span class="lineno">  338</span>                    <span class="keywordflow">if</span> data:</div>
+<div class="line"><span class="lineno">  339</span>                        self.data = data</div>
+<div class="line"><span class="lineno">  340</span>                        self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;ZUGFeRD erkannt!&quot;</span>)</div>
+<div class="line"><span class="lineno">  341</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  342</span>                    <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  343</span>                        self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;ZUGFeRD konnte nicht automatisch importiert werden&quot;</span>)</div>
+<div class="line"><span class="lineno">  344</span>                        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  345</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  346</span>            <span class="keywordflow">if</span> check_xinvoice(file_path):</div>
+<div class="line"><span class="lineno">  347</span>                data = import_xinvoice(file_path, is_income=is_income,</div>
+<div class="line"><span class="lineno">  348</span>                                       income_group=company_default[ECompanyFields.INCOME_GROUP],</div>
+<div class="line"><span class="lineno">  349</span>                                       expenditure_group=company_default[ECompanyFields.EXPENDITURE_GROUP])</div>
+<div class="line"><span class="lineno">  350</span>                <span class="keywordflow">if</span> data:</div>
+<div class="line"><span class="lineno">  351</span>                    self.data = data</div>
+<div class="line"><span class="lineno">  352</span>                    self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;XRechnung erkannt!&quot;</span>)</div>
+<div class="line"><span class="lineno">  353</span>                    self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  354</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  355</span>                    self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;XRechnung konnte nicht automatisch importiert werden&quot;</span>)</div>
+<div class="line"><span class="lineno">  356</span>                    self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  357</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="adaaaee576e18fb4f009f43c5e339dd6d" name="adaaaee576e18fb4f009f43c5e339dd6d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaaaee576e18fb4f009f43c5e339dd6d">&#9670;&#160;</a></span>doc_view_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None doc_view_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_source_1_1_controller_1_1dialog__receipt_1_1_doc_view.html">DocView</a></td>          <td class="paramname"><span class="paramname"><em>doc_view</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Doc view changed. </p>
+<p>Set doc widget and update button color </p><dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">doc_view</td><td>: doc view index </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00406">406</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  406</span>    <span class="keyword">def </span>doc_view_changed(self, doc_view: DocView) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  407</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  408</span><span class="stringliteral">        @brief Doc view changed. Set doc widget and update button color</span></div>
+<div class="line"><span class="lineno">  409</span><span class="stringliteral">        @param doc_view : doc view index</span></div>
+<div class="line"><span class="lineno">  410</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  411</span>        <span class="keywordflow">if</span> self.ui.model.c_monitor.is_light_theme():</div>
+<div class="line"><span class="lineno">  412</span>            active_fg = <span class="stringliteral">&quot;white&quot;</span></div>
+<div class="line"><span class="lineno">  413</span>            active_bg = <span class="stringliteral">&quot;#007BFF&quot;</span></div>
+<div class="line"><span class="lineno">  414</span>            inactive_fg = <span class="stringliteral">&quot;#555555&quot;</span></div>
+<div class="line"><span class="lineno">  415</span>            inactive_bg = <span class="stringliteral">&quot;#e0e0e0&quot;</span></div>
+<div class="line"><span class="lineno">  416</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  417</span>            active_fg = <span class="stringliteral">&quot;black&quot;</span></div>
+<div class="line"><span class="lineno">  418</span>            active_bg = <span class="stringliteral">&quot;#3399FF&quot;</span></div>
+<div class="line"><span class="lineno">  419</span>            inactive_fg = <span class="stringliteral">&quot;#bbbbbb&quot;</span></div>
+<div class="line"><span class="lineno">  420</span>            inactive_bg = <span class="stringliteral">&quot;#2e2e2e&quot;</span></div>
+<div class="line"><span class="lineno">  421</span>        match doc_view:</div>
+<div class="line"><span class="lineno">  422</span>            case DocView.PDF:</div>
+<div class="line"><span class="lineno">  423</span>                self.doc_view.setCurrentIndex(DocView.PDF)</div>
+<div class="line"><span class="lineno">  424</span>                self.btn_view_pdf.setStyleSheet(f<span class="stringliteral">&quot;color: {active_fg}; background-color: {active_bg};&quot;</span>)</div>
+<div class="line"><span class="lineno">  425</span>                self.btn_view_xml.setStyleSheet(f<span class="stringliteral">&quot;color: {inactive_fg}; background-color: {inactive_bg};&quot;</span>)</div>
+<div class="line"><span class="lineno">  426</span>                self.update_pdf_page(<span class="keywordtype">None</span>)</div>
+<div class="line"><span class="lineno">  427</span>            case DocView.XML:</div>
+<div class="line"><span class="lineno">  428</span>                self.doc_view.setCurrentIndex(DocView.XML)</div>
+<div class="line"><span class="lineno">  429</span>                self.btn_view_xml.setStyleSheet(f<span class="stringliteral">&quot;color: {active_fg}; background-color: {active_bg};&quot;</span>)</div>
+<div class="line"><span class="lineno">  430</span>                self.btn_view_pdf.setStyleSheet(f<span class="stringliteral">&quot;color: {inactive_fg}; background-color: {inactive_bg};&quot;</span>)</div>
+<div class="line"><span class="lineno">  431</span>                self.btn_left.hide()</div>
+<div class="line"><span class="lineno">  432</span>                self.btn_right.hide()</div>
+<div class="line"><span class="lineno">  433</span>                self.lbl_page_number.hide()</div>
+<div class="line"><span class="lineno">  434</span>            case _:</div>
+<div class="line"><span class="lineno">  435</span>                log.warning(<span class="stringliteral">&quot;Invalid doc view %s&quot;</span>, doc_view)</div>
+<div class="line"><span class="lineno">  436</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ac3cd54282e45773d0bf07f7c5063314c" name="ac3cd54282e45773d0bf07f7c5063314c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3cd54282e45773d0bf07f7c5063314c">&#9670;&#160;</a></span>gross_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None gross_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Gross changed. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00474">474</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  474</span>    <span class="keyword">def </span>gross_changed(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  475</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  476</span><span class="stringliteral">        @brief Gross changed.</span></div>
+<div class="line"><span class="lineno">  477</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  478</span>        gross_price = self.dsb_gross.value()</div>
+<div class="line"><span class="lineno">  479</span>        <span class="keywordflow">if</span> gross_price <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  480</span>            self.b_gross_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  481</span>            <span class="keywordflow">if</span> <span class="keywordflow">not</span> self.b_net_changed:</div>
+<div class="line"><span class="lineno">  482</span>                <span class="keywordflow">if</span> (self.receipt_type == EReceiptType.INCOME) <span class="keywordflow">and</span> self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.SMALL_BUSINESS_REGULATION]:</div>
+<div class="line"><span class="lineno">  483</span>                    f_net = gross_price  <span class="comment"># income for small business regulation is net = gross</span></div>
+<div class="line"><span class="lineno">  484</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  485</span>                    f_net = round(gross_price / (1 + (self.default_tax_rate / 100)), 2)</div>
+<div class="line"><span class="lineno">  486</span>                self.dsb_net.setValue(f_net)</div>
+<div class="line"><span class="lineno">  487</span>                self.b_net_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  488</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  489</span>            self.b_gross_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  490</span>        self.set_vat_rate()</div>
+<div class="line"><span class="lineno">  491</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="acf79d615935641275473accd7a8cc444" name="acf79d615935641275473accd7a8cc444"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf79d615935641275473accd7a8cc444">&#9670;&#160;</a></span>net_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None net_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Net changed. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00492">492</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  492</span>    <span class="keyword">def </span>net_changed(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  493</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  494</span><span class="stringliteral">        @brief Net changed.</span></div>
+<div class="line"><span class="lineno">  495</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  496</span>        net_price = self.dsb_net.value()</div>
+<div class="line"><span class="lineno">  497</span>        <span class="keywordflow">if</span> net_price <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  498</span>            self.b_net_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  499</span>            <span class="keywordflow">if</span> <span class="keywordflow">not</span> self.b_gross_changed:</div>
+<div class="line"><span class="lineno">  500</span>                <span class="keywordflow">if</span> (self.receipt_type == EReceiptType.INCOME) <span class="keywordflow">and</span> self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.SMALL_BUSINESS_REGULATION]:</div>
+<div class="line"><span class="lineno">  501</span>                    f_gross = net_price  <span class="comment"># income for small business regulation is net = gross</span></div>
+<div class="line"><span class="lineno">  502</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  503</span>                    f_gross = round(net_price * (1 + (self.default_tax_rate / 100)), 2)</div>
+<div class="line"><span class="lineno">  504</span>                self.dsb_gross.setValue(f_gross)</div>
+<div class="line"><span class="lineno">  505</span>                self.b_gross_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  506</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  507</span>            self.b_net_changed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  508</span>        self.set_vat_rate()</div>
+<div class="line"><span class="lineno">  509</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a0ed637580885dfe6f6d88bd794a2763b" name="a0ed637580885dfe6f6d88bd794a2763b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ed637580885dfe6f6d88bd794a2763b">&#9670;&#160;</a></span>on_invoice_data_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None on_invoice_data_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">QDate</td>          <td class="paramname"><span class="paramname"><em>date</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Invoice date changed. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">date</td><td>: date </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00535">535</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  535</span>    <span class="keyword">def </span>on_invoice_data_changed(self, date: QDate) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  536</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  537</span><span class="stringliteral">        @brief Invoice date changed.</span></div>
+<div class="line"><span class="lineno">  538</span><span class="stringliteral">        @param date : date</span></div>
+<div class="line"><span class="lineno">  539</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  540</span>        <span class="keywordflow">if</span> <span class="keywordflow">not</span> self.b_pay_data_changed:</div>
+<div class="line"><span class="lineno">  541</span>            self.b_lock_auto_payed_data = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  542</span>            self.de_payment_date.setDate(date)</div>
+<div class="line"><span class="lineno">  543</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a9680c0910477f4b8344589a33ef8f94b" name="a9680c0910477f4b8344589a33ef8f94b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9680c0910477f4b8344589a33ef8f94b">&#9670;&#160;</a></span>on_pay_data_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None on_pay_data_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">QDate</td>          <td class="paramname"><span class="paramname"><em>_date</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pay date changed. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">_date</td><td>: date </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00544">544</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  544</span>    <span class="keyword">def </span>on_pay_data_changed(self, _date: QDate) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  545</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  546</span><span class="stringliteral">        @brief Pay date changed.</span></div>
+<div class="line"><span class="lineno">  547</span><span class="stringliteral">        @param _date : date</span></div>
+<div class="line"><span class="lineno">  548</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  549</span>        <span class="keywordflow">if</span> self.b_lock_auto_payed_data:</div>
+<div class="line"><span class="lineno">  550</span>            self.b_lock_auto_payed_data = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  551</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  552</span>            self.b_pay_data_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  553</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="af2cd64d60445df219409abd118654455" name="af2cd64d60445df219409abd118654455"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2cd64d60445df219409abd118654455">&#9670;&#160;</a></span>on_payed_changed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None on_payed_changed </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>state</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Payed setting changed. </p>
+<p>Update visibility of payed date and bar widget. </p><dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">state</td><td>: payed state </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00519">519</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  519</span>    <span class="keyword">def </span>on_payed_changed(self, state: bool) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  520</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  521</span><span class="stringliteral">        @brief Payed setting changed. Update visibility of payed date and bar widget.</span></div>
+<div class="line"><span class="lineno">  522</span><span class="stringliteral">        @param state : payed state</span></div>
+<div class="line"><span class="lineno">  523</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  524</span>        <span class="keywordflow">if</span> state:</div>
+<div class="line"><span class="lineno">  525</span>            self.de_payment_date.show()</div>
+<div class="line"><span class="lineno">  526</span>            self.lbl_payment_date.show()</div>
+<div class="line"><span class="lineno">  527</span>            self.cb_bar_check.show()</div>
+<div class="line"><span class="lineno">  528</span>            self.lbl_bar_check.show()</div>
+<div class="line"><span class="lineno">  529</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  530</span>            self.de_payment_date.hide()</div>
+<div class="line"><span class="lineno">  531</span>            self.lbl_payment_date.hide()</div>
+<div class="line"><span class="lineno">  532</span>            self.cb_bar_check.hide()</div>
+<div class="line"><span class="lineno">  533</span>            self.lbl_bar_check.hide()</div>
+<div class="line"><span class="lineno">  534</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="aea5916f6bbdab67db6c61b8877d3a526" name="aea5916f6bbdab67db6c61b8877d3a526"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea5916f6bbdab67db6c61b8877d3a526">&#9670;&#160;</a></span>open_xml_warnings()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">open_xml_warnings </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Open xml warning dialog. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00400">400</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  400</span>    <span class="keyword">def </span>open_xml_warnings(self):</div>
+<div class="line"><span class="lineno">  401</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  402</span><span class="stringliteral">        @brief Open xml warning dialog</span></div>
+<div class="line"><span class="lineno">  403</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  404</span>        QMessageBox.warning(self, <span class="stringliteral">&quot;XML Warnungen&quot;</span>, self.xml_warnings)</div>
+<div class="line"><span class="lineno">  405</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a31807cc1fc71a9b477b1995cad535a49" name="a31807cc1fc71a9b477b1995cad535a49"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a31807cc1fc71a9b477b1995cad535a49">&#9670;&#160;</a></span>preview_clicked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None preview_clicked </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">str</td>          <td class="paramname"><span class="paramname"><em>attachment_file</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>On preview clicked. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">attachment_file</td><td>: attachment file </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00437">437</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  437</span>    <span class="keyword">def </span>preview_clicked(self, attachment_file: str) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  438</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  439</span><span class="stringliteral">        @brief On preview clicked</span></div>
+<div class="line"><span class="lineno">  440</span><span class="stringliteral">        @param attachment_file : attachment file</span></div>
+<div class="line"><span class="lineno">  441</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  442</span>        <span class="keyword">with</span> subprocess.Popen([<span class="stringliteral">&quot;start&quot;</span>, <span class="stringliteral">&quot;&quot;</span>, attachment_file], shell=<span class="keyword">True</span>):</div>
+<div class="line"><span class="lineno">  443</span>            <span class="keywordflow">pass</span></div>
+<div class="line"><span class="lineno">  444</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a7656e17ab49df2a6ccbc1847c346f4cc" name="a7656e17ab49df2a6ccbc1847c346f4cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7656e17ab49df2a6ccbc1847c346f4cc">&#9670;&#160;</a></span>save_clicked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None save_clicked </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Save button clicked. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00585">585</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  585</span>    <span class="keyword">def </span>save_clicked(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  586</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  587</span><span class="stringliteral">        @brief Save button clicked.</span></div>
+<div class="line"><span class="lineno">  588</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  589</span>        valid = self.set_data()</div>
+<div class="line"><span class="lineno">  590</span>        <span class="keywordflow">if</span> valid:</div>
+<div class="line"><span class="lineno">  591</span>            <span class="keywordflow">if</span> self.data <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  592</span>                match self.receipt_type:</div>
+<div class="line"><span class="lineno">  593</span>                    case EReceiptType.INCOME:</div>
+<div class="line"><span class="lineno">  594</span>                        export_income(self.ui.model.data_path, self.ui.model.git_add, self.data, self.uid, self.file_path)</div>
+<div class="line"><span class="lineno">  595</span>                    case EReceiptType.EXPENDITURE:</div>
+<div class="line"><span class="lineno">  596</span>                        export_expenditure(self.ui.model.data_path, self.ui.model.git_add, self.data, self.uid, self.file_path)</div>
+<div class="line"><span class="lineno">  597</span>                    case _:</div>
+<div class="line"><span class="lineno">  598</span>                        <span class="keywordflow">pass</span></div>
+<div class="line"><span class="lineno">  599</span>                <span class="keywordflow">if</span> self.uid <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  600</span>                    self.ui.set_status(f<span class="stringliteral">&quot;{self.receipt_type.value} hinzugefügt&quot;</span>)</div>
+<div class="line"><span class="lineno">  601</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  602</span>                    self.ui.set_status(f<span class="stringliteral">&quot;{self.receipt_type.value} gespeichert&quot;</span>)</div>
+<div class="line"><span class="lineno">  603</span>                self.close()</div>
+<div class="line"><span class="lineno">  604</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  605</span>                log.warning(<span class="stringliteral">&quot;Save file clicked without data&quot;</span>)</div>
+<div class="line"><span class="lineno">  606</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a7178e55d55c323b4b7c264c43361f6ae" name="a7178e55d55c323b4b7c264c43361f6ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7178e55d55c323b4b7c264c43361f6ae">&#9670;&#160;</a></span>set_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> bool set_data </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set receipt data. </p>
+<dl class="section return"><dt>Rückgabe</dt><dd>status if contact data are valid to save </dd></dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00607">607</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  607</span>    <span class="keyword">def </span>set_data(self) -&gt; bool:</div>
+<div class="line"><span class="lineno">  608</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  609</span><span class="stringliteral">        @brief Set receipt data.</span></div>
+<div class="line"><span class="lineno">  610</span><span class="stringliteral">        @return status if contact data are valid to save</span></div>
+<div class="line"><span class="lineno">  611</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  612</span>        valid = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  613</span>        trade_partner = self.pte_trade_partner.toPlainText()</div>
+<div class="line"><span class="lineno">  614</span>        description = self.pte_description.toPlainText()</div>
+<div class="line"><span class="lineno">  615</span>        attachment = self.data.get(EReceiptFields.ATTACHMENT) <span class="keywordflow">if</span> (self.data <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>) <span class="keywordflow">else</span> <span class="keywordtype">None</span></div>
+<div class="line"><span class="lineno">  616</span>        gross_price = self.dsb_gross.value()</div>
+<div class="line"><span class="lineno">  617</span>        <span class="keywordflow">if</span> gross_price % 1 == 0:</div>
+<div class="line"><span class="lineno">  618</span>            gross_price = int(gross_price)</div>
+<div class="line"><span class="lineno">  619</span>        net_price = self.dsb_net.value()</div>
+<div class="line"><span class="lineno">  620</span>        <span class="keywordflow">if</span> net_price % 1 == 0:</div>
+<div class="line"><span class="lineno">  621</span>            net_price = int(net_price)</div>
+<div class="line"><span class="lineno">  622</span>        <span class="comment"># reset sheet style before set new</span></div>
+<div class="line"><span class="lineno">  623</span>        self.pte_description.setStyleSheet(<span class="stringliteral">&quot;border: 1px solid palette(dark);&quot;</span>)</div>
+<div class="line"><span class="lineno">  624</span>        self.pte_description.setStyleSheet(<span class="stringliteral">&quot;border: 1px solid palette(dark);&quot;</span>)</div>
+<div class="line"><span class="lineno">  625</span>        self.dsb_gross.setStyleSheet(<span class="stringliteral">&quot;border: 1px solid palette(dark);&quot;</span>)</div>
+<div class="line"><span class="lineno">  626</span>        self.dsb_net.setStyleSheet(<span class="stringliteral">&quot;border: 1px solid palette(dark);&quot;</span>)</div>
+<div class="line"><span class="lineno">  627</span>        <span class="keywordflow">if</span> gross_price <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  628</span>            self.dsb_gross.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  629</span>            self.ui.set_status(<span class="stringliteral">&quot;Kein Brutto Betrag vorhanden.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  630</span>        <span class="keywordflow">elif</span> net_price <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  631</span>            self.dsb_net.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  632</span>            self.ui.set_status(<span class="stringliteral">&quot;Kein Netto Betrag vorhanden.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  633</span>        <span class="keywordflow">elif</span> gross_price &lt; 0:</div>
+<div class="line"><span class="lineno">  634</span>            self.dsb_gross.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  635</span>            self.ui.set_status(<span class="stringliteral">&quot;Brutto Betrag darf nicht negativ sein.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  636</span>        <span class="keywordflow">elif</span> net_price &lt; 0:</div>
+<div class="line"><span class="lineno">  637</span>            self.dsb_net.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  638</span>            self.ui.set_status(<span class="stringliteral">&quot;Netto Betrag darf nicht negativ sein.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  639</span>        <span class="keywordflow">elif</span> net_price &gt; gross_price:</div>
+<div class="line"><span class="lineno">  640</span>            self.dsb_gross.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  641</span>            self.dsb_net.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  642</span>            self.ui.set_status(<span class="stringliteral">&quot;Netto Betrag darf Brutto nicht übersteigen.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  643</span>        <span class="keywordflow">elif</span> trade_partner <span class="keywordflow">or</span> description:</div>
+<div class="line"><span class="lineno">  644</span>            self.data = copy.deepcopy(D_RECEIPT_TEMPLATE)</div>
+<div class="line"><span class="lineno">  645</span>            self.data[EReceiptFields.TRADE_PARTNER] = trade_partner</div>
+<div class="line"><span class="lineno">  646</span>            self.data[EReceiptFields.DESCRIPTION] = description</div>
+<div class="line"><span class="lineno">  647</span>            self.data[EReceiptFields.INVOICE_NUMBER] = self.le_invoice_number.text()</div>
+<div class="line"><span class="lineno">  648</span>            self.data[EReceiptFields.INVOICE_DATE] = self.de_invoice_date.date().toString(DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  649</span>            self.data[EReceiptFields.DELIVER_DATE] = self.le_deliver_date.text()</div>
+<div class="line"><span class="lineno">  650</span>            self.data[EReceiptFields.AMOUNT_GROSS] = gross_price</div>
+<div class="line"><span class="lineno">  651</span>            self.data[EReceiptFields.AMOUNT_NET] = net_price</div>
+<div class="line"><span class="lineno">  652</span>            <span class="keywordflow">if</span> self.cb_pay_check.isChecked():</div>
+<div class="line"><span class="lineno">  653</span>                self.data[EReceiptFields.PAYMENT_DATE] = self.de_payment_date.date().toString(DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  654</span>                self.data[EReceiptFields.BAR] = self.cb_bar_check.isChecked()</div>
+<div class="line"><span class="lineno">  655</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  656</span>                self.data[EReceiptFields.PAYMENT_DATE] = <span class="stringliteral">&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  657</span>                self.data[EReceiptFields.BAR] = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  658</span>            self.data[EReceiptFields.COMMENT] = self.pte_comment.toPlainText()</div>
+<div class="line"><span class="lineno">  659</span>            self.data[EReceiptFields.GROUP] = self.le_group.text()</div>
+<div class="line"><span class="lineno">  660</span>            self.data[EReceiptFields.ATTACHMENT] = attachment</div>
+<div class="line"><span class="lineno">  661</span>            valid = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  662</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  663</span>            self.pte_trade_partner.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  664</span>            self.pte_description.setStyleSheet(<span class="stringliteral">&quot;border: 2px solid red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  665</span>            self.ui.set_status(<span class="stringliteral">&quot;Weder Handelspartner noch Beschreibung vorhanden.&quot;</span>, b_highlight=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  666</span>        <span class="keywordflow">return</span> valid</div>
+<div class="line"><span class="lineno">  667</span> </div>
+<div class="line"><span class="lineno">  668</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ad3bb181ac99391493585a24fb788a9b4" name="ad3bb181ac99391493585a24fb788a9b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3bb181ac99391493585a24fb788a9b4">&#9670;&#160;</a></span>set_detected_invoice_data()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None set_detected_invoice_data </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_source_1_1_model_1_1ai__data_1_1_invoice_data.html">InvoiceData</a></td>          <td class="paramname"><span class="paramname"><em>invoice_data</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set detected invoice data. </p>
+<p>Do not add if user input text before </p><dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">invoice_data</td><td>: invoice data </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00445">445</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  445</span>    <span class="keyword">def </span>set_detected_invoice_data(self, invoice_data: InvoiceData) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  446</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  447</span><span class="stringliteral">        @brief Set detected invoice data. Do not add if user input text before</span></div>
+<div class="line"><span class="lineno">  448</span><span class="stringliteral">        @param invoice_data : invoice data</span></div>
+<div class="line"><span class="lineno">  449</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  450</span>        <span class="keywordflow">if</span> invoice_data <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  451</span>            <span class="comment"># invoice number</span></div>
+<div class="line"><span class="lineno">  452</span>            <span class="keywordflow">if</span> invoice_data.invoice_number <span class="keywordflow">and</span> <span class="keywordflow">not</span> self.le_invoice_number.text():</div>
+<div class="line"><span class="lineno">  453</span>                self.le_invoice_number.setText(invoice_data.invoice_number)</div>
+<div class="line"><span class="lineno">  454</span>            <span class="comment"># invoice data</span></div>
+<div class="line"><span class="lineno">  455</span>            current_date = QDate.currentDate()</div>
+<div class="line"><span class="lineno">  456</span>            <span class="keywordflow">if</span> invoice_data.invoice_date <span class="keywordflow">and</span> (self.de_invoice_date.date() == current_date):</div>
+<div class="line"><span class="lineno">  457</span>                invoice_date = QDate.fromString(invoice_data.invoice_date, DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  458</span>                self.de_invoice_date.setDate(invoice_date)</div>
+<div class="line"><span class="lineno">  459</span>            <span class="comment"># trade partner</span></div>
+<div class="line"><span class="lineno">  460</span>            <span class="keywordflow">if</span> invoice_data.seller_name <span class="keywordflow">and</span> <span class="keywordflow">not</span> self.pte_trade_partner.toPlainText():</div>
+<div class="line"><span class="lineno">  461</span>                self.pte_trade_partner.setPlainText(invoice_data.seller_name)</div>
+<div class="line"><span class="lineno">  462</span>            <span class="comment"># description</span></div>
+<div class="line"><span class="lineno">  463</span>            <span class="keywordflow">if</span> invoice_data.description <span class="keywordflow">and</span> <span class="keywordflow">not</span> self.pte_description.toPlainText():</div>
+<div class="line"><span class="lineno">  464</span>                self.pte_description.setPlainText(invoice_data.description)</div>
+<div class="line"><span class="lineno">  465</span>            <span class="comment"># gross</span></div>
+<div class="line"><span class="lineno">  466</span>            <span class="keywordflow">if</span> invoice_data.gross_amount <span class="keywordflow">and</span> <span class="keywordflow">not</span> self.dsb_gross.value():</div>
+<div class="line"><span class="lineno">  467</span>                self.dsb_gross.setValue(invoice_data.gross_amount)</div>
+<div class="line"><span class="lineno">  468</span>            <span class="comment"># net</span></div>
+<div class="line"><span class="lineno">  469</span>            <span class="keywordflow">if</span> invoice_data.net_amount <span class="keywordflow">and</span> <span class="keywordflow">not</span> self.dsb_net.value():</div>
+<div class="line"><span class="lineno">  470</span>                self.dsb_net.setValue(invoice_data.net_amount)</div>
+<div class="line"><span class="lineno">  471</span>        self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;Erkennung abgeschlossen!&quot;</span>)</div>
+<div class="line"><span class="lineno">  472</span>        self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  473</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="ae4cae07903009aa1dff00a1454e86149" name="ae4cae07903009aa1dff00a1454e86149"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4cae07903009aa1dff00a1454e86149">&#9670;&#160;</a></span>set_vat_rate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None set_vat_rate </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set VAT rate. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00510">510</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  510</span>    <span class="keyword">def </span>set_vat_rate(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  511</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  512</span><span class="stringliteral">        @brief Set VAT rate.</span></div>
+<div class="line"><span class="lineno">  513</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  514</span>        gross = self.dsb_gross.value()</div>
+<div class="line"><span class="lineno">  515</span>        net = self.dsb_net.value()</div>
+<div class="line"><span class="lineno">  516</span>        vat_rate = calc_vat_rate(gross, net)</div>
+<div class="line"><span class="lineno">  517</span>        self.le_tax.setText(str(vat_rate))</div>
+<div class="line"><span class="lineno">  518</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a660e9ed12bbb6a262d5e338edb523142" name="a660e9ed12bbb6a262d5e338edb523142"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a660e9ed12bbb6a262d5e338edb523142">&#9670;&#160;</a></span>show_dialog()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None show_dialog </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Show dialog. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00121">121</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  121</span>    <span class="keyword">def </span>show_dialog(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  122</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  123</span><span class="stringliteral">        @brief Show dialog</span></div>
+<div class="line"><span class="lineno">  124</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  125</span>        log.debug(<span class="stringliteral">&quot;Starting Receipt dialog&quot;</span>)</div>
+<div class="line"><span class="lineno">  126</span> </div>
+<div class="line"><span class="lineno">  127</span>        self.ui.model.c_monitor.set_dialog_style(self)</div>
+<div class="line"><span class="lineno">  128</span>        current_date = QDate.currentDate()</div>
+<div class="line"><span class="lineno">  129</span> </div>
+<div class="line"><span class="lineno">  130</span>        self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><span class="lineno">  131</span>        self.lbl_xml_valid.setText(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><span class="lineno">  132</span> </div>
+<div class="line"><span class="lineno">  133</span>        <span class="keywordflow">if</span> self.data <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  134</span>            self.btn_delete.hide()</div>
+<div class="line"><span class="lineno">  135</span>            self.detect_data()</div>
+<div class="line"><span class="lineno">  136</span> </div>
+<div class="line"><span class="lineno">  137</span>        <span class="keywordflow">if</span> self.data <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  138</span>            <span class="comment"># invoice number</span></div>
+<div class="line"><span class="lineno">  139</span>            self.le_invoice_number.setText(self.data[EReceiptFields.INVOICE_NUMBER])</div>
+<div class="line"><span class="lineno">  140</span>            <span class="comment"># invoice data</span></div>
+<div class="line"><span class="lineno">  141</span>            invoice_date = QDate.fromString(self.data[EReceiptFields.INVOICE_DATE], DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  142</span>            self.de_invoice_date.setDate(invoice_date)</div>
+<div class="line"><span class="lineno">  143</span>            <span class="comment"># deliver date</span></div>
+<div class="line"><span class="lineno">  144</span>            self.le_deliver_date.setText(self.data[EReceiptFields.DELIVER_DATE])</div>
+<div class="line"><span class="lineno">  145</span>            <span class="comment"># trade partner</span></div>
+<div class="line"><span class="lineno">  146</span>            self.pte_trade_partner.setPlainText(self.data[EReceiptFields.TRADE_PARTNER])</div>
+<div class="line"><span class="lineno">  147</span>            <span class="comment"># description</span></div>
+<div class="line"><span class="lineno">  148</span>            self.pte_description.setPlainText(self.data[EReceiptFields.DESCRIPTION])</div>
+<div class="line"><span class="lineno">  149</span>            <span class="comment"># gross</span></div>
+<div class="line"><span class="lineno">  150</span>            self.b_gross_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  151</span>            self.dsb_gross.setValue(self.data[EReceiptFields.AMOUNT_GROSS])</div>
+<div class="line"><span class="lineno">  152</span>            <span class="comment"># net</span></div>
+<div class="line"><span class="lineno">  153</span>            self.b_net_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  154</span>            self.dsb_net.setValue(self.data[EReceiptFields.AMOUNT_NET])</div>
+<div class="line"><span class="lineno">  155</span>            <span class="comment"># payment</span></div>
+<div class="line"><span class="lineno">  156</span>            self.b_pay_data_changed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  157</span>            pay_date = QDate.fromString(self.data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  158</span>            <span class="keywordflow">if</span> pay_date:</div>
+<div class="line"><span class="lineno">  159</span>                b_payed = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  160</span>                pay_date = QDate.fromString(self.data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  161</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  162</span>                b_payed = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  163</span>                pay_date = current_date</div>
+<div class="line"><span class="lineno">  164</span>            self.de_payment_date.setDate(pay_date)</div>
+<div class="line"><span class="lineno">  165</span>            bar_checked = self.data[EReceiptFields.BAR]</div>
+<div class="line"><span class="lineno">  166</span>            <span class="comment"># comment</span></div>
+<div class="line"><span class="lineno">  167</span>            self.pte_comment.setPlainText(self.data[EReceiptFields.COMMENT])</div>
+<div class="line"><span class="lineno">  168</span>            <span class="comment"># group</span></div>
+<div class="line"><span class="lineno">  169</span>            self.le_group.setText(self.data[EReceiptFields.GROUP])</div>
+<div class="line"><span class="lineno">  170</span>            <span class="comment"># load preview</span></div>
+<div class="line"><span class="lineno">  171</span>            <span class="keywordflow">if</span> self.file_path <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  172</span>                <span class="keywordflow">if</span> self.receipt_type == EReceiptType.INCOME:</div>
+<div class="line"><span class="lineno">  173</span>                    data_path = os.path.join(self.ui.model.data_path, INCOME_FILE_PATH)</div>
+<div class="line"><span class="lineno">  174</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  175</span>                    data_path = os.path.join(self.ui.model.data_path, EXPENDITURE_FILE_PATH)</div>
+<div class="line"><span class="lineno">  176</span>                preview_file = find_file(data_path, self.uid, file_name=self.data[EReceiptFields.ATTACHMENT])</div>
+<div class="line"><span class="lineno">  177</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  178</span>                preview_file = self.file_path</div>
+<div class="line"><span class="lineno">  179</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  180</span>            b_payed = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYED]</div>
+<div class="line"><span class="lineno">  181</span>            bar_checked = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.BAR_PAYED]</div>
+<div class="line"><span class="lineno">  182</span>            <span class="comment"># set actual date date</span></div>
+<div class="line"><span class="lineno">  183</span>            actual_date = current_date</div>
+<div class="line"><span class="lineno">  184</span>            self.de_invoice_date.setDate(actual_date)</div>
+<div class="line"><span class="lineno">  185</span>            self.de_payment_date.setDate(actual_date)</div>
+<div class="line"><span class="lineno">  186</span>            <span class="comment"># group</span></div>
+<div class="line"><span class="lineno">  187</span>            match self.receipt_type:</div>
+<div class="line"><span class="lineno">  188</span>                case EReceiptType.INCOME:</div>
+<div class="line"><span class="lineno">  189</span>                    group_text = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.INCOME_GROUP]</div>
+<div class="line"><span class="lineno">  190</span>                case EReceiptType.EXPENDITURE:</div>
+<div class="line"><span class="lineno">  191</span>                    group_text = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.EXPENDITURE_GROUP]</div>
+<div class="line"><span class="lineno">  192</span>                case _:</div>
+<div class="line"><span class="lineno">  193</span>                    group_text = <span class="stringliteral">&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  194</span>            self.le_group.setText(group_text)</div>
+<div class="line"><span class="lineno">  195</span>            self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;&quot;</span>)</div>
+<div class="line"><span class="lineno">  196</span>            b_use_file_name_for_content = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  197</span>            <span class="keywordflow">if</span> self.file_path.lower().endswith(PDF_TYPE.lower()):</div>
+<div class="line"><span class="lineno">  198</span>                match self.ui.model.ai_type:</div>
+<div class="line"><span class="lineno">  199</span>                    case EAiType.OPEN_AI:</div>
+<div class="line"><span class="lineno">  200</span>                        <span class="keywordflow">if</span> self.ui.model.c_open_ai.get_ready_state():</div>
+<div class="line"><span class="lineno">  201</span>                            self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;Erkennung läuft...&quot;</span>)</div>
+<div class="line"><span class="lineno">  202</span>                            self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: orange;&quot;</span>)</div>
+<div class="line"><span class="lineno">  203</span>                            self.ui.model.c_open_ai.file_path = self.file_path</div>
+<div class="line"><span class="lineno">  204</span>                            self.ui.model.c_open_ai.finish_signal.connect(self.set_detected_invoice_data)</div>
+<div class="line"><span class="lineno">  205</span>                            self.ui.model.c_open_ai.start()</div>
+<div class="line"><span class="lineno">  206</span>                            b_use_file_name_for_content = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  207</span>                    case EAiType.OLLAMA:</div>
+<div class="line"><span class="lineno">  208</span>                        <span class="keywordflow">if</span> self.ui.model.c_ollama_ai.get_ready_state():</div>
+<div class="line"><span class="lineno">  209</span>                            self.lbl_ai_assist_status.setText(<span class="stringliteral">&quot;Erkennung läuft...&quot;</span>)</div>
+<div class="line"><span class="lineno">  210</span>                            self.lbl_ai_assist_status.setStyleSheet(<span class="stringliteral">&quot;color: orange;&quot;</span>)</div>
+<div class="line"><span class="lineno">  211</span>                            self.ui.model.c_ollama_ai.file_path = self.file_path</div>
+<div class="line"><span class="lineno">  212</span>                            self.ui.model.c_ollama_ai.finish_signal.connect(self.set_detected_invoice_data)</div>
+<div class="line"><span class="lineno">  213</span>                            self.ui.model.c_ollama_ai.start()</div>
+<div class="line"><span class="lineno">  214</span>                            b_use_file_name_for_content = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  215</span>                    case _:</div>
+<div class="line"><span class="lineno">  216</span>                        b_use_file_name_for_content = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  217</span>            <span class="keywordflow">if</span> b_use_file_name_for_content:</div>
+<div class="line"><span class="lineno">  218</span>                file_date, file_content = get_file_name_content(self.file_path)</div>
+<div class="line"><span class="lineno">  219</span>                <span class="keywordflow">if</span> file_date <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  220</span>                    invoice_date = QDate.fromString(file_date, DATE_FORMAT)</div>
+<div class="line"><span class="lineno">  221</span>                    self.de_invoice_date.setDate(invoice_date)</div>
+<div class="line"><span class="lineno">  222</span>                <span class="keywordflow">if</span> file_content <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  223</span>                    self.pte_description.setPlainText(file_content)</div>
+<div class="line"><span class="lineno">  224</span>            preview_file = self.file_path</div>
+<div class="line"><span class="lineno">  225</span>        b_show_pdf_page_arrow = <span class="keyword">False</span></div>
+<div class="line"><span class="lineno">  226</span>        <span class="keywordflow">if</span> preview_file <span class="keywordflow">is</span> <span class="keywordflow">not</span> <span class="keywordtype">None</span>:  <span class="comment"># load preview</span></div>
+<div class="line"><span class="lineno">  227</span>            <span class="comment"># load PDF and auto zoom</span></div>
+<div class="line"><span class="lineno">  228</span>            self.pdf_document.load(preview_file)</div>
+<div class="line"><span class="lineno">  229</span>            self.pdf_view.setZoomMode(QPdfView.ZoomMode.FitToWidth)</div>
+<div class="line"><span class="lineno">  230</span>            self.pdf_view.mouseDoubleClickEvent = <span class="keyword">lambda</span> event: self.preview_clicked(preview_file)</div>
+<div class="line"><span class="lineno">  231</span>            xml_content = <span class="keywordtype">None</span></div>
+<div class="line"><span class="lineno">  232</span>            <span class="keywordflow">if</span> preview_file.lower().endswith(PDF_TYPE.lower()):</div>
+<div class="line"><span class="lineno">  233</span>                b_show_pdf_page_arrow = <span class="keyword">True</span></div>
+<div class="line"><span class="lineno">  234</span>                <span class="keywordflow">if</span> check_zugferd(preview_file):</div>
+<div class="line"><span class="lineno">  235</span>                    xml_content = extract_xml_from_pdf(preview_file)</div>
+<div class="line"><span class="lineno">  236</span>                    visualize_xml_invoice(self.ui_invoice_data, xml_content)</div>
+<div class="line"><span class="lineno">  237</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  238</span>                    self.btn_view_pdf.hide()</div>
+<div class="line"><span class="lineno">  239</span>                    self.btn_view_xml.hide()</div>
+<div class="line"><span class="lineno">  240</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  241</span>                <span class="keywordflow">if</span> check_xinvoice(preview_file):</div>
+<div class="line"><span class="lineno">  242</span>                    xml_content = extract_xml_from_xinvoice(preview_file)</div>
+<div class="line"><span class="lineno">  243</span>                    visualize_xml_invoice(self.ui_invoice_data, xml_content)</div>
+<div class="line"><span class="lineno">  244</span>                    self.btn_view_pdf.hide()</div>
+<div class="line"><span class="lineno">  245</span>                    self.btn_view_xml.hide()</div>
+<div class="line"><span class="lineno">  246</span>                    self.doc_view.setCurrentWidget(self.page_xml)  <span class="comment"># show xml tab</span></div>
+<div class="line"><span class="lineno">  247</span>            <span class="keywordflow">if</span> xml_content:</div>
+<div class="line"><span class="lineno">  248</span>                is_valid, warning_text = eval_factur_xml(xml_content)</div>
+<div class="line"><span class="lineno">  249</span>                self.xml_warnings = warning_text</div>
+<div class="line"><span class="lineno">  250</span>                <span class="keywordflow">if</span> is_valid:</div>
+<div class="line"><span class="lineno">  251</span>                    self.lbl_xml_valid.setText(<span class="stringliteral">&quot;EN16931 konform&quot;</span>)</div>
+<div class="line"><span class="lineno">  252</span>                    self.lbl_xml_valid.setStyleSheet(<span class="stringliteral">&quot;color: green;&quot;</span>)</div>
+<div class="line"><span class="lineno">  253</span>                    self.btn_xml_warning.hide()</div>
+<div class="line"><span class="lineno">  254</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  255</span>                    is_valid, _warning_text_ext = eval_factur_xml(xml_content, extended=<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  256</span>                    <span class="keywordflow">if</span> is_valid:</div>
+<div class="line"><span class="lineno">  257</span>                        self.lbl_xml_valid.setText(<span class="stringliteral">&quot;Extended konform&quot;</span>)</div>
+<div class="line"><span class="lineno">  258</span>                        self.lbl_xml_valid.setStyleSheet(<span class="stringliteral">&quot;color: orange;&quot;</span>)</div>
+<div class="line"><span class="lineno">  259</span>                    <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  260</span>                        self.lbl_xml_valid.setText(<span class="stringliteral">&quot;XML nicht konform&quot;</span>)</div>
+<div class="line"><span class="lineno">  261</span>                        self.lbl_xml_valid.setStyleSheet(<span class="stringliteral">&quot;color: red;&quot;</span>)</div>
+<div class="line"><span class="lineno">  262</span>                    self.btn_xml_warning.setIcon(QIcon(ICON_WARNING))</div>
+<div class="line"><span class="lineno">  263</span>                    self.btn_xml_warning.clicked.connect(self.open_xml_warnings)</div>
+<div class="line"><span class="lineno">  264</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  265</span>                self.btn_xml_warning.hide()</div>
+<div class="line"><span class="lineno">  266</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  267</span>            self.btn_view_pdf.hide()</div>
+<div class="line"><span class="lineno">  268</span>            self.btn_view_xml.hide()</div>
+<div class="line"><span class="lineno">  269</span> </div>
+<div class="line"><span class="lineno">  270</span>        <span class="keywordflow">if</span> b_show_pdf_page_arrow <span class="keywordflow">and</span> (self.pdf_document.pageCount() &gt; 1):</div>
+<div class="line"><span class="lineno">  271</span>            self.update_pdf_page(<span class="keywordtype">None</span>)</div>
+<div class="line"><span class="lineno">  272</span>            self.btn_left.clicked.connect(<span class="keyword">lambda</span>: self.update_pdf_page(<span class="keyword">False</span>))</div>
+<div class="line"><span class="lineno">  273</span>            self.btn_right.clicked.connect(<span class="keyword">lambda</span>: self.update_pdf_page(<span class="keyword">True</span>))</div>
+<div class="line"><span class="lineno">  274</span>        <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  275</span>            self.btn_left.hide()</div>
+<div class="line"><span class="lineno">  276</span>            self.btn_right.hide()</div>
+<div class="line"><span class="lineno">  277</span>            self.lbl_page_number.hide()</div>
+<div class="line"><span class="lineno">  278</span> </div>
+<div class="line"><span class="lineno">  279</span>        self.setWindowTitle(self.receipt_type.value)</div>
+<div class="line"><span class="lineno">  280</span>        self.cb_pay_check.setChecked(b_payed)</div>
+<div class="line"><span class="lineno">  281</span>        self.cb_pay_check.stateChanged.connect(self.on_payed_changed)</div>
+<div class="line"><span class="lineno">  282</span>        self.cb_bar_check.setChecked(bar_checked)</div>
+<div class="line"><span class="lineno">  283</span>        self.on_payed_changed(b_payed)</div>
+<div class="line"><span class="lineno">  284</span>        self.dsb_gross.valueChanged.connect(self.gross_changed)</div>
+<div class="line"><span class="lineno">  285</span>        self.dsb_net.valueChanged.connect(self.net_changed)</div>
+<div class="line"><span class="lineno">  286</span>        self.de_invoice_date.dateChanged.connect(self.on_invoice_data_changed)</div>
+<div class="line"><span class="lineno">  287</span>        self.de_payment_date.dateChanged.connect(self.on_pay_data_changed)</div>
+<div class="line"><span class="lineno">  288</span>        self.set_vat_rate()</div>
+<div class="line"><span class="lineno">  289</span>        self.le_tax.setReadOnly(<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  290</span>        self.btn_save.clicked.connect(self.save_clicked)</div>
+<div class="line"><span class="lineno">  291</span>        self.btn_delete.clicked.connect(self.delete_clicked)</div>
+<div class="line"><span class="lineno">  292</span>        self.btn_cancel.clicked.connect(self.close)</div>
+<div class="line"><span class="lineno">  293</span>        <span class="comment"># group</span></div>
+<div class="line"><span class="lineno">  294</span>        action = QAction(QIcon(ICON_SEARCH_LIST_LIGHT <span class="keywordflow">if</span> self.ui.model.c_monitor.is_light_theme() <span class="keywordflow">else</span> ICON_SEARCH_LIST_DARK), <span class="stringliteral">&quot;Wähle eine Kategorie&quot;</span>, self.ui)</div>
+<div class="line"><span class="lineno">  295</span>        action.triggered.connect(self.show_group_dialog)</div>
+<div class="line"><span class="lineno">  296</span>        self.le_group.addAction(action, QLineEdit.ActionPosition.TrailingPosition)</div>
+<div class="line"><span class="lineno">  297</span>        self.show()</div>
+<div class="line"><span class="lineno">  298</span>        self.exec()</div>
+<div class="line"><span class="lineno">  299</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a18aa87ba0d3bd3d64e65a609e4d31ea6" name="a18aa87ba0d3bd3d64e65a609e4d31ea6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18aa87ba0d3bd3d64e65a609e4d31ea6">&#9670;&#160;</a></span>show_group_dialog()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None show_group_dialog </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Shows the dialog for selection of the group. </p>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00554">554</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  554</span>    <span class="keyword">def </span>show_group_dialog(self) -&gt; None:</div>
+<div class="line"><span class="lineno">  555</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  556</span><span class="stringliteral">        @brief Shows the dialog for selection of the group</span></div>
+<div class="line"><span class="lineno">  557</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  558</span>        d_receipt_group = {}</div>
+<div class="line"><span class="lineno">  559</span>        <span class="keywordflow">for</span> key, _value <span class="keywordflow">in</span> D_RECEIPT_GROUP.items():</div>
+<div class="line"><span class="lineno">  560</span>            d_receipt_group[str(key.value)] = str(key.value)</div>
+<div class="line"><span class="lineno">  561</span>        l_group = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.GROUPS]</div>
+<div class="line"><span class="lineno">  562</span>        <span class="keywordflow">for</span> group <span class="keywordflow">in</span> l_group:</div>
+<div class="line"><span class="lineno">  563</span>            <span class="keywordflow">if</span> group <span class="keywordflow">not</span> <span class="keywordflow">in</span> d_receipt_group:</div>
+<div class="line"><span class="lineno">  564</span>                d_receipt_group[group] = group</div>
+<div class="line"><span class="lineno">  565</span>        dialog = GroupDialog(self.ui, d_receipt_group, self.le_group)</div>
+<div class="line"><span class="lineno">  566</span>        dialog.exec()</div>
+<div class="line"><span class="lineno">  567</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a0d96194b73194987698103cac66f43b1" name="a0d96194b73194987698103cac66f43b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d96194b73194987698103cac66f43b1">&#9670;&#160;</a></span>update_pdf_page()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"> None update_pdf_page </td>
+          <td>(</td>
+          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>self</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool | None</td>          <td class="paramname"><span class="paramname"><em>direction</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Update PDF page. </p>
+<dl class="params"><dt>Parameter</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">direction</td><td>: page direction (None: init first, False: prev, True: next) </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00368">368</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+<div class="fragment"><div class="line"><span class="lineno">  368</span>    <span class="keyword">def </span>update_pdf_page(self, direction: bool | <span class="keywordtype">None</span>) -&gt; <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  369</span>        <span class="stringliteral">&quot;&quot;&quot;!</span></div>
+<div class="line"><span class="lineno">  370</span><span class="stringliteral">        @brief Update PDF page</span></div>
+<div class="line"><span class="lineno">  371</span><span class="stringliteral">        @param direction : page direction  (None: init first, False: prev, True: next)</span></div>
+<div class="line"><span class="lineno">  372</span><span class="stringliteral">        &quot;&quot;&quot;</span></div>
+<div class="line"><span class="lineno">  373</span>        total_pages = self.pdf_document.pageCount()</div>
+<div class="line"><span class="lineno">  374</span>        <span class="keywordflow">if</span> total_pages &gt; 1:</div>
+<div class="line"><span class="lineno">  375</span>            current_page = self.pdf_view.pageNavigator().currentPage() + 1</div>
+<div class="line"><span class="lineno">  376</span>            self.lbl_page_number.show()</div>
+<div class="line"><span class="lineno">  377</span>            <span class="keywordflow">if</span> direction <span class="keywordflow">is</span> <span class="keywordtype">None</span>:</div>
+<div class="line"><span class="lineno">  378</span>                page_number = 1</div>
+<div class="line"><span class="lineno">  379</span>                b_light_theme = self.ui.model.c_monitor.is_light_theme()</div>
+<div class="line"><span class="lineno">  380</span>                self.btn_left.setIcon(QIcon(ICON_ARROW_LEFT_LIGHT <span class="keywordflow">if</span> b_light_theme <span class="keywordflow">else</span> ICON_ARROW_LEFT_DARK))</div>
+<div class="line"><span class="lineno">  381</span>                self.btn_right.setIcon(QIcon(ICON_ARROW_RIGHT_LIGHT <span class="keywordflow">if</span> b_light_theme <span class="keywordflow">else</span> ICON_ARROW_RIGHT_DARK))</div>
+<div class="line"><span class="lineno">  382</span>                self.btn_left.show()</div>
+<div class="line"><span class="lineno">  383</span>                self.btn_right.show()</div>
+<div class="line"><span class="lineno">  384</span>                self.btn_left.setEnabled(<span class="keyword">False</span>)</div>
+<div class="line"><span class="lineno">  385</span>                self.btn_right.setEnabled(<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  386</span>            <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  387</span>                <span class="keywordflow">if</span> direction:</div>
+<div class="line"><span class="lineno">  388</span>                    page_number = current_page + 1</div>
+<div class="line"><span class="lineno">  389</span>                <span class="keywordflow">else</span>:</div>
+<div class="line"><span class="lineno">  390</span>                    page_number = current_page - 1</div>
+<div class="line"><span class="lineno">  391</span>                <span class="keywordflow">if</span> page_number == 1:</div>
+<div class="line"><span class="lineno">  392</span>                    self.btn_left.setEnabled(<span class="keyword">False</span>)</div>
+<div class="line"><span class="lineno">  393</span>                    self.btn_right.setEnabled(<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  394</span>                <span class="keywordflow">elif</span> page_number == total_pages:</div>
+<div class="line"><span class="lineno">  395</span>                    self.btn_left.setEnabled(<span class="keyword">True</span>)</div>
+<div class="line"><span class="lineno">  396</span>                    self.btn_right.setEnabled(<span class="keyword">False</span>)</div>
+<div class="line"><span class="lineno">  397</span>            self.pdf_view.pageNavigator().jump(page_number - 1, QPointF(0, 0))</div>
+<div class="line"><span class="lineno">  398</span>            self.lbl_page_number.setText(f<span class="stringliteral">&quot;{page_number}/{total_pages}&quot;</span>)</div>
+<div class="line"><span class="lineno">  399</span> </div>
+</div><!-- fragment -->
+</div>
+</div>
+<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Dokumentation der Datenelemente</h2>
+<a id="abe2c9eb53c74cb8680237db8f8816f9a" name="abe2c9eb53c74cb8680237db8f8816f9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe2c9eb53c74cb8680237db8f8816f9a">&#9670;&#160;</a></span>b_gross_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool b_gross_changed = False</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00081">81</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="add927b9e7fb54fdfeba07ea43fb61621" name="add927b9e7fb54fdfeba07ea43fb61621"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add927b9e7fb54fdfeba07ea43fb61621">&#9670;&#160;</a></span>b_lock_auto_payed_data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool b_lock_auto_payed_data = False</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00084">84</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a09a17f4b2ca1bd16e2c36c54f4f390d3" name="a09a17f4b2ca1bd16e2c36c54f4f390d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a09a17f4b2ca1bd16e2c36c54f4f390d3">&#9670;&#160;</a></span>b_net_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool b_net_changed = False</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00082">82</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a4697d1bfab17d7dde199d4c5d5daae92" name="a4697d1bfab17d7dde199d4c5d5daae92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4697d1bfab17d7dde199d4c5d5daae92">&#9670;&#160;</a></span>b_pay_data_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool b_pay_data_changed = False</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00083">83</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a12e1f53c847d07ce9e58df470087c0fa" name="a12e1f53c847d07ce9e58df470087c0fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12e1f53c847d07ce9e58df470087c0fa">&#9670;&#160;</a></span>close</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">close</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00292">292</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a511ae0b1c13f95e5f08f1a0dd3da3d93" name="a511ae0b1c13f95e5f08f1a0dd3da3d93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a511ae0b1c13f95e5f08f1a0dd3da3d93">&#9670;&#160;</a></span>data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">data = data</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00078">78</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a08bc143deb1d1e38e39926dd1b5bcc40" name="a08bc143deb1d1e38e39926dd1b5bcc40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08bc143deb1d1e38e39926dd1b5bcc40">&#9670;&#160;</a></span>default_tax_rate</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">default_tax_rate = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][<a class="el" href="class_source_1_1_model_1_1company_1_1_e_company_fields.html#a1cf6ca971b230e7706ce011525e28482">ECompanyFields.TAX_RATES</a>][0]</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00087">87</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a224b110fe520e8536a35adb1d46a17b4" name="a224b110fe520e8536a35adb1d46a17b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a224b110fe520e8536a35adb1d46a17b4">&#9670;&#160;</a></span>delete_clicked</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">delete_clicked</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00291">291</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a8aa55c8aa2346c2358ce68869a197088" name="a8aa55c8aa2346c2358ce68869a197088"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8aa55c8aa2346c2358ce68869a197088">&#9670;&#160;</a></span>file_path</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">file_path = file_path</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00080">80</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a16bcde32f28f7756e7885d5fd1ac53ce" name="a16bcde32f28f7756e7885d5fd1ac53ce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a16bcde32f28f7756e7885d5fd1ac53ce">&#9670;&#160;</a></span>gross_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">gross_changed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00284">284</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a429c9e09501aae74ec29663bde11b7d6" name="a429c9e09501aae74ec29663bde11b7d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a429c9e09501aae74ec29663bde11b7d6">&#9670;&#160;</a></span>groupBox</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">groupBox</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00113">113</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a1cebb1b2c98167b4d6575dd84bbf2b55" name="a1cebb1b2c98167b4d6575dd84bbf2b55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cebb1b2c98167b4d6575dd84bbf2b55">&#9670;&#160;</a></span>net_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">net_changed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00285">285</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a0b065be2fb394b3384934b0e0c9c7033" name="a0b065be2fb394b3384934b0e0c9c7033"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0b065be2fb394b3384934b0e0c9c7033">&#9670;&#160;</a></span>on_invoice_data_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">on_invoice_data_changed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00286">286</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="aec791a8c3fa1b2d1435ae44615b4f75a" name="aec791a8c3fa1b2d1435ae44615b4f75a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec791a8c3fa1b2d1435ae44615b4f75a">&#9670;&#160;</a></span>on_pay_data_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">on_pay_data_changed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00287">287</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="af2cfc0fbfaf9beb30dfc62ab02dc5f1b" name="af2cfc0fbfaf9beb30dfc62ab02dc5f1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2cfc0fbfaf9beb30dfc62ab02dc5f1b">&#9670;&#160;</a></span>on_payed_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">on_payed_changed</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00281">281</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a8ee71c24e90636d7b2191265ad0b5c64" name="a8ee71c24e90636d7b2191265ad0b5c64"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ee71c24e90636d7b2191265ad0b5c64">&#9670;&#160;</a></span>open_xml_warnings</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">open_xml_warnings</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00263">263</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a7226b92c5e1f4f89000b27dd725ed26b" name="a7226b92c5e1f4f89000b27dd725ed26b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7226b92c5e1f4f89000b27dd725ed26b">&#9670;&#160;</a></span>page_xml</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">page_xml</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00246">246</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="acb93fa681729bc6a6ae51dfd7bb9b68f" name="acb93fa681729bc6a6ae51dfd7bb9b68f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb93fa681729bc6a6ae51dfd7bb9b68f">&#9670;&#160;</a></span>pdf_document</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pdf_document = QPdfDocument(self)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00090">90</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="acb1ede75fd6f5e66f8acdce497000561" name="acb1ede75fd6f5e66f8acdce497000561"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb1ede75fd6f5e66f8acdce497000561">&#9670;&#160;</a></span>pdf_view</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pdf_view = QPdfView(self)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00091">91</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a36bb9382c5de6e69318bb82e27c9e68c" name="a36bb9382c5de6e69318bb82e27c9e68c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a36bb9382c5de6e69318bb82e27c9e68c">&#9670;&#160;</a></span>receipt_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">receipt_type = receipt_type</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00085">85</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="ae0e254f409004bae1aeb1dcdad15ec4c" name="ae0e254f409004bae1aeb1dcdad15ec4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0e254f409004bae1aeb1dcdad15ec4c">&#9670;&#160;</a></span>save_clicked</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">save_clicked</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00290">290</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a6041ea02ea535fd87760b8cc08e7ddcf" name="a6041ea02ea535fd87760b8cc08e7ddcf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6041ea02ea535fd87760b8cc08e7ddcf">&#9670;&#160;</a></span>scroll_area</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">scroll_area</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00104">104</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a459f4fabc57bceb4e6535b8186621b80" name="a459f4fabc57bceb4e6535b8186621b80"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a459f4fabc57bceb4e6535b8186621b80">&#9670;&#160;</a></span>set_detected_invoice_data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">set_detected_invoice_data</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00204">204</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a18dd5892f26b781e60d1f0f3258468f0" name="a18dd5892f26b781e60d1f0f3258468f0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18dd5892f26b781e60d1f0f3258468f0">&#9670;&#160;</a></span>show_group_dialog</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">show_group_dialog</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00295">295</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="ac492f8de2d00b6c4282e766bfadaf2e7" name="ac492f8de2d00b6c4282e766bfadaf2e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac492f8de2d00b6c4282e766bfadaf2e7">&#9670;&#160;</a></span>ui</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ui = ui</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00077">77</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a25790f30953738d05f1d81dd2cbf27b9" name="a25790f30953738d05f1d81dd2cbf27b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25790f30953738d05f1d81dd2cbf27b9">&#9670;&#160;</a></span>ui_invoice_data</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ui_invoice_data = Ui_InvoiceData()</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00099">99</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="aa948347617c685883662e97a6964ae6e" name="aa948347617c685883662e97a6964ae6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa948347617c685883662e97a6964ae6e">&#9670;&#160;</a></span>uid</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uid = uid</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00079">79</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="a2301432f1e5b2f2c9b704b4b736fd564" name="a2301432f1e5b2f2c9b704b4b736fd564"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2301432f1e5b2f2c9b704b4b736fd564">&#9670;&#160;</a></span>widget_right</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">widget_right</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00114">114</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<a id="ac706dda0cac46e733a7dd975209bc6f1" name="ac706dda0cac46e733a7dd975209bc6f1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac706dda0cac46e733a7dd975209bc6f1">&#9670;&#160;</a></span>xml_warnings</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">xml_warnings = &quot;&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definiert in Zeile <a class="el" href="dialog__receipt_8py_source.html#l00086">86</a> der Datei <a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a>.</p>
+
+</div>
+</div>
+<hr/>Die Dokumentation für diese Klasse wurde erzeugt aufgrund der Datei:<ul>
+<li><a class="el" href="dialog__receipt_8py_source.html">dialog_receipt.py</a></li>
+</ul>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<div id="page-nav" class="page-nav-panel">
+<div id="page-nav-resize-handle"></div>
+<div id="page-nav-tree">
+<div id="page-nav-contents">
+</div><!-- page-nav-contents -->
+</div><!-- page-nav-tree -->
+</div><!-- page-nav -->
+</div><!-- container -->
+<!-- HTML footer for doxygen 1.14.0-->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="namespace_source.html">Source</a></li><li class="navelem"><a href="namespace_source_1_1_controller.html">Controller</a></li><li class="navelem"><a href="namespace_source_1_1_controller_1_1dialog__receipt.html">dialog_receipt</a></li><li class="navelem"><a href="class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html">ReceiptDialog</a></li>
+    <li class="footer">Copyright © 2023-2025 Timo Unger</li>
+  </ul>
+</div>
+</body>
+</html>
+<a href=https://github.com/timounger/ElsterBooksHome class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>

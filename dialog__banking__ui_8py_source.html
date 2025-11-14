@@ -1,0 +1,294 @@
+<!-- HTML header for doxygen 1.14.0-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=11"/>
+<meta name="generator" content="Doxygen 1.14.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>ElsterBooks: dialog_banking_ui.py Quellcode</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript" src="cookie.js"></script>
+<link href="search/search.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="search/searchdata.js"></script>
+<script type="text/javascript" src="search/search.js"></script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="doxygen-awesome.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only.css" rel="stylesheet" type="text/css"/>
+<link href="doxygen-awesome-sidebar-only-darkmode-toggle.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr id="projectrow">
+  <td id="projectlogo"><img alt="Logo" src="app.ico"/></td>
+  <td id="projectalign">
+   <div id="projectname">ElsterBooks<span id="projectnumber">&#160;v0.3.0</span>
+   </div>
+   <div id="projectbrief">Buchhaltungssoftware</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<html>
+    <head>
+        <!-- ... other metadata & script includes ... -->
+        <script type="text/javascript" src="doxygen-awesome-darkmode-toggle.js"></script>
+        <script type="text/javascript">
+            DoxygenAwesomeDarkModeToggle.init()
+        </script>
+    </head>
+    <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-fragment-copy-button.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeFragmentCopyButton.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-paragraph-link.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeParagraphLink.init()
+	   </script>
+   </head>
+   <body>
+<html>
+   <head>
+	   <!-- ... other metadata & script includes ... -->
+	   <script type="text/javascript" src="doxygen-awesome-interactive-toc.js"></script>
+	   <script type="text/javascript">
+		   DoxygenAwesomeInteractiveToc.init()
+	   </script>
+   </head>
+   <body>
+  <html>
+   <head>
+       <!-- ... other metadata & script includes ... -->
+       <script type="text/javascript" src="doxygen-awesome-tabs.js"></script>
+       <script type="text/javascript">
+           DoxygenAwesomeTabs.init()
+       </script>
+   </head>
+   <body>
+<!-- Erzeugt von Doxygen 1.14.0 -->
+<script type="text/javascript">
+var searchBox = new SearchBox("searchBox", "search/",'.html');
+</script>
+<script type="text/javascript">
+$(function() { codefold.init(); });
+</script>
+<script type="text/javascript" src="menudata.js"></script>
+<script type="text/javascript" src="menu.js"></script>
+<script type="text/javascript">
+$(function() {
+  initMenu('',true,false,'search.php','Suchen',true);
+  $(function() { init_search(); });
+});
+</script>
+<div id="main-nav"></div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(function(){initNavTree('dialog__banking__ui_8py_source.html','',''); });
+</script>
+<div id="container">
+<div id="doc-content">
+<!-- window showing the filter options -->
+<div id="MSearchSelectWindow"
+     onmouseover="return searchBox.OnSearchSelectShow()"
+     onmouseout="return searchBox.OnSearchSelectHide()"
+     onkeydown="return searchBox.OnSearchSelectKey(event)">
+</div>
+
+<!-- iframe showing the search results (closed by default) -->
+<div id="MSearchResultsWindow">
+<div id="MSearchResults">
+<div class="SRPage">
+<div id="SRIndex">
+<div id="SRResults"></div>
+<div class="SRStatus" id="Loading">Lade ...</div>
+<div class="SRStatus" id="Searching">Suche ...</div>
+<div class="SRStatus" id="NoMatches">Keine Treffer</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="header">
+  <div class="headertitle"><div class="title">dialog_banking_ui.py</div></div>
+</div><!--header-->
+<div class="contents">
+<a href="dialog__banking__ui_8py.html">gehe zur Dokumentation dieser Datei</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno"><a class="line" href="namespacedialog__banking__ui.html">    1</a></span><span class="comment"># Form implementation generated from reading ui file &#39;dialogs/dialog_banking.ui&#39;</span></div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="comment">#</span></div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="comment"># Created by: PyQt6 UI code generator 6.10.0</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="comment">#</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="comment"># WARNING: Any manual changes made to this file will be lost when pyuic6 is</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="comment"># run again.  Do not edit this file unless you know what you are doing.</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span> </div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span> </div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="keyword">from</span> PyQt6 <span class="keyword">import</span> QtCore, QtGui, QtWidgets</div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="foldopen" id="foldopen00012" data-start="" data-end="">
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html">   12</a></span><span class="keyword">class </span><a class="code hl_class" href="classdialog__banking__ui_1_1_ui___dialog_banking.html">Ui_DialogBanking</a>(object):</div>
+<div class="foldopen" id="foldopen00013" data-start="" data-end="">
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#af55075cb821931c47e4b4489063af610">   13</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#af55075cb821931c47e4b4489063af610">setupUi</a>(self, DialogBanking):</div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>        DialogBanking.setObjectName(<span class="stringliteral">&quot;DialogBanking&quot;</span>)</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>        DialogBanking.resize(676, 460)</div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>        DialogBanking.setMinimumSize(QtCore.QSize(400, 210))</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">   17</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a> = QtWidgets.QGridLayout(DialogBanking)</div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.setObjectName(<span class="stringliteral">&quot;gridLayout_2&quot;</span>)</div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">   19</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">lbl_url</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">lbl_url</a>.setObjectName(<span class="stringliteral">&quot;lbl_url&quot;</span>)</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">lbl_url</a>, 4, 0, 1, 1)</div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">   22</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">lbl_blz</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">lbl_blz</a>.setObjectName(<span class="stringliteral">&quot;lbl_blz&quot;</span>)</div>
+<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">lbl_blz</a>, 3, 0, 1, 1)</div>
+<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addItem(spacerItem, 16, 2, 1, 1)</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">   27</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">lbl_pin</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">lbl_pin</a>.setObjectName(<span class="stringliteral">&quot;lbl_pin&quot;</span>)</div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">lbl_pin</a>, 6, 0, 1, 1)</div>
+<div class="line"><a id="l00030" name="l00030"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">   30</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">lbl_alias</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00031" name="l00031"></a><span class="lineno">   31</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">lbl_alias</a>.setObjectName(<span class="stringliteral">&quot;lbl_alias&quot;</span>)</div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">lbl_alias</a>, 5, 0, 1, 1)</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">   33</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">lbl_account</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">lbl_account</a>.setObjectName(<span class="stringliteral">&quot;lbl_account&quot;</span>)</div>
+<div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">lbl_account</a>, 9, 0, 1, 1)</div>
+<div class="line"><a id="l00036" name="l00036"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">   36</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">lbl_tan_mechanism</a> = QtWidgets.QLabel(parent=DialogBanking)</div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">lbl_tan_mechanism</a>.setObjectName(<span class="stringliteral">&quot;lbl_tan_mechanism&quot;</span>)</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">lbl_tan_mechanism</a>, 12, 0, 1, 1)</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">   39</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">le_pin</a> = QtWidgets.QLineEdit(parent=DialogBanking)</div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">le_pin</a>.setObjectName(<span class="stringliteral">&quot;le_pin&quot;</span>)</div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">le_pin</a>, 6, 2, 1, 1)</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">   42</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a> = QtWidgets.QPushButton(parent=DialogBanking)</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a>.setObjectName(<span class="stringliteral">&quot;btn_clear&quot;</span>)</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a>, 6, 3, 1, 1)</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">   45</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">le_alias</a> = QtWidgets.QLineEdit(parent=DialogBanking)</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">le_alias</a>.setObjectName(<span class="stringliteral">&quot;le_alias&quot;</span>)</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">le_alias</a>, 5, 2, 1, 2)</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">   48</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">le_url</a> = QtWidgets.QLineEdit(parent=DialogBanking)</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">le_url</a>.setObjectName(<span class="stringliteral">&quot;le_url&quot;</span>)</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">le_url</a>, 4, 2, 1, 2)</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">   51</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">le_blz</a> = QtWidgets.QLineEdit(parent=DialogBanking)</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">le_blz</a>.setObjectName(<span class="stringliteral">&quot;le_blz&quot;</span>)</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">le_blz</a>, 3, 2, 1, 2)</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">   54</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">cb_institutes</a> = QtWidgets.QComboBox(parent=DialogBanking)</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">cb_institutes</a>.setObjectName(<span class="stringliteral">&quot;cb_institutes&quot;</span>)</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">cb_institutes</a>, 0, 0, 1, 4)</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">   57</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a> = QtWidgets.QPushButton(parent=DialogBanking)</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a>.setObjectName(<span class="stringliteral">&quot;btn_connect&quot;</span>)</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a>, 7, 0, 1, 4)</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">   60</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">line</a> = QtWidgets.QFrame(parent=DialogBanking)</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">line</a>.setFrameShape(QtWidgets.QFrame.Shape.HLine)</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">line</a>.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)</div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">line</a>.setObjectName(<span class="stringliteral">&quot;line&quot;</span>)</div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">line</a>, 8, 0, 1, 4)</div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">   65</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">cb_accounts</a> = QtWidgets.QComboBox(parent=DialogBanking)</div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">cb_accounts</a>.setObjectName(<span class="stringliteral">&quot;cb_accounts&quot;</span>)</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">cb_accounts</a>, 9, 2, 1, 2)</div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">   68</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">cb_tan_mechanisms</a> = QtWidgets.QComboBox(parent=DialogBanking)</div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">cb_tan_mechanisms</a>.setObjectName(<span class="stringliteral">&quot;cb_tan_mechanisms&quot;</span>)</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">cb_tan_mechanisms</a>, 12, 2, 1, 2)</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">   71</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a> = QtWidgets.QPushButton(parent=DialogBanking)</div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a>.setObjectName(<span class="stringliteral">&quot;btn_get_transactions&quot;</span>)</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a>, 13, 0, 1, 4)</div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">   74</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">pte_text</a> = QtWidgets.QPlainTextEdit(parent=DialogBanking)</div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">pte_text</a>.setObjectName(<span class="stringliteral">&quot;pte_text&quot;</span>)</div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">pte_text</a>, 14, 0, 1, 4)</div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">   77</a></span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">btn_payed_check</a> = QtWidgets.QPushButton(parent=DialogBanking)</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">btn_payed_check</a>.setObjectName(<span class="stringliteral">&quot;btn_payed_check&quot;</span>)</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">gridLayout_2</a>.addWidget(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">btn_payed_check</a>, 15, 0, 1, 4)</div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>        self.<a class="code hl_function" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ab7e0355b60c73cd8af09c0abda68d1f5">retranslateUi</a>(DialogBanking)</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>        QtCore.QMetaObject.connectSlotsByName(DialogBanking)</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">cb_institutes</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">le_blz</a>)</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">le_blz</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">le_url</a>)</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">le_url</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">le_alias</a>)</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">le_alias</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">le_pin</a>)</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">le_pin</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a>)</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a>)</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">cb_accounts</a>)</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">cb_accounts</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">cb_tan_mechanisms</a>)</div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">cb_tan_mechanisms</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a>)</div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">pte_text</a>)</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>        DialogBanking.setTabOrder(self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">pte_text</a>, self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">btn_payed_check</a>)</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span> </div>
+</div>
+<div class="foldopen" id="foldopen00095" data-start="" data-end="">
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ab7e0355b60c73cd8af09c0abda68d1f5">   95</a></span>    <span class="keyword">def </span><a class="code hl_function" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ab7e0355b60c73cd8af09c0abda68d1f5">retranslateUi</a>(self, DialogBanking):</div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>        _translate = QtCore.QCoreApplication.translate</div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>        DialogBanking.setWindowTitle(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Form&quot;</span>))</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">lbl_url</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;FinTS URL&quot;</span>))</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">lbl_blz</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Bankleitzahl&quot;</span>))</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">lbl_pin</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;PIN&quot;</span>))</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">lbl_alias</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Benutzername (Alias)&quot;</span>))</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">lbl_account</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Konto&quot;</span>))</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">lbl_tan_mechanism</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;TAN Verfahren&quot;</span>))</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">btn_clear</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Daten löschen&quot;</span>))</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">btn_connect</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Verbinden&quot;</span>))</div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">btn_get_transactions</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Transaktionen abrufen&quot;</span>))</div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>        self.<a class="code hl_variable" href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">btn_payed_check</a>.setText(_translate(<span class="stringliteral">&quot;DialogBanking&quot;</span>, <span class="stringliteral">&quot;Offene Zahlungen automatisch zuordnen&quot;</span>))</div>
+</div>
+</div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html">dialog_banking_ui.Ui_DialogBanking</a></div><div class="ttdef"><b>Definition</b> <a href="#l00012">dialog_banking_ui.py:12</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a12fe3e1e6f585d48822b12f9c799e10e"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a12fe3e1e6f585d48822b12f9c799e10e">dialog_banking_ui.Ui_DialogBanking.le_blz</a></div><div class="ttdeci">le_blz</div><div class="ttdef"><b>Definition</b> <a href="#l00051">dialog_banking_ui.py:51</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a457f4582cb97173ce1055509c2244eba"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a457f4582cb97173ce1055509c2244eba">dialog_banking_ui.Ui_DialogBanking.lbl_blz</a></div><div class="ttdeci">lbl_blz</div><div class="ttdef"><b>Definition</b> <a href="#l00022">dialog_banking_ui.py:22</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a4674ce133270ced9487f8912b397ef5a"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4674ce133270ced9487f8912b397ef5a">dialog_banking_ui.Ui_DialogBanking.lbl_account</a></div><div class="ttdeci">lbl_account</div><div class="ttdef"><b>Definition</b> <a href="#l00033">dialog_banking_ui.py:33</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a4fa05b1f00fcde100685cc887554b93b"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a4fa05b1f00fcde100685cc887554b93b">dialog_banking_ui.Ui_DialogBanking.line</a></div><div class="ttdeci">line</div><div class="ttdef"><b>Definition</b> <a href="#l00060">dialog_banking_ui.py:60</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a5137f81e1dda2be97cb151c7ff454add"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5137f81e1dda2be97cb151c7ff454add">dialog_banking_ui.Ui_DialogBanking.lbl_tan_mechanism</a></div><div class="ttdeci">lbl_tan_mechanism</div><div class="ttdef"><b>Definition</b> <a href="#l00036">dialog_banking_ui.py:36</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a537f20e89dfd191a4992732d65538a5b"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a537f20e89dfd191a4992732d65538a5b">dialog_banking_ui.Ui_DialogBanking.le_alias</a></div><div class="ttdeci">le_alias</div><div class="ttdef"><b>Definition</b> <a href="#l00045">dialog_banking_ui.py:45</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a5a93334f080504ffc2058bf71c7359b6"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a5a93334f080504ffc2058bf71c7359b6">dialog_banking_ui.Ui_DialogBanking.btn_payed_check</a></div><div class="ttdeci">btn_payed_check</div><div class="ttdef"><b>Definition</b> <a href="#l00077">dialog_banking_ui.py:77</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a61a45e60bdd6c48bc3a0dcf6deffede8"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a61a45e60bdd6c48bc3a0dcf6deffede8">dialog_banking_ui.Ui_DialogBanking.pte_text</a></div><div class="ttdeci">pte_text</div><div class="ttdef"><b>Definition</b> <a href="#l00074">dialog_banking_ui.py:74</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a754d3950007c86c47c4e7af8d0ccd5a8"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a754d3950007c86c47c4e7af8d0ccd5a8">dialog_banking_ui.Ui_DialogBanking.lbl_url</a></div><div class="ttdeci">lbl_url</div><div class="ttdef"><b>Definition</b> <a href="#l00019">dialog_banking_ui.py:19</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a8fca0a7248875f741cef3796138666e9"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a8fca0a7248875f741cef3796138666e9">dialog_banking_ui.Ui_DialogBanking.lbl_alias</a></div><div class="ttdeci">lbl_alias</div><div class="ttdef"><b>Definition</b> <a href="#l00030">dialog_banking_ui.py:30</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a96b12cee2b7776b80d5910aafc0b9095"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a96b12cee2b7776b80d5910aafc0b9095">dialog_banking_ui.Ui_DialogBanking.lbl_pin</a></div><div class="ttdeci">lbl_pin</div><div class="ttdef"><b>Definition</b> <a href="#l00027">dialog_banking_ui.py:27</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_a9ea64e78294231769e099fcc96b927ef"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#a9ea64e78294231769e099fcc96b927ef">dialog_banking_ui.Ui_DialogBanking.cb_institutes</a></div><div class="ttdeci">cb_institutes</div><div class="ttdef"><b>Definition</b> <a href="#l00054">dialog_banking_ui.py:54</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_aa669109f1f5847722afb0989e3cf4a8f"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa669109f1f5847722afb0989e3cf4a8f">dialog_banking_ui.Ui_DialogBanking.le_pin</a></div><div class="ttdeci">le_pin</div><div class="ttdef"><b>Definition</b> <a href="#l00039">dialog_banking_ui.py:39</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_aa6921809a9565ba4237e9dd963a37027"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa6921809a9565ba4237e9dd963a37027">dialog_banking_ui.Ui_DialogBanking.le_url</a></div><div class="ttdeci">le_url</div><div class="ttdef"><b>Definition</b> <a href="#l00048">dialog_banking_ui.py:48</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_aa9dc1eb0a75f0e71b220433d9b6f4398"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aa9dc1eb0a75f0e71b220433d9b6f4398">dialog_banking_ui.Ui_DialogBanking.btn_get_transactions</a></div><div class="ttdeci">btn_get_transactions</div><div class="ttdef"><b>Definition</b> <a href="#l00071">dialog_banking_ui.py:71</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_aaf91d1f97798460faaebebf6627646e4"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#aaf91d1f97798460faaebebf6627646e4">dialog_banking_ui.Ui_DialogBanking.btn_clear</a></div><div class="ttdeci">btn_clear</div><div class="ttdef"><b>Definition</b> <a href="#l00042">dialog_banking_ui.py:42</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_ab7e0355b60c73cd8af09c0abda68d1f5"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ab7e0355b60c73cd8af09c0abda68d1f5">dialog_banking_ui.Ui_DialogBanking.retranslateUi</a></div><div class="ttdeci">retranslateUi(self, DialogBanking)</div><div class="ttdef"><b>Definition</b> <a href="#l00095">dialog_banking_ui.py:95</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_ad1baae8347d30bd547a261cce4b595a7"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad1baae8347d30bd547a261cce4b595a7">dialog_banking_ui.Ui_DialogBanking.cb_accounts</a></div><div class="ttdeci">cb_accounts</div><div class="ttdef"><b>Definition</b> <a href="#l00065">dialog_banking_ui.py:65</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_ad9ad6a21d8cf8eec76dc04bfd226b6d9"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ad9ad6a21d8cf8eec76dc04bfd226b6d9">dialog_banking_ui.Ui_DialogBanking.btn_connect</a></div><div class="ttdeci">btn_connect</div><div class="ttdef"><b>Definition</b> <a href="#l00057">dialog_banking_ui.py:57</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_ae75520b5bf394080242f1abecdd4d00e"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#ae75520b5bf394080242f1abecdd4d00e">dialog_banking_ui.Ui_DialogBanking.cb_tan_mechanisms</a></div><div class="ttdeci">cb_tan_mechanisms</div><div class="ttdef"><b>Definition</b> <a href="#l00068">dialog_banking_ui.py:68</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_af55075cb821931c47e4b4489063af610"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#af55075cb821931c47e4b4489063af610">dialog_banking_ui.Ui_DialogBanking.setupUi</a></div><div class="ttdeci">setupUi(self, DialogBanking)</div><div class="ttdef"><b>Definition</b> <a href="#l00013">dialog_banking_ui.py:13</a></div></div>
+<div class="ttc" id="aclassdialog__banking__ui_1_1_ui___dialog_banking_html_afbd3454df44b3d112a5defe0538b0e2f"><div class="ttname"><a href="classdialog__banking__ui_1_1_ui___dialog_banking.html#afbd3454df44b3d112a5defe0538b0e2f">dialog_banking_ui.Ui_DialogBanking.gridLayout_2</a></div><div class="ttdeci">gridLayout_2</div><div class="ttdef"><b>Definition</b> <a href="#l00017">dialog_banking_ui.py:17</a></div></div>
+</div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
+</div><!-- container -->
+<!-- HTML footer for doxygen 1.14.0-->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a href="dir_74389ed8173ad57b461b9d623a1f3867.html">Source</a></li><li class="navelem"><a href="dir_9de1eeb7664ef8e5365c12dcc50ed780.html">Views</a></li><li class="navelem"><a href="dir_d4703da4c61c43c443b8e5ee93fb58dd.html">dialogs</a></li><li class="navelem"><a href="dialog__banking__ui_8py.html">dialog_banking_ui.py</a></li>
+    <li class="footer">Copyright © 2023-2025 Timo Unger</li>
+  </ul>
+</div>
+</body>
+</html>
+<a href=https://github.com/timounger/ElsterBooksHome class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
