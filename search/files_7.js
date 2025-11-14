@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['help_2emd_0',['Help.md',['../_help_8md.html',1,'']]],
-  ['help_5fdialog_2epy_1',['help_dialog.py',['../help__dialog_8py.html',1,'']]]
+  ['general_2emd_0',['general.md',['../general_8md.html',1,'']]],
+  ['general_5finvoice_2epy_1',['general_invoice.py',['../general__invoice_8py.html',1,'']]]
 ];

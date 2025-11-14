@@ -87,34 +87,22 @@ var NAVTREE =
       ] ]
     ] ],
     [ "Dateien", "files.html", [
-      [ "Auflistung der Dateien", "files.html", "files_dup" ],
-      [ "Datei-Elemente", "globals.html", [
-        [ "Alle", "globals.html", null ],
-        [ "Variablen", "globals_vars.html", null ]
-      ] ]
+      [ "Auflistung der Dateien", "files.html", "files_dup" ]
     ] ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"_c_h_a_n_g_e_l_o_g.html",
-"class_source_1_1_controller_1_1dialog__commit_1_1_commit_dialog.html#aebc0f8fde6c6828d3805f06cfa336eb5",
-"class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#ab787e264f988097a34cca2013a217ee6",
-"class_source_1_1_controller_1_1tab__dashboard_1_1_tab_dashboard.html#aae67b018ea8fae6e541c6b0f013140b0",
-"class_source_1_1_controller_1_1table__filter_1_1_table_filter.html#a8102584e94d632e0725e531bb4c64e8a",
-"class_source_1_1_util_1_1app__log_1_1_log_config.html#af2fe9aec0484a8d331ffcbc182d64af3",
-"classdialog__company__ui_1_1_ui___dialog_company.html#a078e85ad2acc6267234fb249cfde9342",
-"classdialog__company__ui_1_1_ui___dialog_company.html#aeb914a629be3c342d319de4b70ba71c1",
-"classdialog__receipt__ui_1_1_ui___dialog_receipt.html#a650e13fd6acf0eb32e879783d8427cea",
-"classinvoice__data__ui_1_1_ui___invoice_data.html#a697f6dd749b8ad12dcbdf3f2c10f7661",
-"classinvoice__data__ui_1_1_ui___invoice_data.html#aff752ed2643548f6ab3178440dcc2147",
-"classinvoice__surcharges__data__ui_1_1_ui___invoice_surcharges_data.html#a8ec8128eb90f786b62d58b5f762b19ee",
-"classtab__export__ui_1_1_ui___export.html#a5f8a624d1690e784eda13030fd0c68a2",
-"functions_func_d.html",
-"namespace_source_1_1_controller_1_1main__window.html#a8259f2f434b68297f58fb93bc6294230",
-"namespace_source_1_1_model_1_1export.html#aedcaa15eae1c72460a8c7ccc579df0c3",
-"namespace_source_1_1_util_1_1app__log.html#a665cea98d12bc3aaa4c2c08242aad57c"
+"____init_____8py.html",
+"class_source_1_1_controller_1_1dialog__contact_1_1_contact_dialog.html#aa4cfcaf2a3469fe48d63740db47009a4",
+"class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html#a2af64cf1cb3570a0de2ba3d92cbd6353",
+"class_source_1_1_controller_1_1tab__export_1_1_tab_export.html#a4f149a78bd8e1e24f825819cb6073f9f",
+"class_source_1_1_model_1_1export_1_1_export_report.html#ab4edd8d2e0435e896078024c645faccd",
+"class_source_1_1_worker_1_1open__ai_1_1_open_a_i.html#a90ee73a4bee9dd00a79d8a760abb97a9",
+"namespace_source_1_1_controller_1_1splash__screen.html#a2c7c31b3052601edca4769be488c84d2",
+"namespace_source_1_1_model_1_1fin__ts.html#a1d63039ae75f9b5c3d1439a685c9e43d",
+"namespace_source_1_1_util_1_1colored__log.html#a8dde42b4eef418f64a7a267b399c0abf"
 ];
 
 var SYNCONMSG = 'Klicken um Panelsynchronisation auszuschalten';

@@ -1,10 +1,12 @@
 var searchData=
 [
-  ['uninstall_5fpackages_2ebat_0',['uninstall_packages.bat',['../uninstall__packages_8bat.html',1,'']]],
-  ['update_5fdownloader_2epy_1',['update_downloader.py',['../update__downloader_8py.html',1,'']]],
-  ['update_5fpy_5frequirements_2ebat_2',['update_py_requirements.bat',['../update__py__requirements_8bat.html',1,'']]],
-  ['update_5fpy_5frequirements_2epy_3',['update_py_requirements.py',['../update__py__requirements_8py.html',1,'']]],
-  ['update_5fservice_2epy_4',['update_service.py',['../update__service_8py.html',1,'']]],
-  ['ust_5fimport_2epy_5',['ust_import.py',['../ust__import_8py.html',1,'']]],
-  ['ust_5fpreregistration_5fimport_2epy_6',['ust_preregistration_import.py',['../ust__preregistration__import_8py.html',1,'']]]
+  ['tab_5fcontacts_2epy_0',['tab_contacts.py',['../tab__contacts_8py.html',1,'']]],
+  ['tab_5fdashboard_2epy_1',['tab_dashboard.py',['../tab__dashboard_8py.html',1,'']]],
+  ['tab_5fdocument_2epy_2',['tab_document.py',['../tab__document_8py.html',1,'']]],
+  ['tab_5fexpenditure_2epy_3',['tab_expenditure.py',['../tab__expenditure_8py.html',1,'']]],
+  ['tab_5fexport_2epy_4',['tab_export.py',['../tab__export_8py.html',1,'']]],
+  ['tab_5fincome_2epy_5',['tab_income.py',['../tab__income_8py.html',1,'']]],
+  ['tab_5fsettings_2epy_6',['tab_settings.py',['../tab__settings_8py.html',1,'']]],
+  ['table_5ffilter_2epy_7',['table_filter.py',['../table__filter_8py.html',1,'']]],
+  ['tools_5fdownloader_2epy_8',['tools_downloader.py',['../tools__downloader_8py.html',1,'']]]
 ];

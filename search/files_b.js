@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['ocr_5frecognition_2epy_0',['ocr_recognition.py',['../ocr__recognition_8py.html',1,'']]],
-  ['ollama_5fai_2epy_1',['ollama_ai.py',['../ollama__ai_8py.html',1,'']]],
-  ['open_5fai_2epy_2',['open_ai.py',['../open__ai_8py.html',1,'']]],
-  ['openpyxl_5futil_2epy_3',['openpyxl_util.py',['../openpyxl__util_8py.html',1,'']]]
+  ['main_5fwindow_2epy_0',['main_window.py',['../main__window_8py.html',1,'']]],
+  ['model_2epy_1',['model.py',['../model_8py.html',1,'']]],
+  ['model_2f_5f_5finit_5f_5f_2epy_2',['__init__.py',['../_model_2____init_____8py.html',1,'']]],
+  ['model_2fpretax_2f_5f_5finit_5f_5f_2epy_3',['__init__.py',['../_model_2_pre_tax_2____init_____8py.html',1,'']]],
+  ['model_2fzugferd_2f_5f_5finit_5f_5f_2epy_4',['__init__.py',['../_model_2_z_u_g_fe_r_d_2____init_____8py.html',1,'']]],
+  ['monitor_2epy_5',['monitor.py',['../monitor_8py.html',1,'']]]
 ];

@@ -14,11 +14,10 @@ var searchData=
   ['update_5fitem_5fexpand_5fstatus_11',['update_item_expand_status',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a3865cd3ab7a187f945dc6f348acae096',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
   ['update_5flog_5flevel_12',['update_log_level',['../class_source_1_1_util_1_1app__log_1_1_log_config.html#a918c135620960ab154be9df5af876154',1,'Source::Util::app_log::LogConfig']]],
   ['update_5foutput_5fpath_13',['update_output_path',['../class_source_1_1_model_1_1model_1_1_model.html#a1022d62fd122fa0c3a6b656122d62c5f',1,'Source::Model::model::Model']]],
-  ['update_5fpackages_14',['update_packages',['../namespaceupdate__py__requirements.html#ab92eeb65c368ee80ace85ba1cb8923d9',1,'update_py_requirements']]],
-  ['update_5fpdf_5fpage_15',['update_pdf_page',['../class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html#a0d96194b73194987698103cac66f43b1',1,'Source::Controller::dialog_receipt::ReceiptDialog']]],
-  ['update_5ftable_16',['update_table',['../class_source_1_1_controller_1_1table__filter_1_1_table_filter.html#a95c92d0695756d6cdef025d874801627',1,'Source::Controller::table_filter::TableFilter']]],
-  ['update_5ftax_5fwidget_17',['update_tax_widget',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a4a9dd5740b5ae40e663653d3d5bce6a7',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
-  ['update_5ftotal_5fdata_18',['update_total_data',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a559c65b0c81f21227ac1c3106066cc08',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
-  ['ust_5fbtn_5fclicked_19',['ust_btn_clicked',['../class_source_1_1_controller_1_1tab__export_1_1_tab_export.html#ace6c4c18e2481a87c9899fa367277123',1,'Source::Controller::tab_export::TabExport']]],
-  ['ust_5fpre_5fbtn_5fclicked_20',['ust_pre_btn_clicked',['../class_source_1_1_controller_1_1tab__export_1_1_tab_export.html#af23138a3db9cba6f2523f2d53d8a915e',1,'Source::Controller::tab_export::TabExport']]]
+  ['update_5fpdf_5fpage_14',['update_pdf_page',['../class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html#a0d96194b73194987698103cac66f43b1',1,'Source::Controller::dialog_receipt::ReceiptDialog']]],
+  ['update_5ftable_15',['update_table',['../class_source_1_1_controller_1_1table__filter_1_1_table_filter.html#a95c92d0695756d6cdef025d874801627',1,'Source::Controller::table_filter::TableFilter']]],
+  ['update_5ftax_5fwidget_16',['update_tax_widget',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a4a9dd5740b5ae40e663653d3d5bce6a7',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['update_5ftotal_5fdata_17',['update_total_data',['../class_source_1_1_controller_1_1dialog__invoice_1_1_invoice_dialog.html#a559c65b0c81f21227ac1c3106066cc08',1,'Source::Controller::dialog_invoice::InvoiceDialog']]],
+  ['ust_5fbtn_5fclicked_18',['ust_btn_clicked',['../class_source_1_1_controller_1_1tab__export_1_1_tab_export.html#ace6c4c18e2481a87c9899fa367277123',1,'Source::Controller::tab_export::TabExport']]],
+  ['ust_5fpre_5fbtn_5fclicked_19',['ust_pre_btn_clicked',['../class_source_1_1_controller_1_1tab__export_1_1_tab_export.html#af23138a3db9cba6f2523f2d53d8a915e',1,'Source::Controller::tab_export::TabExport']]]
 ];

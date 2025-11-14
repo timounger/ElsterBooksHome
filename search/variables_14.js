@@ -7,16 +7,7 @@ var searchData=
   ['vat_5fresult_4',['vat_result',['../class_source_1_1_controller_1_1dialog__company_1_1_company_dialog.html#a4c53cc255907e10baf2229d890780523',1,'Source.Controller.dialog_company.CompanyDialog.vat_result'],['../class_source_1_1_controller_1_1dialog__contact_1_1_contact_dialog.html#a4c53cc255907e10baf2229d890780523',1,'Source.Controller.dialog_contact.ContactDialog.vat_result']]],
   ['vat_5fvalidator_5',['vat_validator',['../class_source_1_1_controller_1_1dialog__company_1_1_company_dialog.html#adcc1e101f7322f27339b5e009acad49d',1,'Source.Controller.dialog_company.CompanyDialog.vat_validator'],['../class_source_1_1_controller_1_1dialog__contact_1_1_contact_dialog.html#adcc1e101f7322f27339b5e009acad49d',1,'Source.Controller.dialog_contact.ContactDialog.vat_validator']]],
   ['version_5fbuild_6',['VERSION_BUILD',['../namespace_source_1_1version.html#a69972f6a94129228bbfc02cd95c161b3',1,'Source::version']]],
-  ['version_5ffile_5fname_7',['VERSION_FILE_NAME',['../namespace_executable_1_1generate__executable.html#ab4eebde576250e5b51ac86b875ee5aab',1,'Executable::generate_executable']]],
-  ['version_5fmajor_8',['VERSION_MAJOR',['../namespace_source_1_1version.html#a1ed4a2ce02bc5fe28ff2b82d647e53a2',1,'Source::version']]],
-  ['version_5fminor_9',['VERSION_MINOR',['../namespace_source_1_1version.html#a1e9e7f5a63ba7d52c3a44990665ad119',1,'Source::version']]],
-  ['version_5fpatch_10',['VERSION_PATCH',['../namespace_source_1_1version.html#ae156febe985b76c53397252b25ddc5b5',1,'Source::version']]],
-  ['versioninfo_11',['versionInfo',['../namespace_executable_1_1generate__version__file.html#a1327147992659825670f49d3b73a265d',1,'Executable::generate_version_file']]],
-  ['verticallayout_12',['verticalLayout',['../classdialog__about__ui_1_1_ui___about_dialog.html#ab8e9c7f87bbedfcaf4576de262889373',1,'dialog_about_ui.Ui_AboutDialog.verticalLayout'],['../classdialog__commit__ui_1_1_ui___commit_dialog.html#ab8e9c7f87bbedfcaf4576de262889373',1,'dialog_commit_ui.Ui_CommitDialog.verticalLayout'],['../classdialog__company__ui_1_1_ui___dialog_company.html#ab8e9c7f87bbedfcaf4576de262889373',1,'dialog_company_ui.Ui_DialogCompany.verticalLayout'],['../classdialog__help__ui_1_1_ui___help_dialog.html#ab8e9c7f87bbedfcaf4576de262889373',1,'dialog_help_ui.Ui_HelpDialog.verticalLayout']]],
-  ['verticallayout_5f2_13',['verticalLayout_2',['../classdialog__about__ui_1_1_ui___about_dialog.html#a2e170f65100c68352a811111d1e1bf0f',1,'dialog_about_ui::Ui_AboutDialog']]],
-  ['verticallayout_5f3_14',['verticalLayout_3',['../classdialog__help__ui_1_1_ui___help_dialog.html#a1113df1f3c1e18e48a200ae1a6b56a0d',1,'dialog_help_ui::Ui_HelpDialog']]],
-  ['verticallayout_5f4_15',['verticalLayout_4',['../classdialog__help__ui_1_1_ui___help_dialog.html#aabfbf58efc9cecaaba86f7d3d4422d18',1,'dialog_help_ui::Ui_HelpDialog']]],
-  ['verticallayout_5f7_16',['verticalLayout_7',['../classdialog__help__ui_1_1_ui___help_dialog.html#ac0ab4eda8cb16b4d74d76431a38f92c0',1,'dialog_help_ui::Ui_HelpDialog']]],
-  ['verticallayout_5f8_17',['verticalLayout_8',['../classdialog__help__ui_1_1_ui___help_dialog.html#aa99886ac53b8878edf715ec3c481ea9d',1,'dialog_help_ui::Ui_HelpDialog']]],
-  ['verticallayout_5f9_18',['verticalLayout_9',['../classdialog__help__ui_1_1_ui___help_dialog.html#aa793cbd0eadd6b505c06f3971f48ac92',1,'dialog_help_ui::Ui_HelpDialog']]]
+  ['version_5fmajor_7',['VERSION_MAJOR',['../namespace_source_1_1version.html#a1ed4a2ce02bc5fe28ff2b82d647e53a2',1,'Source::version']]],
+  ['version_5fminor_8',['VERSION_MINOR',['../namespace_source_1_1version.html#a1e9e7f5a63ba7d52c3a44990665ad119',1,'Source::version']]],
+  ['version_5fpatch_9',['VERSION_PATCH',['../namespace_source_1_1version.html#ae156febe985b76c53397252b25ddc5b5',1,'Source::version']]]
 ];

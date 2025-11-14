@@ -2,7 +2,7 @@ var dir_4d2cd150aff3df625ebb7431566b7a26 =
 [
     [ "PreTax", "dir_6e217145ca64c8702911d31a4ecd5b3c.html", "dir_6e217145ca64c8702911d31a4ecd5b3c" ],
     [ "ZUGFeRD", "dir_46871b34a69cd3b9ac7b3630ce31857b.html", "dir_46871b34a69cd3b9ac7b3630ce31857b" ],
-    [ "__init__.py", "_source_2_model_2____init_____8py.html", null ],
+    [ "__init__.py", "_model_2____init_____8py.html", null ],
     [ "ai_data.py", "ai__data_8py.html", "ai__data_8py" ],
     [ "company.py", "company_8py.html", "company_8py" ],
     [ "contacts.py", "contacts_8py.html", "contacts_8py" ],

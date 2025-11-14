@@ -1,6 +1,6 @@
 var dir_f8aa4293453eee9d13c5cb7f3b3f7908 =
 [
-    [ "__init__.py", "_source_2_controller_2____init_____8py.html", null ],
+    [ "__init__.py", "_controller_2____init_____8py.html", null ],
     [ "dialog_about.py", "dialog__about_8py.html", "dialog__about_8py" ],
     [ "dialog_banking.py", "dialog__banking_8py.html", "dialog__banking_8py" ],
     [ "dialog_commit.py", "dialog__commit_8py.html", "dialog__commit_8py" ],

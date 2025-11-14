@@ -1,27 +1,4 @@
 var searchData=
 [
-  ['ui_5faboutdialog_0',['Ui_AboutDialog',['../classdialog__about__ui_1_1_ui___about_dialog.html',1,'dialog_about_ui']]],
-  ['ui_5fcommitdialog_1',['Ui_CommitDialog',['../classdialog__commit__ui_1_1_ui___commit_dialog.html',1,'dialog_commit_ui']]],
-  ['ui_5fdashboard_2',['Ui_Dashboard',['../classtab__dashboard__ui_1_1_ui___dashboard.html',1,'tab_dashboard_ui']]],
-  ['ui_5fdialogbanking_3',['Ui_DialogBanking',['../classdialog__banking__ui_1_1_ui___dialog_banking.html',1,'dialog_banking_ui']]],
-  ['ui_5fdialogcompany_4',['Ui_DialogCompany',['../classdialog__company__ui_1_1_ui___dialog_company.html',1,'dialog_company_ui']]],
-  ['ui_5fdialogcontact_5',['Ui_DialogContact',['../classdialog__contact__ui_1_1_ui___dialog_contact.html',1,'dialog_contact_ui']]],
-  ['ui_5fdialogdocument_6',['Ui_DialogDocument',['../classdialog__document__ui_1_1_ui___dialog_document.html',1,'dialog_document_ui']]],
-  ['ui_5fdialoginvoice_7',['Ui_DialogInvoice',['../classdialog__invoice__general__ui_1_1_ui___dialog_invoice.html',1,'dialog_invoice_general_ui']]],
-  ['ui_5fdialogreceipt_8',['Ui_DialogReceipt',['../classdialog__receipt__ui_1_1_ui___dialog_receipt.html',1,'dialog_receipt_ui']]],
-  ['ui_5fexport_9',['Ui_Export',['../classtab__export__ui_1_1_ui___export.html',1,'tab_export_ui']]],
-  ['ui_5fhelpdialog_10',['Ui_HelpDialog',['../classdialog__help__ui_1_1_ui___help_dialog.html',1,'dialog_help_ui']]],
-  ['ui_5finvoicedata_11',['Ui_InvoiceData',['../classinvoice__data__ui_1_1_ui___invoice_data.html',1,'invoice_data_ui']]],
-  ['ui_5finvoicediscountsdata_12',['Ui_InvoiceDiscountsData',['../classinvoice__discounts__data__ui_1_1_ui___invoice_discounts_data.html',1,'invoice_discounts_data_ui']]],
-  ['ui_5finvoiceitemdata_13',['Ui_InvoiceItemData',['../classinvoice__item__data__ui_1_1_ui___invoice_item_data.html',1,'invoice_item_data_ui']]],
-  ['ui_5finvoiceitemdiscountsdata_14',['Ui_InvoiceItemDiscountsData',['../classinvoice__item__discounts__data__ui_1_1_ui___invoice_item_discounts_data.html',1,'invoice_item_discounts_data_ui']]],
-  ['ui_5finvoiceitemsurchargedata_15',['Ui_InvoiceItemSurchargeData',['../classinvoice__item__surcharges__data__ui_1_1_ui___invoice_item_surcharge_data.html',1,'invoice_item_surcharges_data_ui']]],
-  ['ui_5finvoicesurchargesdata_16',['Ui_InvoiceSurchargesData',['../classinvoice__surcharges__data__ui_1_1_ui___invoice_surcharges_data.html',1,'invoice_surcharges_data_ui']]],
-  ['ui_5finvoicetaxdata_17',['Ui_InvoiceTaxData',['../classinvoice__tax__data__ui_1_1_ui___invoice_tax_data.html',1,'invoice_tax_data_ui']]],
-  ['ui_5fmainwindow_18',['Ui_MainWindow',['../classmainwindow__ui_1_1_ui___main_window.html',1,'mainwindow_ui']]],
-  ['ui_5fsettings_19',['Ui_Settings',['../classtab__settings__ui_1_1_ui___settings.html',1,'tab_settings_ui']]],
-  ['ui_5fsplashscreen_20',['Ui_SplashScreen',['../classdialog__splash__ui_1_1_ui___splash_screen.html',1,'dialog_splash_ui']]],
-  ['ui_5ftablefilter_21',['Ui_TableFilter',['../classtab__table__filter__ui_1_1_ui___table_filter.html',1,'tab_table_filter_ui']]],
-  ['uncaughthook_22',['UncaughtHook',['../class_source_1_1_util_1_1app__err__handler_1_1_uncaught_hook.html',1,'Source::Util::app_err_handler']]],
-  ['updatedownloader_23',['UpdateDownloader',['../class_source_1_1_worker_1_1update__downloader_1_1_update_downloader.html',1,'Source::Worker::update_downloader']]]
+  ['vatvalidation_0',['VatValidation',['../class_source_1_1_worker_1_1vat__validation_1_1_vat_validation.html',1,'Source::Worker::vat_validation']]]
 ];

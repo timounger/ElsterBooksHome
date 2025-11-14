@@ -28,8 +28,7 @@ var searchData=
   ['open_5fxml_5fwarnings_25',['open_xml_warnings',['../class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html#a8ee71c24e90636d7b2191265ad0b5c64',1,'Source.Controller.dialog_receipt.ReceiptDialog.open_xml_warnings'],['../class_source_1_1_controller_1_1dialog__receipt_1_1_receipt_dialog.html#aea5916f6bbdab67db6c61b8877d3a526',1,'Source.Controller.dialog_receipt.ReceiptDialog.open_xml_warnings(self)']]],
   ['openai_26',['OpenAI',['../class_source_1_1_worker_1_1open__ai_1_1_open_a_i.html',1,'Source::Worker::open_ai']]],
   ['openai_5fclient_27',['openai_client',['../class_source_1_1_worker_1_1open__ai_1_1_open_a_i.html#a4d0596915c90d9fb85f4641c074db8f1',1,'Source::Worker::open_ai::OpenAI']]],
-  ['opennotepad_28',['OpenNotepad',['../class_doxygen_creator_1_1doxygen__creator_1_1_open_notepad.html',1,'DoxygenCreator::doxygen_creator']]],
-  ['openpyxl_5futil_2epy_29',['openpyxl_util.py',['../openpyxl__util_8py.html',1,'']]],
-  ['others_20freedom_30',['12. No Surrender of Others&apos; Freedom',['../_l_i_c_e_n_s_e.html#autotoc_md20',1,'']]],
-  ['overview_31',['OVERVIEW',['../class_source_1_1_model_1_1export_1_1_e_report_sheet.html#a8bfe980f8c2b3bb4614b9a7c2f4765ac',1,'Source::Model::export::EReportSheet']]]
+  ['openpyxl_5futil_2epy_28',['openpyxl_util.py',['../openpyxl__util_8py.html',1,'']]],
+  ['others_20freedom_29',['12. No Surrender of Others&apos; Freedom',['../_l_i_c_e_n_s_e.html#autotoc_md20',1,'']]],
+  ['overview_30',['OVERVIEW',['../class_source_1_1_model_1_1export_1_1_e_report_sheet.html#a8bfe980f8c2b3bb4614b9a7c2f4765ac',1,'Source::Model::export::EReportSheet']]]
 ];
