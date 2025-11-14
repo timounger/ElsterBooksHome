@@ -1,0 +1,182 @@
+---
+#------------------------------------------------------------------------------
+# Central ElsterBooks GitHub CI
+# Doc: https://docs.github.com/de/actions
+#------------------------------------------------------------------------------
+name: ElsterBooks CI
+
+#------------------------------------------------------------------------------
+# Token Permission
+#------------------------------------------------------------------------------
+permissions:
+  actions: write
+  checks: none
+  contents: write
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: write
+  pull-requests: write
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+defaults:
+  run:
+    shell: cmd
+
+env:
+  PYTHON_VERSION: 3.11.9
+  PYTHON_ARCH: x64
+  PYTHON_PACKAGE_INST_PATH: ./Documentation/Installation
+  PYTHON_PACKAGE_INST_FILE: install_packages.bat
+  DOXYGEN_OUTPUT_NAME: Output_Doxygen
+  DOXYGEN_OUTPUT_PATH: ./Documentation/DoxygenCreator/Output_Doxygen
+  BINARY_EXE_NAME: bin_Exe
+  BINARY_PATH: ./Executable/bin
+
+#--------------------------------------------------------------------------------
+# WORKFLOW TRIGGER
+#--------------------------------------------------------------------------------
+on:
+  push:
+    branches:
+      - test_version
+    paths:
+      - "Source/version.py"
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+    inputs:
+      create_release:
+        description: "Create Release. All jobs are executed."
+        type: boolean
+        default: false
+
+#--------------------------------------------------------------------------------
+# WORKFLOW JOBS
+#--------------------------------------------------------------------------------
+jobs:
+  doc-Doxygen:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ env.PYTHON_ARCH }}
+      - name: Install Graphviz
+        run: choco install graphviz
+      - name: Install Packages
+        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
+        run: ${{ env.PYTHON_PACKAGE_INST_FILE }}
+      - name: Run Doxygen
+        working-directory: ./Documentation/DoxygenCreator
+        run: ..\..\.venv\Scripts\python create_doxygen.py
+      - name: Upload Doxygen Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.DOXYGEN_OUTPUT_NAME }}
+          path: ${{ env.DOXYGEN_OUTPUT_PATH }}
+  #------------------------------------------------------------------------------
+  doc-Pages:
+    needs: doc-Doxygen
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download Doxygen Output
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.DOXYGEN_OUTPUT_NAME }}
+          path: ${{ env.DOXYGEN_OUTPUT_PATH }}
+      - name: Deploy to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.DOXYGEN_OUTPUT_PATH }}/html
+  #------------------------------------------------------------------------------
+  build-Exe:
+    if: (github.event_name == 'push')
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ env.PYTHON_ARCH }}
+      - name: Install Packages
+        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
+        run: ${{ env.PYTHON_PACKAGE_INST_FILE }}
+      - name: Get Package list
+        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
+        run: get_package_list.bat
+      - name: Upload Package list
+        uses: actions/upload-artifact@v4
+        with:
+          name: installed_packages.txt
+          path: ./Documentation/Installation/installed_packages.txt
+      - name: Build Executable
+        working-directory: ./Executable
+        run: generate_executable.bat
+      - name: Upload Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_EXE_NAME }}
+          path: ${{ env.BINARY_PATH }}
+  #------------------------------------------------------------------------------
+  create-Release:
+    if: inputs.create_release || (github.event_name == 'push')
+    needs: build-Exe
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download Executable
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BINARY_EXE_NAME }}
+          path: ${{ env.BINARY_PATH }}
+      - name: Get Commit Message
+        shell: bash
+        run: echo "commit_message=$(git log -1 --pretty=format:"%s")" >> $GITHUB_ENV
+      - name: Get version from Python file
+        shell: bash
+        run: |
+          version=$(python -c 'from Source.version import __version__; print(__version__)')
+          echo "file_version=${version}" >> $GITHUB_ENV
+      - name: Create tag
+        shell: bash
+        run: |
+          tag_name="v${{ env.file_version }}"
+          git tag "$tag_name"
+          git push origin "$tag_name"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.file_version }}
+          release_name: "[ElsterBooks] v${{ env.file_version }}"
+          body: "Git SHA: ${{ github.sha }}\n\n${{ env.commit_message }}"
+          draft: false
+          prerelease: false
+      - name: Upload Executable files to release assets
+        shell: bash
+        run: |
+          for file in ${{ env.BINARY_PATH }}/*; do
+            filename=$(basename "$file")
+            curl -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$filename" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "Content-Type: $(file -b --mime-type $file)" \
+              --data-binary @"$file"
+          done

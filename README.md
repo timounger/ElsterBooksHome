@@ -28,7 +28,7 @@ ElsterBooks unterstützt Sie bei der elektronischen Buchführung für Ihr Untern
 
 ## ⚡ Installation / Nutzung
 
-1. [Download](https://github.com/timounger/ElsterBooksHome/releases/latest) der aktuellen Version von *ElsterBooks.exe*
+1. [Download](https://github.com/timounger/ElsterBooksHome/releases/latest) der aktuellen Version von _ElsterBooks.exe_
 2. Lege die Datei an einem gewünschten Speicherort ab, an dem auch die erfassten Buchungen abgelegt werden sollen. ⚠️ Der Ordner muss über Schreibrechte verfügen.
 3. Führe die Datei aus – eine Installation ist nicht erforderlich.
 4. Zukünftige Aktualisierungen werden automatisch erkannt und können über den integrierten Update-Mechanismus installiert werden.
@@ -43,7 +43,7 @@ Im Tool kann über das Menüband (`Hilfe` → `Hilfe anzeigen`) die Hilfe zur Be
 
 <!-- TODO Dokumentation verlinken wenn vorhanden -->
 
-## 🐞 Bugs & 🌟 Wünsche
+## 🐞 Bugs & 🚀 Verbesserungen
 
 Ideen, Bugmeldungen oder Optimierungen können über [Issues](https://github.com/timounger/ElsterBooksHome/issues) gemeldet werden.
 
@@ -51,7 +51,7 @@ Aufgetretene Fehler werden in der Logdatei `app_log.log` gespeichert.
 
 ## 📄 Lizenz
 
-ElsterBooks steht unter der ➡️ [GPLv3](LICENSE.md).
+ElsterBooks steht unter der ➡️ \ref LICENSE "GPLv3".
 
 ## 👥 Credits
 
