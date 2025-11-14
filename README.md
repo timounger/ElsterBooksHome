@@ -1,43 +1,59 @@
+\mainpage ElsterBooks
+
+\tableofcontents
+
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/timounger/ElsterBooksHome)](https://github.com/timounger/ElsterBooksHome/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg)](https://github.com/timounger/ElsterBooksHome/blob/master/LICENSE.md)
 [![Python version](https://img.shields.io/badge/python-3.11.9-blue)](https://www.python.org/downloads/release/python-3119/)
 [![Code style: autopep8](https://img.shields.io/badge/code%20style-autopep8-green.svg)](https://github.com/hhatto/autopep8)
 ![GitHub Repo stars](https://img.shields.io/github/stars/timounger/ElsterBooksHome)
-
-## Über ℹ️
+![Downloads](https://img.shields.io/github/downloads/timounger/ElsterBooksHome/total)
 
 ElsterBooks unterstützt Sie bei der elektronischen Buchführung für Ihr Unternehmen.
 
-![Splash](Resources/splash.gif)
+![ElsterBooks](Resources/splash.gif)
 
-## Funktionalitäten 🥇
+## 📦 Features
 
-- Einnahmen und Ausgaben archivieren (automatische Datenübernahme bei E-Rechnungen oder aktiver KI-Anbindung)
-- Kundenkontakte verwalten
-- Erstellen von Rechnungen in den Formaten: Excel, PDF, X-Rechnung oder ZUGFeRD
-- Erstellung der EÜR, USt und UStVA sowie DATEV-Export
+- Einnahmen, Ausgaben und Dokumente erfassen
+- EÜR, USt, UStVA und DATEV-Export
+- Rechnungen erstellen (Excel, PDF, X-Rechnung, ZUGFeRD)
+- Kunden- und Kontaktverwaltung
 
-## Download ☁️ ⬇️
+## ⭐ Highlights
 
-Die freigegebenen Versionen sind auf GitHub veröffentlicht und können dort [heruntergeladen](https://github.com/timounger/ElsterBooksHome/releases/latest) werden.
+- KI-gestützte Datenerkennung für Dokumente
+- E-Rechnungsimport (X-Rechnung und ZUGFeRD)
+- FinTS-Bankanbindung mit intelligenter Zuordnung
 
-## Bedienung 👆️
+## ⚡ Installation / Nutzung
+
+1. [Download](https://github.com/timounger/ElsterBooksHome/releases/latest) der aktuellen Version von *ElsterBooks.exe*
+2. Lege die Datei an einem gewünschten Speicherort ab, an dem auch die erfassten Buchungen abgelegt werden sollen. ⚠️ Der Ordner muss über Schreibrechte verfügen.
+3. Führe die Datei aus – eine Installation ist nicht erforderlich.
+4. Zukünftige Aktualisierungen werden automatisch erkannt und können über den integrierten Update-Mechanismus installiert werden.
+
+## 🖥️ Systemanforderungen
+
+- Windows 10/11 (32/64 Bit)
+
+## 📚 Dokumentation
 
 Im Tool kann über das Menüband (`Hilfe` → `Hilfe anzeigen`) die Hilfe zur Bedienung und Konfiguration aufgerufen werden.
 
-## Feedback / Bugmeldung 🐞
+<!-- TODO Dokumentation verlinken wenn vorhanden -->
 
-Ideen, Bugmeldungen oder Optimierungen können über [Issues](https://github.com/timounger/ElsterBooksHome/issues) gemeldet gemeldet werden.
+## 🐞 Bugs & 🌟 Wünsche
+
+Ideen, Bugmeldungen oder Optimierungen können über [Issues](https://github.com/timounger/ElsterBooksHome/issues) gemeldet werden.
 
 Aufgetretene Fehler werden in der Logdatei `app_log.log` gespeichert.
 
-## OS Support
+## 📄 Lizenz
 
-Getestet mit
+ElsterBooks steht unter der ➡️ [GPLv3](LICENSE.md).
 
-- Windows 11, Windows 10
-
-## Credits
+## 👥 Credits
 
 Besonderen Dank an alle Mitwirkenden:
 <br><br>
