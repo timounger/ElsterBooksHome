@@ -1,50 +1,50 @@
-## v0.3.0  Testversion Release 09.11.2025
+\page CHANGELOG 📋️ Changelog
 
-[Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0)
+\tableofcontents
 
-_[compare to previous version](https://github.com/timounger/ElsterBooksHome/compare/v0.2.0...v0.3.0)_
+## Legende
 
-### Features
+| Kategorie         | Bedeutung                                |
+| ----------------- | ---------------------------------------- |
+| ✨ Feature        | Neue Funktionen, Erweiterungen           |
+| 🔧 Bugfix         | Fehlerbehebungen, Stabilitätskorrekturen |
+| 🚀 Verbesserungen | Optimierungen, Performance, Reworks      |
+| 📚 Dokumentation  | Änderungen an Dokumentation & Texten     |
 
-- Die Rechnungsvorlage kann auch als PDF oder XML importiert werden.
-- Transaktionen: Daten löschen Button
-- Integriertes Update für zukünftige neue ElsterBooks Versionen
+## [v0.3.1](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.1) Testversion Release 29.11.2025
 
-### Bug fixes
+- 🚀 Rechnungsnummern: Individuell in den Einstellungen mit Hilfe von Datum und Sequenz Pattern gestalten
+- 🚀 QR-Code: Letzte Einstellung wird gespeichert
+- 🚀 Verbesserte Darstellung erstellter Rechnungen
+- 📚 Lizenztext hinzugefügt
 
-- Export Diagramme unter Berücksichtigung der 10 Tage frit für wiederkehrende Zahlungen dem Vorjahr zuordnen (identisch zu EÜR)
-- Dialog für Belege öffnen schneller (Initial Ressourcen vorladen)
-- Transaktionen abrufen: Crash fix bie Zuordnung und Löschen Button
+## [v0.3.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0) Testversion Release 09.11.2025
 
-## v0.2.0  Testversion Release 29.10.2025
+- ✨ Rechnungsvorlagen: Import von ZUGFeRD PDF oder XML möglich
+- ✨ Integrierter Update-Mechanismus für zukünftige ElsterBooks-Versionen
+- 🔧 Export Diagramme: Berücksichtigung der 10-Tage-Frist für wiederkehrende Zahlungen (identisch zu EÜR)
+- 🔧 Transaktionen abrufen: Crash behoben bei Zuordnung und Löschen
+- 🚀 Transaktionen: Daten-Löschen-Button hinzugefügt
+- 🚀 Dialog „Belege öffnen“ beschleunigt (Initial-Ressourcen vorladen)
 
-[Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.2.0)
+## [v0.2.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.2.0) Testversion Release 29.10.2025
 
-_[compare to previous version](https://github.com/timounger/ElsterBooksHome/compare/v0.1.0...v0.2.0)_
+- ✨ Bankanbindung über FinTS und automatische Transaktionszuordnung
+- ✨ QR-Code für Rechnungen
+- ✨ „Unvollständige Daten löschen“: Löscht Einnahmen, Ausgaben oder Dokumente, die nur Metadaten oder Anhänge enthalten
+- ✨ Änderungsansicht im Commit-Dialog integriert („TortoiseGit Merge“-View)
+- ✨ Update-Benachrichtigung hinzugefügt
+- 🔧 Umsatzsteuer-ID-Format für alle bekannten Länder geprüft
+- 🔧 Widget-Style zurückgesetzt (PyQt-Änderungen korrigiert)
+- 🔧 Eingebettete X-Rechnungen in ZUGFeRD werden erkannt
+- 🔧 Fälliger Zahlungsbetrag als optionaler Parameter behandelt
+- 🔧 Gesamtbrutto statt Fälligkeitsbetrag bei E-Rechnungen importiert
+- 🔧 Elektronische Adresse (BT-34, BT-49) schreiben.
+- 🔧 Mengenangaben bei Artikeln korrekt importiert (Problem mit Exponentialschreibweise behoben)
+- 🔧 Bankname-Label bei Rechnungen im erweiterten Modus korrigiert
+- 🚀 Rechnungen direkt an Kontakte ausstellen (über Kontextmenü)
+- 📚 Dokumentationshilfe für Export angepasst
 
-### Features
+## [v0.1.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.1.0) Testversion Release 06.09.2025
 
-- Bankanbindung über FinTS sowie Zuordnung von Transaktionen
-- QR-Code für Rechnungen
-- Unvollständige Daten löschen: Löscht automatisch Einnahmen, Ausgaben oder Dokumente welche nur Metadaten oder nur Anhang haben
-- Rechnung direkt an Kontakt ausstellen: Diese Option ist im Kontextmenü der Kontakte verfügbar
-- Änderungsansicht im Commit Dialog integriert: "TortoiseGit Merge" View
-- Update-Benachrichtigung
-
-### Bug fixes
-
-- Die Dokumentationshilfe für den Export wurde angepasst.
-- Umsatzsteuer-ID-Format der Kontakte für alle bekannten Länder prüfen.
-- Widget Style Veränderungen zurücksetzen (geändertes Verhalten von PyQt)
-- In ZUGFeRD eingebettete X-Rechnungen werden erkannt.
-- Fälliger Zahlungsbetrag als optional Parameter behandelt
-- Gesamt Brutto statt Fälligkeitsbetrag bei erkannten E-Rechnungen importieren
-- Elektronische Adresse (BT-34, BT-49) schreiben.
-- Artikel Mengenanzahl alle Mengenangaben möglich (Problem mit der Exponentialschreibweise)
-- Name der Bank Label bei Rechnungen schreiben im Erweiterten Modus korrigiert
-
-## v0.1.0 Testversion Release 06.09.2025
-
-[Download](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.1.0)
-
-- Initiale Testversion
+- ✨ Initiale Testversion

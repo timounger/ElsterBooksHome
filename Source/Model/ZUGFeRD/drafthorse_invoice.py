@@ -476,7 +476,7 @@ def write_customer_to_json(invoice_data: dict, contact: dict[str, str | dict[str
         data_buyer_address["countryCode"] = address_data[EContactFields.COUNTRY]  # Ländercode der Käuferanschrift (BT-55)
         contact_data = contact[CONTACT_CONTACT_FIELD]
         data_buyer_contact = data_buyer.setdefault("contact", {})
-        data_buyer_contact["name"] = f"{contact_data[EContactFields.FIRST_NAME]} {contact_data[EContactFields.LAST_NAME]}"  # Kontaktstelle des Käufers (BT-56)
+        data_buyer_contact["name"] = f"{contact_data[EContactFields.FIRST_NAME]} {contact_data[EContactFields.LAST_NAME]}".strip()  # Kontaktstelle des Käufers (BT-56)
         data_buyer_contact["email"] = contact_data[EContactFields.MAIL]  # E-Mail-Adresse der Kontaktstelle des Käufers (BT-58)
         data_buyer_contact["phone"] = contact_data[EContactFields.PHONE]  # Telefonnummer der Kontaktstelle des Käufers (BT-57)
 
@@ -509,7 +509,7 @@ def write_company_to_json(invoice_data: dict, company: dict, logo_path: Optional
     data_seller_address["countryCode"] = address_data[ECompanyFields.COUNTRY]  # Land (BT-40) D_COUNTRY_CODE
     contact_data = company[COMPANY_CONTACT_FIELD]
     data_seller_contact = data_seller.setdefault("contact", {})
-    data_seller_contact["name"] = f"{contact_data[ECompanyFields.FIRST_NAME]} {contact_data[ECompanyFields.LAST_NAME]}"  # Name (BT-41)
+    data_seller_contact["name"] = f"{contact_data[ECompanyFields.FIRST_NAME]} {contact_data[ECompanyFields.LAST_NAME]}".strip()  # Name (BT-41)
     data_seller_contact["email"] = contact_data[ECompanyFields.MAIL]  # E-Mail (BT-43)
     data_seller_contact["phone"] = contact_data[ECompanyFields.PHONE]  # Telefon (BT-42)
     data_seller_contact["fax"] = ""  # Fax
@@ -555,7 +555,8 @@ def fill_invoice_data(invoice_data: dict) -> None:
         net_amount = (item_quantity * net_unit_price) / item_basis_quantity
         gross_amount = (item_quantity * gross_unit_price) / item_basis_quantity
         vat_amount = gross_amount - net_amount
-        vat_key = f"{vat_code}-{vat_rate}"
+        vat_rate_normalized = normalize_decimal(vat_rate)
+        vat_key = f"{vat_code}-{vat_rate_normalized}"
         if vat_key in tax_data:
             tax_data[vat_key]["netAmount"] += net_amount
             tax_data[vat_key]["vatAmount"] += vat_amount

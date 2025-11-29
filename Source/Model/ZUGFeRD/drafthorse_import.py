@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QAbstractSpinBox, QComboBox, Q
     QPlainTextEdit, QLineEdit, QLabel
 
 from Source.version import __title__
-from Source.Model.data_handler import DATE_FORMAT_JSON, DATE_FORMAT_XML, EReceiptFields, fill_data, D_RECEIPT_TEMPLATE, XML_TYPE
+from Source.Model.data_handler import convert_to_de_date, DATE_FORMAT_XML, EReceiptFields, fill_data, D_RECEIPT_TEMPLATE, XML_TYPE
 from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
     D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_EXEMPTION_REASON_CODE, D_CHARGE_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json
@@ -286,8 +286,7 @@ def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: 
         doc = Document.parse(xml_content)
         invoice_date = doc.header.issue_date_time._value
         if invoice_date:
-            invoice_date = datetime.strptime(str(invoice_date), DATE_FORMAT_XML)
-            invoice_date = invoice_date.strftime(DATE_FORMAT_JSON)
+            invoice_date = convert_to_de_date(invoice_date)
         else:
             invoice_date = ""
         if is_income:
@@ -298,8 +297,7 @@ def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: 
 
         deliver_date = doc.trade.delivery.event.occurrence._value
         if deliver_date:
-            deliver_date = datetime.strptime(str(deliver_date), DATE_FORMAT_XML)
-            deliver_date = deliver_date.strftime(DATE_FORMAT_JSON)
+            deliver_date = convert_to_de_date(deliver_date)
         else:
             deliver_date = ""
 

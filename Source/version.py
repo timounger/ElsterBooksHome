@@ -11,7 +11,7 @@ from typing import Optional
 # Version
 VERSION_MAJOR = 0  # major changes/breaks at API (e.g incompatibility)
 VERSION_MINOR = 3  # minor changes/does not break the API (e.g new feature)
-VERSION_PATCH = 0  # Bug fixes
+VERSION_PATCH = 1  # Bug fixes
 VERSION_BUILD = 0  # build number (if available)
 
 __title__ = "ElsterBooks"
@@ -21,8 +21,9 @@ __owner__ = "timounger"
 __repo__ = "ElsterBooksHome"
 __copyright__ = f"Copyright © 2023-2025 {__author__}"
 __license__ = "GNU General Public License"
-__home__ = f"https://{__owner__}.github.io/{__repo__}"
-__issue__ = f"https://github.com/{__owner__}/{__repo__}/issues"
+__website__ = f"https://{__owner__}.github.io/{__repo__}"
+__home__ = f"https://github.com/{__owner__}/{__repo__}"
+__issue__ = f"{__home__}/issues"
 
 if VERSION_BUILD == 0:
     if VERSION_MAJOR != 0:

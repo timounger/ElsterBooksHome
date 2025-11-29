@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_Export(object):
     def setupUi(self, Export):
         Export.setObjectName("Export")
-        Export.resize(991, 584)
+        Export.resize(991, 612)
         self.gridLayout_3 = QtWidgets.QGridLayout(Export)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.groupBox_1_tax = QtWidgets.QGroupBox(parent=Export)
@@ -232,11 +232,11 @@ class Ui_Export(object):
         self.btn_backup.setText(_translate("Export", "Sicherung erstellen"))
         self.groupBox_6_tools.setTitle(_translate("Export", "Externe Tools"))
         self.btn_download_tools.setText(_translate("Export", "Download Tools"))
-        self.lbl_external_tools.setText(_translate("Export", "<html><head/><body><p><span style=\" font-size:8pt;\">Benötigte Tools:<br/>- LibreOfficePortable: Erstellung von PDF und ZUGFeRD Rechnungen<br/>- PortableGit: zur Revisionierung der Daten<br/>- Tesseract-OCR: Texterkennung zur automatischen Belegerfassung<br/>- plz.json: Automatische Ortvervollständigung anhand der PLZ</span></p></body></html>"))
+        self.lbl_external_tools.setText(_translate("Export", "<html><head/><body><p><span style=\" font-size:8pt;\">Benötigte Tools:<br/>- LibreOfficePortable: Erstellung von PDF und ZUGFeRD Rechnungen<br/>- PortableGit: zur Revisionierung der Daten<br/>- TortoiseGit: Änderungsansicht beim Commit<br/>- Tesseract-OCR: Texterkennung zur automatischen Belegerfassung<br/>- plz.json: Automatische Ortvervollständigung anhand der PLZ</span></p></body></html>"))
         self.groupBox_4_data.setTitle(_translate("Export", "Daten Update"))
-        self.btn_update_data_rename.setText(_translate("Export", "Daten Updaten (inkl. Dateinamen)"))
+        self.btn_update_data_rename.setText(_translate("Export", "Daten aktualisieren (inkl. Dateinamen)"))
         self.btn_data_clean.setText(_translate("Export", "Unvollständige Daten löschen"))
-        self.btn_update_data.setText(_translate("Export", "Daten Updaten"))
+        self.btn_update_data.setText(_translate("Export", "Daten aktualisieren"))
         self.groupBox_3_pdf.setTitle(_translate("Export", "PDF-Toolbox"))
         self.btn_pdf_combine.setText(_translate("Export", "PDF kombinieren"))
         self.groupBox_banking.setTitle(_translate("Export", "Kontoverbindung"))

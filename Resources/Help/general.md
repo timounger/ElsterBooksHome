@@ -2,24 +2,26 @@
 
 # Allgemein
 
----
-
 ## Über 🥇
 
-ElsterBooks ist ein Buchhaltungsprogramm als Offline-Desktopanwendung.
+ElsterBooks ist ein Offline-Buchhaltungsprogramm für Windows.
 
-Damit können Sie Einnahmen und Ausgaben archivieren, Kundenkontakte verwalten und Rechnungen schreiben.
+Es ermöglicht Ihnen:
 
-E-Rechnung-Verarbeitung und KI-Unterstützung.
-
-Erstellung der EÜR, USt und UStVA sowie DATEV-Export.
+- Einnahmen und Ausgaben zu erfassen und zu archivieren
+- Kundenkontakte zu verwalten
+- Rechnungen zu erstellen und zu versenden
+- E-Rechnungen zu verarbeiten (XRechnung / ZUGFeRD)
+- KI-gestützte Datenerkennung zu nutzen
+- Steuerdokumente wie EÜR, USt-Erklärung und UStVA zu erzeugen
+- Daten für DATEV zu exportieren
 
 ## Erklärung der Tabs
 
-- Übersicht: Hier werden die Summen aller Ein- und Ausgaben angezeigt und die der letzten 12 Monate visualisiert.
-- Kontakte: Hier können Kundenkontakte angelegt werden, um die Rechnungsstellung und den Mailkontakt zu vereinfachen.
-- Einnahmen: Einnahmen erfassen und Rechnungen schreiben
-- Ausgaben: Ausgaben erfassen
-- Dokumente: sonstige relevante Unterlagen, die keine buchungsrelevanten Umsätze aufweisen.
-- Export: Erstellung von Steuerdokumenten und Datensicherung.
-- Einstellungen: Eigene Unternehmensdaten und Einstellungen verwalten.
+- Übersicht: zeigt die Gesamtsummen aller Einnahmen und Ausgaben sowie eine grafische Darstellung der letzten 12 Monate.
+- Kontakte: Kundenkontakte anlegen und verwalten, erleichtert Rechnungsstellung und E-Mail-Versand.
+- Einnahmen: Einnahmen erfassen und Rechnungen erstellen.
+- Ausgaben: Ausgaben erfassen und Belege hinterlegen.
+- Dokumente: sonstige relevante Unterlagen speichern, die keine buchungsrelevanten Umsätze enthalten.
+- Export: Steuerdokumente erzeugen, Daten exportieren und Backups erstellen.
+- Einstellungen: Unternehmensdaten, Programmverhalten und Zusatzfunktionen konfigurieren.

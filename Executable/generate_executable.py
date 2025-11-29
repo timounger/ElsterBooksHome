@@ -73,6 +73,7 @@ for _config_name, (config_status, _exclude_file, exclude_packages) in D_CONFIG_D
 """
 
 add_data = [
+    "..\\LICENSE.md;.\\",
     "..\\Resources\\splash.gif;Resources\\",
     "..\\Resources\\app.ico;Resources\\",
     "..\\Resources\\FinTS\\;Resources\\FinTS\\",

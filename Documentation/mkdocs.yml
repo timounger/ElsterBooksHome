@@ -1,0 +1,184 @@
+#------------------------------------------------------------------------------
+# Documentation Creator with MkDocs Material
+# Doc: https://squidfunk.github.io/mkdocs-material/setup/
+#------------------------------------------------------------------------------
+
+# Project information
+site_name: ElsterBooks
+site_url: https://github.com/timounger/ElsterBooksHome
+site_author: Timo Unger
+site_description: >-
+  Buchhaltungssoftware
+
+# Repository
+repo_name: timounger/ElsterBooksHome
+repo_url: https://github.com/timounger/ElsterBooksHome
+edit_uri: blob/main/docs # TODO
+
+# Copyright
+copyright: Copyright &copy; 2023-2025 Timo Unger
+
+# Documentation directory
+docs_dir: docs
+
+# Output directory
+site_dir: public
+
+# Configuration
+theme:
+  name: material
+  custom_dir: mkdocs_overrides # https://github.com/squidfunk/mkdocs-material/blob/master/src/templates/partials/header.html
+  features:
+    - announce.dismiss
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme)" # System standard
+      toggle:
+        icon: material/link
+        name: In den Hellen Modus wechseln
+    - media: "(prefers-color-scheme: light)" # Light Mode
+      scheme: elsterbooks
+      toggle:
+        icon: material/weather-sunny
+        name: In den Dunkel Modus wechseln
+    - media: "(prefers-color-scheme: dark)" # Dark Mode
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: In den System Standard Modus wechseln
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: _assets/images/favicon.ico
+  icon:
+    logo: logo
+    previous: fontawesome/solid/angle-left
+    next: fontawesome/solid/angle-right
+    repo: fontawesome/brands/github
+  language: de
+  logo: _assets/images/app.ico
+
+use_directory_urls: false # links not shortened, instead lead to /index.html
+
+# Strict Validation
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+# Additional configuration
+extra:
+  generator: false  # disable create by material text
+  status:
+    new: Recently added
+    deprecated: Deprecated
+  #analytics:
+  #  provider: google
+  #  property: !ENV GOOGLE_ANALYTICS_KEY
+  social:
+    - icon: material/web
+      link: https://github.com/timounger/ElsterBooksHome
+
+extra_css:
+  - _assets/stylesheets/color.css
+  - _assets/stylesheets/width.css
+
+extra_javascript:
+  - _assets/javascripts/panzoom.min.js
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: squidfunk
+      repo: mkdocs-material
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      auto_append:
+        - includes/mkdocs.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Page tree
+nav:
+  - Übersicht: index.md
+  - Erste Schritte:
+      - Installation: 01-GettingStarted/Installation.md
+      - Erste Nutzung & Einrichtung: 01-GettingStarted/FirstSteps.md
+      - Funktionsübersicht: 01-GettingStarted/FeatureOverview.md
+      - Tab-Übersicht: 01-GettingStarted/UIOverview.md
+  - Buchungen:
+      - Rechnungen erstellen: 02-Transactions/Invoices.md
+      - Belegerfassung: 02-Transactions/Transactions.md
+      - Sonstige Dokumente: 02-Transactions/Documents.md
+  - Kontakte:
+      - Kontakt anlegen: 03-Contacts/AddContact.md
+      - E-Mail senden: 03-Contacts/SendEmail.md
+  - Export:
+      - Steuerdokumente: 04-Exports/TaxDocuments.md
+      - Export: 04-Exports/Export.md
+      - Kontoverbindung: 04-Exports/BankAccounts.md
+      - PDF-Toolbox: 04-Exports/PDFTools.md
+      - Update: 04-Exports/Updates.md
+      - Git-Aktionen: 04-Exports/GitActions.md
+  - Einstellungen:
+      - Unternehmensdaten: 05-Settings/CompanyInfo.md
+      - Buchhaltung: 05-Settings/Accounting.md
+      - Standardwerte: 05-Settings/Defaults.md
+      - E-Mail-Vorlagen: 05-Settings/MailTemplate.md
+      - KI-Einstellungen: 05-Settings/AISettings.md
+      - Logo: 05-Settings/Logo.md
+  - Rechtliches:
+      - E-Rechnung: 06-Regulations/EInvoice.md

@@ -132,3 +132,11 @@ class MonitorScale:
         self.ui.action_help.setIcon(QIcon(ICON_HELP_LIGHT if b_light_theme else ICON_HELP_DARK))
         self.ui.action_about_app.setIcon(QIcon(ICON_APP))
         self.ui.action_support.setIcon(QIcon(ICON_GITHUB_LIGHT if b_light_theme else ICON_GITHUB_DARK))
+        if b_light_theme:
+            self.ui.frame_update_banner.setStyleSheet("background-color: #ffffaf")
+            self.ui.btn_update.setStyleSheet("color: blue")
+        else:
+            self.ui.frame_update_banner.setStyleSheet("background-color: #EBBC4E")
+            self.ui.lbl_update_banner.setStyleSheet("color: black")
+            self.ui.btn_update.setStyleSheet("color: darkblue")
+            self.ui.btn_close_update_banner.setStyleSheet("background: transparent; border: none; color: black")

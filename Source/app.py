@@ -20,7 +20,6 @@ from Source.version import __title__, __version__  # pylint: disable=wrong-impor
 from Source.Util.app_data import I_LOG_LEVEL_DEFAULT, ICON_APP  # pylint: disable=wrong-import-position
 from Source.Util.app_err_handler import UncaughtHook  # pylint: disable=wrong-import-position
 from Source.Util.app_log import LogConfig  # pylint: disable=wrong-import-position
-
 from Source.Controller.main_window import MainWindow  # pylint: disable=wrong-import-position
 from Source.Controller.splash_screen import create_splash_screen, F_MIN_SPLASH_SCREEN_TIME  # pylint: disable=wrong-import-position
 # autopep8: on

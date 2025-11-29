@@ -1,3 +1,5 @@
+\page LICENSE 📄 Lizenz
+
 \tableofcontents
 
 Describes the terms under which ElsterBooks is distributed.

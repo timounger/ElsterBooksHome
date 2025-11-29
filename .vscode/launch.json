@@ -1,0 +1,60 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "run_app", // configuration name
+      "type": "debugpy", // debugging of python scripts
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",  // python interpretor
+      "request": "launch",  // launch: start debugging; attach: attach a running process
+      "program": "${workspaceFolder}/Source/app.py",  // file to run
+      "cwd": "${workspaceFolder}/Source",  // Current Working Director
+      "args": [],  // arguments of running file
+      "console": "integratedTerminal",  // integratedTerminal: run in integrated terminal; externalTerminal; internalConsole
+      "justMyCode": false  // true: debug only my code; false: debug all code
+    },
+    {
+      "name": "generate_executable",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "request": "launch",
+      "program": "${workspaceFolder}/Executable/generate_executable.py",
+      "cwd": "${workspaceFolder}/Executable",
+      "args": [],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "run_py_preprocessor",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "request": "launch",
+      "program": "${workspaceFolder}/Test/py_preprocessor.py",
+      "cwd": "${workspaceFolder}/Test",
+      "args": [],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "run_create_demo_data",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "request": "launch",
+      "program": "${workspaceFolder}/Test/create_demo_data.py",
+      "cwd": "${workspaceFolder}/Test",
+      "args": [],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    },
+    {
+      "name": "run_doxygen_to_google_doc",
+      "type": "debugpy",
+      "python": "${workspaceFolder}/.venv/Scripts/python.exe",
+      "request": "launch",
+      "program": "${workspaceFolder}/Test/doxygen_to_google_doc.py",
+      "cwd": "${workspaceFolder}/Test",
+      "args": [],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

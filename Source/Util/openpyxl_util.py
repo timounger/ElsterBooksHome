@@ -88,9 +88,9 @@ class XLSCreator():
         @brief Set page margins in cm
         @param worksheet : select worksheet
         @param left : left margin in cm
-        @param right : left margin in cm
-        @param top : left margin in cm
-        @param bottom : left margin in cm
+        @param right : right margin in cm
+        @param top : top margin in cm
+        @param bottom : bottom margin in cm
         """
         if left is not None:
             worksheet.page_margins.left = left * PAGE_MARGIN_FACTOR

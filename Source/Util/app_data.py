@@ -16,6 +16,8 @@ import platform
 import subprocess
 from subprocess import CompletedProcess
 import traceback
+import importlib.util
+import inspect
 
 if platform.system() == 'Windows':
     import win32crypt
@@ -171,6 +173,39 @@ def group_menu(parent: "MainWindow", l_actions: list[QAction], actual_value: Any
     return action_group
 
 
+def try_load_plugin(name: str, path: str):
+    """!
+    @brief Try to load plugin.
+    @param name : plugin name
+    @param path : plugin path
+    @return loaded module
+    """
+    if os.path.isfile(path):
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    else:
+        module = None
+    return module
+
+
+def function_accepts_params(func, *args):
+    """!
+    @brief Check if function accepts params
+    @param func : function
+    @param args : arguments
+    @return accept status
+    """
+    accept_status = False
+    sig = inspect.signature(func)
+    try:
+        sig.bind(*args)
+        accept_status = True
+    except TypeError:
+        accept_status = False
+    return accept_status
+
+
 # Files and Paths
 # https://icons8.com/icons/fluency-systems-regular
 # https://www.flaticon.com/free-icon/list-search_7560656
@@ -243,8 +278,13 @@ ICON_UPDATE_LIGHT = resource_path("Resources/Icon/update_light.svg")
 ICON_UPDATE_DARK = resource_path("Resources/Icon/update_dark.svg")
 ICON_TICK_GREEN = resource_path("Resources/Icon/tick_green.png")
 ICON_CROSS_RED = resource_path("Resources/Icon/cross_red.png")
+ICON_LICENSE_LIGHT = resource_path("Resources/Icon/license_light.png")
+ICON_LICENSE_DARK = resource_path("Resources/Icon/license_dark.png")
 
 ICON_WARNING = resource_path("Resources/Icon/warning.png")
+
+# License
+LICENSE_FILE = resource_path("LICENSE.md")
 
 # schemata
 SCHEMATA_PATH = resource_path("Resources/schemata/")
@@ -324,6 +364,8 @@ S_KEY_UPDATE_VERSION = "update_version"
 S_DEFAULT_UPDATE_VERSION = "0.0.0"
 S_KEY_INVOICE_OPTION = "invoice_option"
 E_DEFAULT_INVOICE_OPTION = EInvoiceOption.ZUGFERD
+S_QR_CODE = "qr_code"
+B_DEFAULT_QR_CODE = False
 
 S_KEY_CONTACTS_COLUMN = "contacts"
 S_KEY_DOCUMENT_COLUMN = "document"
@@ -596,6 +638,34 @@ def read_invoice_option() -> EInvoiceOption:
         invoice_option = E_DEFAULT_INVOICE_OPTION
         handle.endGroup()
     return invoice_option
+
+
+def write_qr_code_settings(b_qr_code: bool) -> None:
+    """!
+    @brief Writes the QR code settings to persistent storage
+    @param b_qr_code : QR code status
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_SETTINGS)
+    handle.setValue(S_QR_CODE, b_qr_code)
+    handle.endGroup()
+
+
+def read_qr_code_settings() -> bool:
+    """!
+    @brief Reads the QR code settings from persistent storage
+    @return QR code status
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_SETTINGS)
+        b_qr_code = bool(get_registry_value(handle, S_QR_CODE) == "true")
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("QR Code not found, using default values (%s)", str(e))
+        b_qr_code = B_DEFAULT_QR_CODE
+        handle.endGroup()
+    return b_qr_code
 
 
 def write_table_column(key: str, d_config: dict[str, bool]) -> None:

@@ -59,9 +59,10 @@ class UpdateDownloader(QThread):
         super().__init__()
         self.latest_version = None
 
-    def download_update(self) -> None:
+    def download_update(self) -> bool:
         """!
         @brief Download update
+        @return success_status : download success status
         """
         success_status = False
         url = f"https://github.com/{__owner__}/{__repo__}/releases/download/v{self.latest_version}/{__title__}.exe"

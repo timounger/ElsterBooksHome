@@ -13,11 +13,12 @@ from datetime import datetime
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QDate, Qt
 from PyQt6.QtGui import QIcon, QPixmap, QAction
-from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout, QMessageBox
 
 from Source.version import __title__
-from Source.Util.app_data import EInvoiceOption, read_invoice_option, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, \
-    ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, write_invoice_option
+from Source.Util.app_data import EInvoiceOption, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, \
+    ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, \
+    write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, try_load_plugin, function_accepts_params
 from Source.Views.dialogs.dialog_invoice_general_ui import Ui_DialogInvoice
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
 from Source.Views.widgets.invoice_item_data_ui import Ui_InvoiceItemData
@@ -28,22 +29,21 @@ from Source.Model.company import ECompanyFields, LOGO_BRIEF_PATH, COMPANY_BOOKIN
     COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, COMPANY_PAYMENT_FIELD, COMPANY_DEFAULT_FIELD
 from Source.Model.contacts import EContactFields, CONTACT_CONTACT_FIELD, CONTACT_ADDRESS_FIELD
 from Source.Model.general_invoice import create_general_invoice
+from Source.Model.invoice_number import InvoiceNumber
 from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, INVOICE_TEMPLATE_FILE_TYPES, \
-    DATE_FORMAT_XINVOICE, EReceiptFields, JSON_FILE_TYPES, read_json_file, write_json_file, DATE_FORMAT_XML, \
+    DATE_FORMAT_XINVOICE, JSON_FILE_TYPES, read_json_file, write_json_file, DATE_FORMAT_XML, \
     PDF_TYPE, XML_TYPE, JSON_TYPE
 from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
     D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_CHARGE_REASON_CODE, D_EXEMPTION_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_invoice import write_customer_to_json, write_company_to_json, fill_invoice_data
 from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only, set_combo_box_items, set_line_edit_read_only, \
     set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice
-from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json
+from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json, normalize_decimal
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
 log = logging.getLogger(__title__)
 
-B_DEBUG_FILL = False
-I_MAX_INVOICE_NUMBER = 100
 I_MAX_POSITIONS = 100
 
 
@@ -129,22 +129,6 @@ def config_invoice_type_btn(dialog: Any) -> None:
             dialog.action_create_zugferd.triggered.connect(lambda: dialog.create_invoice(EInvoiceOption.ZUGFERD))
 
 
-def create_invoice_number(date: QDate, number: Optional[int] = None) -> str | None:
-    """!
-    @brief Get invoice number depend on invoice date.
-    @param date : date to create invoice number
-    @param number : number suffix of invoice number
-    @return invoice number
-    """
-    if number is None:
-        number = 0
-    if number < I_MAX_INVOICE_NUMBER:
-        invoice_number = f"{str((date.year()%100)).zfill(2)}{str(date.month()).zfill(2)}-{str(date.day()).zfill(2)}{str(number).zfill(2)}"
-    else:
-        invoice_number = None
-    return invoice_number
-
-
 class InvoiceDialog(QDialog, Ui_DialogInvoice):
     """!
     @brief Invoice dialog.
@@ -161,11 +145,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.setWindowTitle("Rechnung erstellen")
         self.ui = ui
         self.due_days_changed = False  # True=due days changed; False=due date changed
+        self.c_invoice_number = InvoiceNumber(ui)
 
         # select customer data
         self.customer = None
-        if B_DEBUG_FILL:
-            self.customer = self.ui.tab_contacts.l_data[0]
         self.default_uid = uid
         self.extended_mode = False
         self.ui_invoice_data = None
@@ -288,10 +271,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.update_total_data()
 
         # customer
-        if B_DEBUG_FILL:
-            index_to_set = 0
-        else:
-            index_to_set = None
+        index_to_set = None
         for i, contact in enumerate(self.ui.tab_contacts.l_data):
             self.cb_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
             if self.default_uid:
@@ -303,6 +283,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             self.contact_template_activated(index_to_set)
         else:
             self.cb_contact_template.setCurrentIndex(-1)
+
+        self.cb_qr_code.setChecked(read_qr_code_settings())
 
         self.btn_import.clicked.connect(self.import_btn_clicked)
         self.btn_export.clicked.connect(self.export_btn_clicked)
@@ -373,17 +355,6 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.de_invoice_reference.setDate(actual_date)  # Datum (BT-26)
         # Freitext zur Rechnung (BT-22)
         dialog.pte_note.setPlainText("")
-        if B_DEBUG_FILL:
-            l_text = []
-            l_text.append("<b><font backColor='yellow'> Ihre Maßnahme in Hochdorf, Kirchheimer Str. 47 und 49</font></b>")
-            l_text.append("")
-            l_text.append("<b>Grundstücksneuordung Hauptstraße Straße xx / yy, Spongebob / Tadeus / Patrick</b>")
-            l_text.append("")
-            l_text.append("<u>Folgende Leistungen wurden durchgeführt:</u> Ausführungszeit: Januar - Juli 2020")
-            l_text.append("")
-            l_text.append("<b>Vertragsgestaltung und Vertragspläne</b>")
-            l_text.append("mit Besprechungen und Koordination von Notar, Büro für Stadtentwicklung und Gemeinde Abrechnung der Leistungen gemäß beiliegender Stundenliste")
-            dialog.pte_note.setPlainText("\n".join(l_text))
         # Einleitungstext
         dialog.pte_introduction_text.setPlainText("")
 
@@ -643,8 +614,6 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         actual_date = QDate.currentDate()
         # Name (BT-153)
         item_dialog.le_item_name.setText("")
-        if B_DEBUG_FILL:
-            item_dialog.le_item_name.setText("Item")
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
         item_dialog.dsb_item_vat_rate.setValue(self.default_tax_rate)
         # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
@@ -665,28 +634,20 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         item_dialog.le_object_reference.setText("")
         # Artikelbeschreibung (BT-154)
         item_dialog.pte_item_description.setPlainText("")
-        if B_DEBUG_FILL:
-            item_dialog.pte_item_description.setPlainText("Artikelbeschreibung")
         # Menge (BT-129)
         item_dialog.dsb_item_quantity.setValue(1)
         # Einheit (BT-130) D_UNIT
         set_combo_box_items(item_dialog.cb_item_quantity_unit, "H87", D_UNIT)
         # Einzelpreis (Netto) (BT-146)
         item_dialog.dsb_item_net_unit_price.setValue(0.0)
-        if B_DEBUG_FILL:
-            item_dialog.dsb_item_net_unit_price.setValue(100)
         # Einzelpreis (Brutto)
         item_dialog.dsb_item_gross_unit_price.setValue(0.0)
-        if B_DEBUG_FILL:
-            item_dialog.dsb_item_gross_unit_price.setValue(119)
         # Basismenge zum Artikelpreis (BT-149)
         item_dialog.dsb_item_basis_quantity.setValue(1)
         # Steuerbetrag
         set_spin_box_read_only(item_dialog.dsb_item_vat_amount, 0.0)
         # Gesamtpreis (Netto) (BT-131)
         set_spin_box_read_only(item_dialog.dsb_item_net_amount, 0.0)
-        if B_DEBUG_FILL:
-            item_dialog.dsb_item_net_amount.setValue(100)
         # Gesamtpreis (Brutto)
         set_spin_box_read_only(item_dialog.dsb_item_gross_price, 0.0)
 
@@ -1229,30 +1190,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @param date : date
         """
         self.due_date_changed(None)  # update due date
-
-        # get not awarded invoice number
-        number = 0
-        while number < I_MAX_INVOICE_NUMBER:
-            invoice_number = create_invoice_number(date, number=number)
-            not_awarded = True
-            for income in self.ui.tab_income.l_data:
-                if income[EReceiptFields.INVOICE_NUMBER] == invoice_number:
-                    not_awarded = False
-                    break
-            if not_awarded:
-                break
-            number += 1
-        if not_awarded:
-            self.ui_invoice_data.le_invoice_number.setText(invoice_number)
-            currentDate = QDate.currentDate()
-            if date != currentDate:
-                self.ui_invoice_data.de_invoice_date.setStyleSheet("QDateEdit { background-color: red; }")
-            else:
-                self.ui_invoice_data.de_invoice_date.setStyleSheet("border: 1px solid palette(dark);")
+        # invoice number
+        invoice_number = self.c_invoice_number.create_invoice_number(date)
+        self.ui_invoice_data.le_invoice_number.setText(invoice_number)
+        # invoice date
+        currentDate = QDate.currentDate()
+        if date != currentDate:
+            self.ui_invoice_data.de_invoice_date.setStyleSheet("QDateEdit { background-color: red; }")
         else:
-            self.ui_invoice_data.le_invoice_number.setText("")
-            self.ui_invoice_data.le_invoice_number.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine freie Rechnungsnummer gefunden.", b_highlight=True)
+            self.ui_invoice_data.de_invoice_date.setStyleSheet("border: 1px solid palette(dark);")
 
     def due_date_changed(self, due_days_changed: None | bool) -> None:
         """!
@@ -1320,9 +1266,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         else:
             invoice_data = self.read_ui_data_to_json()
             write_invoice_option(e_invoice_option)
+            create_qr_code = self.cb_qr_code.isChecked()
+            write_qr_code_settings(create_qr_code)
             custom_invoice = False
             if not custom_invoice:
-                create_qr_code = self.cb_qr_code.isChecked()
+                plugin = try_load_plugin("custom_invoice", "plugins/custom_invoice.py")
+                if plugin and hasattr(plugin, "create_custom_invoice"):
+                    func = plugin.create_custom_invoice
+                    if function_accepts_params(func, invoice_data, e_invoice_option, create_qr_code):
+                        func(invoice_data, e_invoice_option, create_qr_code)
+                        custom_invoice = True
+                    else:
+                        QMessageBox.warning(self, "Plugin Hinweis", "Dein verwendetes Plugin wird nicht mehr unterstützt.\nEine Rechnung im Standardformat wird erstellt!")
+            if not custom_invoice:
                 create_general_invoice(invoice_data, e_invoice_option, create_qr_code)
             self.close()
 
@@ -1500,7 +1456,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             data_items.append(data_item)
             if b_extended:
                 # Steuern
-                vat_key = f"{vat_code}-{vat_rate}"
+                vat_rate_normalized = normalize_decimal(vat_rate)
+                vat_key = f"{vat_code}-{vat_rate_normalized}"
                 if vat_key not in data_taxes:
                     tax_widget = dialog.tax_widgets[len(data_taxes) - 1]
                     vat_value = {

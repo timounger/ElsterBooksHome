@@ -8,14 +8,16 @@
 import sys
 import logging
 from typing import TYPE_CHECKING, Any, Optional
+import markdown
 
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QTransform, QCloseEvent
-from PyQt6.QtWidgets import QDialog
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextEdit
 from PyQt6.QtCore import Qt, QTimer, QRectF
 from PyQt6.QtSvg import QSvgRenderer
 
-from Source.version import __title__, __description__, __version__, __home__, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
-from Source.Util.app_data import ICON_APP, ICON_UPDATE_LIGHT, ICON_UPDATE_DARK, ICON_TICK_GREEN, ICON_CROSS_RED, thread_dialog
+from Source.version import __title__, __description__, __version__, __website__, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
+from Source.Util.app_data import ICON_APP, ICON_UPDATE_LIGHT, ICON_UPDATE_DARK, ICON_TICK_GREEN, ICON_CROSS_RED, thread_dialog, \
+    ICON_LICENSE_LIGHT, ICON_LICENSE_DARK, LICENSE_FILE
 from Source.Views.dialogs.dialog_about_ui import Ui_AboutDialog
 from Source.Model.update_service import get_tool_update_status
 from Source.Worker.update_downloader import UpdateDownloader, generate_and_start_updater_script
@@ -23,6 +25,34 @@ if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
 log = logging.getLogger(__title__)
+
+
+class LicenseDialog(QDialog):
+    """!
+    @brief License dialog.
+    @param ui : main window
+    """
+
+    def __init__(self, ui: "MainWindow", *args: Any, **kwargs: Any) -> None:
+        super().__init__(parent=ui, *args, **kwargs)  # type: ignore
+        self.resize(600, 400)
+        self.setWindowTitle("Lizenz")
+        layout = QVBoxLayout(self)
+        te_text = QTextEdit(self)
+        te_text.setReadOnly(True)
+        with open(LICENSE_FILE, mode="r", encoding="utf-8") as f:
+            text = f.read()
+            text = text[text.find("#"):]
+            te_text.setHtml(markdown.markdown(text))
+        layout.addWidget(te_text)
+        thread_dialog(self)
+
+    def show_dialog(self) -> None:
+        """!
+        @brief Show dialog
+        """
+        self.show()
+        self.exec()
 
 
 class AboutDialog(QDialog, Ui_AboutDialog):
@@ -100,7 +130,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         version_info += "  Prerelease Build"
         self.lbl_version.setStyleSheet("color: orange;")
         license_text = __license__
-        home_link = f"Home: <a href=\"{__home__}\">{__home__}</a>"
+        home_link = f"Home: <a href=\"{__website__}\">{__website__}</a>"
         if GIT_SHORT_SHA is not None:
             version_info += f"\nGit SHA: {GIT_SHORT_SHA}"
         if BUILD_NAME:
@@ -108,7 +138,10 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.lbl_version.setText(version_info)
         self.lbl_copyright.setText(__copyright__)
         self.lbl_license.setText(license_text)
+        self.btn_license.setIcon(QIcon(ICON_LICENSE_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_LICENSE_DARK))
+        self.btn_license.clicked.connect(lambda: LicenseDialog(self.ui))
         self.lbl_home.setText(home_link)
+        self.lbl_home.setOpenExternalLinks(True)
         self.imagePlaceholder.setPixmap(QPixmap(ICON_APP))
         self.setWindowTitle(f"Über {__title__}")
         self.setWindowIcon(QIcon(ICON_APP))

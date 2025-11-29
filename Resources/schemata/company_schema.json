@@ -190,6 +190,10 @@
           },
           "description": "Liste möglicher Gruppen"
         },
+        "invoice_number": {
+          "type": "string",
+          "description": "Rechnungsnummer"
+        },
         "payment_days": {
           "type": "integer",
           "description": "Zahlungsziel in Tage"
@@ -209,12 +213,13 @@
           "income_group",
           "expenditure_group",
           "groups",
+          "invoice_number",
           "payment_days",
           "mail_subject",
           "mail_text"
         ],
         "additionalProperties": false,
-        "maxProperties": 9
+        "maxProperties": 10
       }
     }
   },

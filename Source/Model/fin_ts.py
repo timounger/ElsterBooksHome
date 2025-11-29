@@ -364,7 +364,7 @@ class FinTs:
                         f.write(client_blob)
 
                 success = True
-                success_text = f"Es wurden {len(transactions)} Transaktionen für das Konto {account.iban} gefunden."
+                success_text = f"Es wurden {len(transactions)} Transaktionen für das Konto {select_account.iban} gefunden."
             else:
                 success_text = "Account nicht gefunden"
         return success, success_text

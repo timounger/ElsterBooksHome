@@ -17,7 +17,7 @@ from Source.Model.data_handler import read_json_file, validate_data, read_json_f
 
 log = logging.getLogger(__title__)
 
-JSON_VERSION_COMPANY = "02.01.00"
+JSON_VERSION_COMPANY = "02.02.00"
 
 COMPANY_FOLDER = "company"
 COMPANY_TYPE = "company"
@@ -78,6 +78,7 @@ class ECompanyFields(str, enum.Enum):
     INCOME_GROUP = "income_group"  # default income group
     EXPENDITURE_GROUP = "expenditure_group"  # default expenditure group
     GROUPS = "groups"  # receipt groups
+    INVOICE_NUMBER = "invoice_number"  # invoice number
     PAYMENT_DAYS = "payment_days"  # payment days
     MAIL_SUBJECT = "mail_subject"  # mail subject
     MAIL_TEXT = "mail_text"  # mail text
@@ -141,6 +142,7 @@ D_COMPANY_TEMPLATE = {
         ECompanyFields.INCOME_GROUP: "",  # default income group
         ECompanyFields.EXPENDITURE_GROUP: "",  # default expenditure group
         ECompanyFields.GROUPS: [],  # receipt groups
+        ECompanyFields.INVOICE_NUMBER: "",  # invoice number
         ECompanyFields.PAYMENT_DAYS: 14,  # payment days
         ECompanyFields.MAIL_SUBJECT: DEFAULT_MAIL_SUBJECT,  # mail subject
         ECompanyFields.MAIL_TEXT: DEFAULT_MAIL_TEXT  # mail text

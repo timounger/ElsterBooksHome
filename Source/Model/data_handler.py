@@ -241,6 +241,39 @@ def convert_amount(string: str) -> int | float:
     return amount
 
 
+def convert_to_de_amount(amount: int | float) -> str:
+    """!
+    @brief Convert to german amount
+    @param amount : amount to convert
+    @return converted amount string
+    """
+    formatted = f"{amount:,.2f}"  # equals: 1,234,567.89
+    amount_string = formatted.replace(",", "X").replace(".", ",").replace("X", ".")
+    return amount_string
+
+
+def convert_to_rate(rate: int | float) -> str:
+    """!
+    @brief Convert to rate
+    @param rate : rate
+    @return converted rate string
+    """
+    if rate.is_integer():
+        rate = int(rate)
+    return f"{rate} %"
+
+
+def convert_to_de_date(date_string: str) -> str:
+    """!
+    @brief Convert to german date
+    @param date_string : date in format YYYY-MM-DD
+    @return converted date in format DD.MM.YYYY
+    """
+    date_datetime = datetime.strptime(str(date_string), DATE_FORMAT_XML)
+    converted_date = date_datetime.strftime(DATE_FORMAT_JSON)
+    return converted_date
+
+
 def fill_data(template: dict[Any, Any], data: dict[Any, Any]) -> dict[Any, Any]:
     """!
     @brief Fill data to template dictionary.

@@ -32,6 +32,8 @@ env:
   PYTHON_ARCH: x64
   PYTHON_PACKAGE_INST_PATH: ./Documentation/Installation
   PYTHON_PACKAGE_INST_FILE: install_packages.bat
+  MKDOCSTRINGS_OUTPUT_NAME: public
+  MKDOCSTRINGS_OUTPUT_PATH: ./Documentation/public
   BINARY_EXE_NAME: bin_Exe
   BINARY_PATH: ./Executable/bin
 
@@ -55,6 +57,47 @@ on:
 # WORKFLOW JOBS
 #--------------------------------------------------------------------------------
 jobs:
+  doc-MkDocStrings:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          architecture: ${{ env.PYTHON_ARCH }}
+      - name: Install Packages
+        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
+        run: ${{ env.PYTHON_PACKAGE_INST_FILE }}
+      - name: Run MkDocStrings
+        working-directory: ./Documentation
+        run: run_mkdoc_build.bat
+      - name: Upload MkDocStrings Output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.MKDOCSTRINGS_OUTPUT_NAME }}
+          path: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
+  #------------------------------------------------------------------------------
+  doc-Pages:
+    needs: doc-MkDocStrings
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Download MkDocStrings Output
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.MKDOCSTRINGS_OUTPUT_NAME }}
+          path: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
+      - name: Deploy to Github Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
+  #------------------------------------------------------------------------------
   build-Exe:
     if: (github.event_name == 'push')
     runs-on: windows-latest

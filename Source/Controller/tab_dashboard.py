@@ -133,9 +133,7 @@ class TabDashboard:
         set_spin_box_read_only(self.ui_dashboard.dsb_income_net, income_net)
         set_spin_box_read_only(self.ui_dashboard.dsb_expenditure_net, expenditure_net)
         set_spin_box_read_only(self.ui_dashboard.dsb_profit_net, diff_net)
-        data = ""
-        for warning in self.l_warnings:
-            data += f"\n{warning}"
+        data = "\n".join(str(warning) for warning in self.l_warnings)
         if len(self.l_warnings) > 0:
             self.ui_dashboard.dashboard_text.setTextColor(QColor("orange"))
             self.ui.set_status("Falsche Daten vorhanden.", b_warning=True)
