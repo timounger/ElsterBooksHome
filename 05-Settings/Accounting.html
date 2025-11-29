@@ -1234,6 +1234,8 @@
       
         
       
+        
+      
     
     
     
@@ -1326,6 +1328,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Buchhaltung
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="Accounting.html" class="md-nav__link md-nav__link--active">
         
   
@@ -1342,6 +1362,69 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Inhaltsverzeichnis">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#umsatzsteuer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Umsatzsteuer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gewinnermittlung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gewinnermittlung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versteuerungsart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versteuerungsart
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#steuersatze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steuersätze
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1363,6 +1446,34 @@
     
   
     Standardwerte
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="MailTemplate.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E-Mail-Vorlagen
   
 
     
@@ -1550,6 +1661,58 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Inhaltsverzeichnis
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#umsatzsteuer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Umsatzsteuer
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gewinnermittlung" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gewinnermittlung
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#versteuerungsart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Versteuerungsart
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#steuersatze" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Steuersätze
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1569,9 +1732,30 @@
 
 
 <h1 id="buchhaltung">Buchhaltung<a class="headerlink" href="#buchhaltung" title="Permanent link">&para;</a></h1>
-<p>In diesem Bereich konfigurieren Sie die steuerliche Einstufung Ihres Unternehmens.  </p>
-<p>Die korrekten Angaben sind erforderlich, damit ElsterBooks Steuerdokumente wie <strong>EÜR</strong>, <strong>UStVA</strong> und <strong>Umsatzsteuererklärung</strong> automatisch und korrekt berechnen kann.  </p>
-<p>Stellen Sie sicher, dass alle Angaben aktuell und vollständig sind, um fehlerfreie Auswertungen und Exporte zu gewährleisten.</p>
+<p>In diesem Bereich konfigurieren Sie die steuerliche Einstufung und die relevanten Buchhaltungsparameter Ihres Unternehmens.<br />
+Die korrekten Angaben sind erforderlich, damit ElsterBooks steuerliche Auswertungen sowie Dokumente wie <strong>EÜR</strong>, <strong>UStVA</strong> und <strong>Umsatzsteuererklärung</strong> automatisch und korrekt erstellen kann.</p>
+<h2 id="umsatzsteuer">Umsatzsteuer<a class="headerlink" href="#umsatzsteuer" title="Permanent link">&para;</a></h2>
+<p>Wählen Sie die Umsatzsteuerregelung, unter der Ihr Unternehmen steuerlich geführt wird:</p>
+<ul>
+<li><strong>Standard</strong>: Umsatzsteuer wird erhoben und auf Rechnungen ausgewiesen; Vorsteuerabzug ist möglich.  </li>
+<li><strong>Kleinunternehmer</strong>: Keine Umsatzsteuer gemäß § 19 UStG ausweisen; kein Vorsteuerabzug.</li>
+</ul>
+<h2 id="gewinnermittlung">Gewinnermittlung<a class="headerlink" href="#gewinnermittlung" title="Permanent link">&para;</a></h2>
+<p>Legt fest, wie der steuerliche Gewinn ermittelt wird:</p>
+<ul>
+<li><strong>EÜR</strong> (Einnahmen-Überschuss-Rechnung): Standardverfahren für Einzelunternehmen, Freiberufler und kleine Betriebe.  </li>
+<li><strong>GuV</strong> (Gewinn- und Verlustrechnung): Pflicht für Kapitalgesellschaften sowie bei bilanzierungspflichtigen Unternehmen.</li>
+</ul>
+<h2 id="versteuerungsart">Versteuerungsart<a class="headerlink" href="#versteuerungsart" title="Permanent link">&para;</a></h2>
+<p>Bestimmt, wann Umsätze steuerlich wirksam werden:</p>
+<ul>
+<li><strong>Soll-Versteuerung</strong>: Umsatzsteuer entsteht zum Zeitpunkt der Rechnungsstellung.  </li>
+<li><strong>Ist-Versteuerung</strong>: Umsatzsteuer entsteht erst beim tatsächlichen Zahlungseingang (bei Berechtigung).</li>
+</ul>
+<h2 id="steuersatze">Steuersätze<a class="headerlink" href="#steuersatze" title="Permanent link">&para;</a></h2>
+<p>Geben Sie hier – durch Leerzeichen getrennt – die von Ihrem Unternehmen verwendeten Steuersätze an.<br />
+Der am häufigsten verwendete Steuersatz sollte an <strong>erster Stelle</strong> stehen.</p>
+<p><em>Beispiel:</em> <code>19 7 0</code></p>
 
 
 

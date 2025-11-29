@@ -18,7 +18,7 @@
         <link rel="prev" href="Accounting.html">
       
       
-        <link rel="next" href="AISettings.html">
+        <link rel="next" href="MailTemplate.html">
       
       
         
@@ -1234,6 +1234,8 @@
       
         
       
+        
+      
     
     
     
@@ -1405,10 +1407,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#e-mail-vorlagen" class="md-nav__link">
+  <a href="#rechnungsnummer-detaillierte-beschreibung" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E-Mail-Vorlagen
+        Rechnungsnummer (detaillierte Beschreibung)
       
     </span>
   </a>
@@ -1419,6 +1421,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="MailTemplate.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E-Mail-Vorlagen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1605,10 +1635,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#e-mail-vorlagen" class="md-nav__link">
+  <a href="#rechnungsnummer-detaillierte-beschreibung" class="md-nav__link">
     <span class="md-ellipsis">
       
-        E-Mail-Vorlagen
+        Rechnungsnummer (detaillierte Beschreibung)
       
     </span>
   </a>
@@ -1636,15 +1666,39 @@
 
 
 <h1 id="standardwerte">Standardwerte<a class="headerlink" href="#standardwerte" title="Permanent link">&para;</a></h1>
-<p>Mit den Standardwerten können bestimmte Felder automatisch mit vordefinierten Werten befüllt werden.  </p>
-<h2 id="e-mail-vorlagen">E-Mail-Vorlagen<a class="headerlink" href="#e-mail-vorlagen" title="Permanent link">&para;</a></h2>
-<p>Sie können individuelle E-Mail-Vorlagen erstellen, die beim Versand automatisch verwendet werden.  </p>
-<p>Verfügbare Platzhalter werden im Format <code>[%tag_name%]</code> eingefügt:  </p>
+<p>Mit den Standardwerten können bestimmte Felder in Belegen, Rechnungen und Buchungen automatisch mit vordefinierten Werten befüllt werden.<br />
+Dies erleichtert die Dateneingabe und sorgt für einheitliche Prozesse.</p>
 <ul>
-<li>Der <code>Tagname</code> entspricht exakt dem Feldnamen der zugehörigen JSON-Datei.  </li>
-<li>Beim Versand werden die Platzhalter automatisch durch die entsprechenden Daten ersetzt.  </li>
+<li><strong>UStVA-Periode:</strong> Voreinstellung für den Abgabezeitraum der Umsatzsteuervoranmeldung (monatlich oder quartalsweise).  </li>
+<li><strong>Bezahlt:</strong> Legt fest, ob der Status „bezahlt“ bei neuen Belegen standardmäßig aktiviert ist.  </li>
+<li><strong>Bar bezahlt:</strong> Automatische Voreinstellung, ob ein neuer Beleg als Barzahlung gekennzeichnet wird.  </li>
+<li><strong>Standard Gruppe Einnahme:</strong> Vordefinierte Kategorie für neue Einnahmebelege.  </li>
+<li><strong>Standard Gruppe Ausgabe:</strong> Vordefinierte Kategorie für neue Ausgabenbelege.  </li>
+<li><strong>Liste aller Gruppen:</strong> Auflistung aller üblichen Einnahme- und Ausgabenkategorien für eine schnellere Auswahl.  </li>
+<li><strong>Rechnungsnummer:</strong> Siehe detaillierte Beschreibung unten.  </li>
+<li><strong>Zahlungsziel:</strong> Voreingestellte Anzahl an Tagen bis zur Fälligkeit einer Rechnung (z. B. 14, 30, 60 Tage).  </li>
 </ul>
-<p>Dies ermöglicht eine schnelle, fehlerfreie und personalisierte Kommunikation mit dem Kunden.</p>
+<h2 id="rechnungsnummer-detaillierte-beschreibung">Rechnungsnummer (detaillierte Beschreibung)<a class="headerlink" href="#rechnungsnummer-detaillierte-beschreibung" title="Permanent link">&para;</a></h2>
+<p>Die Rechnungsnummer kann flexibel über Platzhalter und Sequenzen aufgebaut werden, um individuelle Nummerierungssysteme abzubilden.  </p>
+<p><strong>Verfügbare Platzhalter:</strong></p>
+<ul>
+<li><code>{YYYY}</code> – Vierstellige Jahreszahl (z. B. 2025)  </li>
+<li><code>{YY}</code> – Zweistellige Jahreszahl (z. B. 25)  </li>
+<li><code>{MM}</code> – Monat zweistellig (01–12)  </li>
+<li><code>{DD}</code> – Tag zweistellig (01–31)  </li>
+<li><code>{SEQ:&lt;reset&gt;:&lt;length&gt;:&lt;start&gt;:&lt;increment&gt;}</code> – Laufende Nummer  </li>
+<li><strong>reset:</strong> none / yearly / monthly / daily  </li>
+<li><strong>length:</strong> Stellenanzahl (mit führenden Nullen)  </li>
+<li><strong>start:</strong> Startwert der Sequenz  </li>
+<li><strong>increment:</strong> Schrittweite der Nummerierung  </li>
+</ul>
+<p><strong>Beispiele:</strong></p>
+<ul>
+<li><code>RE-{YYYY}-{SEQ:none:4:1:1}</code> → <code>RE-2025-0001</code>, <code>RE-2025-0002</code>  </li>
+<li><code>{YYYY}{MM}-{SEQ:monthly:3:1:1}</code> → Januar: <code>202501-001</code>, Februar: <code>202502-001</code>  </li>
+<li><code>{YY}{MM}{DD}-{SEQ:daily:2:0:1}</code> → <code>250312-00</code>, <code>250312-01</code>  </li>
+<li><code>{SEQ:none:6:1:1}</code> → <code>000001</code>, <code>000002</code>  </li>
+</ul>
 
 
 
@@ -1697,13 +1751,13 @@
         
         
           
-          <a href="AISettings.html" class="md-footer__link md-footer__link--next" aria-label="Weiter: KI-Einstellungen">
+          <a href="MailTemplate.html" class="md-footer__link md-footer__link--next" aria-label="Weiter: E-Mail-Vorlagen">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Weiter
               </span>
               <div class="md-ellipsis">
-                KI-Einstellungen
+                E-Mail-Vorlagen
               </div>
             </div>
             <div class="md-footer__button md-icon">

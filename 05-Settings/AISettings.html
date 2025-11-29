@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://github.com/timounger/ElsterBooksHome/05-Settings/AISettings.html">
       
       
-        <link rel="prev" href="Defaults.html">
+        <link rel="prev" href="MailTemplate.html">
       
       
         <link rel="next" href="Logo.html">
@@ -1234,6 +1234,8 @@
       
         
       
+        
+      
     
     
     
@@ -1370,6 +1372,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="MailTemplate.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    E-Mail-Vorlagen
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1437,6 +1467,39 @@
     <span class="md-ellipsis">
       
         Verfügbare KI-Engines
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#modell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modell
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-key-nur-fur-chatgpt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API-Key (nur für ChatGPT)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#speicherung-der-einstellungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speicherung der Einstellungen
       
     </span>
   </a>
@@ -1615,6 +1678,39 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#modell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Modell
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-key-nur-fur-chatgpt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API-Key (nur für ChatGPT)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#speicherung-der-einstellungen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speicherung der Einstellungen
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1639,10 +1735,25 @@
 <p>In diesem Bereich konfigurieren Sie die Funktionen zur automatischen Belegerkennung und Datenextraktion.</p>
 <h2 id="verfugbare-ki-engines">Verfügbare KI-Engines<a class="headerlink" href="#verfugbare-ki-engines" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>ChatGPT</strong>: Nutzt die Online-API von OpenAI. Ein gültiger API-Key ist erforderlich.  </li>
-<li><strong>Ollama (lokale KI)</strong>: Arbeitet vollständig offline. Erfordert jedoch ausreichend Rechenleistung und Speicher.</li>
+<li><strong>Deaktiviert:</strong> Keine KI-Unterstützung.  </li>
+<li><strong>ChatGPT (online):</strong> Nutzt die Online-API von OpenAI. Ein gültiger API-Key ist erforderlich.  </li>
+<li><strong>Ollama (offline):</strong> Arbeitet vollständig offline. Erfordert ausreichend Rechenleistung und Speicher.</li>
 </ul>
-<p>Die KI-Einstellungen und Zugangsdaten werden verschlüsselt in der Windows-Registrierung des aktuellen Benutzers gespeichert.</p>
+<h2 id="modell">Modell<a class="headerlink" href="#modell" title="Permanent link">&para;</a></h2>
+<p>Hier geben Sie das jeweils verwendete Sprachmodell der ausgewählten KI-Engine an.</p>
+<h2 id="api-key-nur-fur-chatgpt">API-Key (nur für ChatGPT)<a class="headerlink" href="#api-key-nur-fur-chatgpt" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Ein API-Key von OpenAI ist erforderlich, um die Online-Engine zu nutzen.  </li>
+<li>Sie können den Key über Ihr OpenAI-Konto erstellen:  </li>
+<li>Besuchen Sie <a href="https://platform.openai.com/account/api-keys">https://platform.openai.com/account/api-keys</a>  </li>
+<li>Melden Sie sich an oder erstellen Sie ein Konto.  </li>
+<li>Generieren Sie einen neuen API-Key und kopieren Sie ihn in das entsprechende Feld in den KI-Einstellungen.</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>Hinweis:</strong> Der API-Key muss über ein Guthaben verfügen, damit Anfragen an die OpenAI-API verarbeitet werden können. Stellen Sie sicher, dass Ihr Konto aufgeladen ist, bevor Sie die KI-Funktion nutzen.</p>
+</blockquote>
+<h2 id="speicherung-der-einstellungen">Speicherung der Einstellungen<a class="headerlink" href="#speicherung-der-einstellungen" title="Permanent link">&para;</a></h2>
+<p>Alle KI-Einstellungen und Zugangsdaten werden verschlüsselt in der <strong>Windows-Registrierung</strong> des aktuellen Benutzers gespeichert.</p>
 
 
 
@@ -1678,7 +1789,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Fußzeile" >
         
           
-          <a href="Defaults.html" class="md-footer__link md-footer__link--prev" aria-label="Zurück: Standardwerte">
+          <a href="MailTemplate.html" class="md-footer__link md-footer__link--prev" aria-label="Zurück: E-Mail-Vorlagen">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256l137.3-137.4c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg>
@@ -1688,7 +1799,7 @@
                 Zurück
               </span>
               <div class="md-ellipsis">
-                Standardwerte
+                E-Mail-Vorlagen
               </div>
             </div>
           </a>
