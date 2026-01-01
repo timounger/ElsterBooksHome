@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   ollama_ai.py
-@brief  Ollama AI
+@brief  Handle local AI models via Ollama with enhanced prompts
         https://ollama.com/blog/structured-outputs
 ********************************************************************************
 """
@@ -10,7 +10,6 @@ import logging
 import subprocess
 import enum
 from ollama import chat
-import psutil
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
@@ -23,27 +22,34 @@ log = logging.getLogger(__title__)
 
 class EOllamaModel(str, enum.Enum):
     """!
-    @brief Ollama model
+    @brief Ollama model. See https://ollama.com/library
     """
-    DEEPSEEK_R1_70B = "deepseek-r1:70b"  # 43GB
-    DEEPSEEK_R1_32B = "deepseek-r1:32b"  # 20GB
-    DEEPSEEK_R1_14B = "deepseek-r1:14b"  # 9GB
-    DEEPSEEK_R1_8B = "deepseek-r1:8b"  # 4.9GB
-    LLAMA3_3_70B = "llama3.3:70b"  # 43GB
-    PHI4_14B = "phi4:14b"  # 9.1GB
-    LLAMA3_2_3B = "llama3.2:3b"  # 2GB
+    # Meta
     LLAMA3_1_8B = "llama3.1:8b"  # 4.9GB
     LLAMA3_1_70B = "llama3.1:70b"  # 43GB
+    LLAMA3_2_1B = "llama3.2:1b"  # 1.3GB
+    LLAMA3_2_3B = "llama3.2:3b"  # 2GB
+    LLAMA3_3_70B = "llama3.3:70b"  # 43GB
+    # Mistral
+    MISTRAL_7B = "mistral:7b"  # 4.4GB
+    MISTRAL_SMALL_22B = "mistral-small:22b"  # 13GB
+    MISTRAL_SMALL_24B = "mistral-small:24b"  # 14GB
+    MISTRAL_SMALL3_1_24B = "mistral-small3.1:24b"  # 15GB
+    MISTRAL_SMALL3_2_24B = "mistral-small3.2:24b"  # 15GB
+    # Microsoft
+    PHI3_3_3B = "phi3:3.8b"  # 2.2GB
+    PHI3_14B = "phi3:14b"  # 7.9GB
+    PHI4_14B = "phi4:14b"  # 9.1GB
+    # Deepseek
+    DEEPSEEK_R1_1_5B = "deepseek-r1:1.5b"  # 1.1GB
+    DEEPSEEK_R1_7B = "deepseek-r1:7b"  # 4.7GB
+    DEEPSEEK_R1_8B = "deepseek-r1:8b"  # 5.2GB
+    DEEPSEEK_R1_14B = "deepseek-r1:14b"  # 9GB
+    DEEPSEEK_R1_32B = "deepseek-r1:32b"  # 20GB
+    DEEPSEEK_R1_70B = "deepseek-r1:70b"  # 43GB
 
 
-# set highest RAM at top for best auto selection
-D_OLLAMA_RAM_RES = {
-    EOllamaModel.LLAMA3_1_8B.value: 4.9,
-    EOllamaModel.LLAMA3_2_3B.value: 2,
-    EOllamaModel.LLAMA3_3_70B.value: 43,
-}
-
-I_RAM_OFFSET = 5  # more RAM in GB that model use
+DEFAULT_OLLAMA_MODEL = EOllamaModel.LLAMA3_1_8B.value
 
 
 class OllamaAI(QThread):
@@ -55,12 +61,12 @@ class OllamaAI(QThread):
     def __init__(self) -> None:
         super().__init__()
         self.init_check = False
-        self.model = read_ollama_model()  # selected model
-        self.l_models = []
-        self.i_ram_size = 0
-        self.b_ollama_installed = False
         self.b_ready = False
         self.file_path = None  # file to detect in actual call
+        self.b_ollama_installed = False
+        self.l_models = []
+        self.model = DEFAULT_OLLAMA_MODEL
+        self.set_model(read_ollama_model())
         self.initialize_ollama()
 
     def set_model(self, model: str) -> None:
@@ -68,19 +74,7 @@ class OllamaAI(QThread):
         @brief Set model
         @param model : model
         """
-        if self.model:
-            model = self.model  # use custom model if present
-
-        self.b_ready = False
-        if not self.b_ollama_installed:
-            log.debug("Ollama not installed model to: %s", model)
-        elif model not in self.l_models:
-            log.debug("Model not installed: %s", model)
-        else:
-            self.model = model
-            self.b_ready = True
-            log.debug("Changing Ollama model to: %s", model)
-        log.debug("Ollama ready status: %s", self.b_ready)
+        self.model = model if model else DEFAULT_OLLAMA_MODEL
         write_ollama_model(model)
 
     def get_ready_state(self) -> bool:
@@ -97,12 +91,10 @@ class OllamaAI(QThread):
         @brief Initialize Ollama
         """
         self.init_check = True
-        self.i_ram_size = self.get_ram_size()
+        self.b_ready = False
         self.b_ollama_installed = self.check_ollama_installed()
         if self.b_ollama_installed:
             self.l_models = self.list_available_models()
-        if not self.model:
-            self.set_auto_model()
         if self.model in self.l_models:
             self.b_ready = True
 
@@ -140,26 +132,6 @@ class OllamaAI(QThread):
         log.debug("Installed models: %s", models)
         return models
 
-    def get_ram_size(self) -> int:
-        """!
-        @brief Set auto model for Ollama AI
-        @return total RAM size in GB (rounded as integer)
-        """
-        total_ram = psutil.virtual_memory().total
-        total_ram_gb = round(total_ram / (1024 ** 3))
-        log.debug("Total RAM: %s GB", total_ram_gb)
-        return total_ram_gb
-
-    def set_auto_model(self) -> None:
-        """!
-        @brief Set auto model for Ollama AI
-        """
-        for model, req_ram in D_OLLAMA_RAM_RES.items():
-            if (req_ram + I_RAM_OFFSET <= self.i_ram_size) and (model in self.l_models):
-                log.debug("Set auto model: %s", model)
-                self.set_model(model)
-                break
-
     def ask_ollama(self, text: str) -> InvoiceData | None:
         """!
         @brief Ask ollama
@@ -186,7 +158,7 @@ class OllamaAI(QThread):
 
     def run(self) -> None:
         """!
-        @brief Run Ollama to get invoice data from PDF
+        @brief Extract text from PDF and get invoice data via Ollama
         """
         invoice_data = None
         text = get_ai_document_text(self.file_path)

@@ -9,6 +9,7 @@ import os
 import logging
 from typing import Optional, Any
 import subprocess
+from io import BytesIO
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.drawing.image import Image
 from openpyxl.styles.borders import Border, Side
@@ -27,14 +28,12 @@ from Source.Model.ZUGFeRD.drafthorse_invoice import add_xml_to_pdf, create_factu
 
 log = logging.getLogger(__title__)
 
-FONT_NAME = "Helvetica"
+FONT_NAME = "LiberationSans"
 COLOR_LIGHT_GREY = "F2F2F2"
 COLOR_LIGHT_BLUE = "CFF1FF"
 COLOR_MIDDLE_GREY = "E0E0E0"
 WHITE_BORDER = Border(right=Side(style="medium", color="FFFFFF"))
 SECTION_KEY = "SECTION_KEY"
-
-QR_CODE_FILE_PATH = os.path.join(EXPORT_PATH, "payment_qr.png")
 
 L_BOLD_SECTIONS = ["Fälliger Betrag"]
 L_OBLIGATION_SECTIONS = ["Betrag (Netto)", "Steuerbetrag", "Steuersatz", "Summe Positionen (Netto)",
@@ -106,8 +105,6 @@ def generate_epc_qr(invoice_data: dict[str, Any], box_size: int = 2, border: int
     @param border : border size of QR code
     @return image
     """
-    delete_file(QR_CODE_FILE_PATH)
-
     data_payment = invoice_data["payment"]
     if len(data_payment["methods"]) > 0:
         payment_method = data_payment["methods"][0]
@@ -148,10 +145,13 @@ def generate_epc_qr(invoice_data: dict[str, Any], box_size: int = 2, border: int
         qr.make(fit=True)
 
         img = qr.make_image(fill_color="black", back_color="white")
-        img.save(QR_CODE_FILE_PATH)
+
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
     else:
-        img = None
-    return img
+        buffer = None
+    return buffer
 
 
 ###########################
@@ -178,7 +178,7 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
         xls_creator.font_name = FONT_NAME
         ws = xls_creator.workbook.active
         ws.title = "Rechnung"
-        xls_creator.set_page_marcins(ws, left=2.0, right=0.2, top=1.2, bottom=1.0)
+        xls_creator.set_page_margins(ws, left=2.0, right=0.2, top=1.2, bottom=1.0)
         ws.column_dimensions["A"].width = 14
         ws.column_dimensions["B"].width = 7
         ws.column_dimensions["G"].width = 13
@@ -201,12 +201,12 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
         # QR code
         if create_qr_code:
             qr_code = generate_epc_qr(invoice_data, box_size=2, border=1)
-            if qr_code and os.path.exists(QR_CODE_FILE_PATH):
+            if qr_code:
                 i_row += 2
                 xls_creator.set_cell(ws, i_row, 2, "Überweisen per Code", bold=True, font_size=10, align_vert="bottom")
                 i_row += 1
                 xls_creator.set_cell(ws, i_row, 2, "Ganz bequem mit der Banking-App scannen.", font_size=9, align_vert="top")
-                ws.add_image(Image(QR_CODE_FILE_PATH), f"A{i_row-1}")
+                ws.add_image(Image(qr_code), f"A{i_row-1}")
                 i_row += 3
 
     if b_create_xml:
@@ -448,7 +448,6 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], e_invoice_option: EInv
     if b_create_excel:
         file_name_excel = f"{file_name}.xlsx"
         xls_creator.save(filename=file_name_excel)
-        delete_file(QR_CODE_FILE_PATH)
 
     file_to_open = None
     if b_create_xml:

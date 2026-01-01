@@ -17,40 +17,17 @@ from Source.Model.data_handler import write_json_file, read_json_file, JSON_TYPE
 
 log = logging.getLogger(__title__)
 
-B_DOWNLOAD_PLZ = False
 
-PLZ_DATABASE = "https://dev.ratopi.de/opengeodb/DE.tab.json"
 PLZ_DIR = TOOLS_FOLDER
 PLZ_FILE = os.path.join(PLZ_DIR, f"plz{JSON_TYPE}")
-I_TIMEOUT = 2  # timeout to get PLZ data
-
-
-def download_plz_data() -> Any:
-    """!
-    @brief Download PLZ data
-    @return PLZ data
-    """
-    try:
-        response = requests.get(PLZ_DATABASE, timeout=I_TIMEOUT)
-        response.raise_for_status()
-        plz_data = response.json()
-    except requests.exceptions.RequestException as e:
-        log.error("Error occurred: %s", e)
-        plz_data = None
-    return plz_data
 
 
 def get_plz_data() -> dict[str, str]:
     """!
-    @brief Get PLZ city data. Download if data file not present
+    @brief Get PLZ city data.
     @return PLZ data
     """
     d_plz = {}
-    if B_DOWNLOAD_PLZ:
-        if os.path.isfile(PLZ_FILE):
-            plz_data = download_plz_data()
-            if plz_data is not None:
-                write_json_file(PLZ_FILE, plz_data)
     if os.path.isfile(PLZ_FILE):
         l_plz_data = read_json_file(PLZ_FILE)
         if l_plz_data is not None:

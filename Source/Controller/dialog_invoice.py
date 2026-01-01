@@ -1,14 +1,13 @@
 """!
 ********************************************************************************
 @file   dialog_invoice.py
-@brief  Create invoice dialog
+@brief  Dialog for creating invoices.
 ********************************************************************************
 """
 
 import os
 import logging
 from typing import Any, Optional, TYPE_CHECKING
-from datetime import datetime
 
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QDate, Qt
@@ -17,6 +16,7 @@ from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushBut
 
 from Source.version import __title__
 from Source.Util.app_data import EInvoiceOption, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, \
+    ICON_CROSS_RED, ICON_ARROW_UP_LIGHT, ICON_ARROW_UP_DARK, ICON_ARROW_DOWN_LIGHT, ICON_ARROW_DOWN_DARK, \
     ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, \
     write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, try_load_plugin, function_accepts_params
 from Source.Views.dialogs.dialog_invoice_general_ui import Ui_DialogInvoice
@@ -31,13 +31,13 @@ from Source.Model.contacts import EContactFields, CONTACT_CONTACT_FIELD, CONTACT
 from Source.Model.general_invoice import create_general_invoice
 from Source.Model.invoice_number import InvoiceNumber
 from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, INVOICE_TEMPLATE_FILE_TYPES, \
-    DATE_FORMAT_XINVOICE, JSON_FILE_TYPES, read_json_file, write_json_file, DATE_FORMAT_XML, \
+    DATE_FORMAT_XINVOICE, JSON_FILE_TYPES, read_json_file, write_json_file, \
     PDF_TYPE, XML_TYPE, JSON_TYPE
 from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
     D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_CHARGE_REASON_CODE, D_EXEMPTION_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_invoice import write_customer_to_json, write_company_to_json, fill_invoice_data
 from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only, set_combo_box_items, set_line_edit_read_only, \
-    set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice
+    set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice, set_date_optional
 from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json, normalize_decimal
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -49,9 +49,9 @@ I_MAX_POSITIONS = 100
 
 def add_icon(action: QAction, icon: str) -> None:
     """!
-    @brief Add icon to action
-    @param action : action
-    @param icon : icon
+    @brief Assign an icon to an action.
+    @param action : Target QAction
+    @param icon : Path to icon file
     """
     image = QIcon()
     image.addPixmap(QPixmap(icon), QIcon.Mode.Normal, QIcon.State.Off)
@@ -60,8 +60,8 @@ def add_icon(action: QAction, icon: str) -> None:
 
 def config_invoice_type_btn(dialog: Any) -> None:
     """!
-    @brief Configuration invoice type button.
-    @param dialog : dialog
+    @brief Configure the invoice creation type button and menu.
+    @param dialog : Parent dialog instance
     """
     generate_pdf = os.path.isfile(get_libre_office_path())
 
@@ -131,12 +131,12 @@ def config_invoice_type_btn(dialog: Any) -> None:
 
 class InvoiceDialog(QDialog, Ui_DialogInvoice):
     """!
-    @brief Invoice dialog.
+    @brief Dialog for creating and editing invoices.
     @param ui : main window
-    @param uid : UID of selected contact
+    @param uid : UID of the selected contact (optional)
     """
 
-    def __init__(self, ui: "MainWindow", uid: Optional[str] = None, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, ui: "MainWindow", uid: Optional[str] = None, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
         self.setMinimumWidth(960)
@@ -159,14 +159,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         else:
             self.default_tax_rate = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES][0]
         self.default_payment_days = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYMENT_DAYS]
+        self.default_payment_purpose = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYMENT_PURPOSE]
         # items
         self.item_gross_changed = [False] * I_MAX_POSITIONS  # True=gross changed; False=net changed
-        self.item_layout = None
-        self.btn_add_item = QPushButton("Position hinzufügen")
-        self.btn_remove_item = QPushButton("Position entfernen")
-        self.item_button_layout = QHBoxLayout()
-        self.item_button_layout.addWidget(self.btn_add_item)
-        self.item_button_layout.addWidget(self.btn_remove_item)
         # discounts
         self.discount_percent_changed = [False] * I_MAX_POSITIONS  # True=percent changed; False=net changed
         self.discounts_layout = None
@@ -189,7 +184,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Initialize and display the invoice dialog modally.
         """
         self.ui.model.c_monitor.set_dialog_style(self)
 
@@ -208,16 +203,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         # add item widget
         self.ui_invoice_data.item_widgets = []  # item widget list
-        if self.ui_invoice_data.groupBox_6_position.layout() is None:  # ensure that layout exists
-            self.item_layout = QVBoxLayout(self.ui_invoice_data.groupBox_6_position)
-            self.ui_invoice_data.groupBox_6_position.setLayout(self.item_layout)
-        else:
-            self.item_layout = self.ui_invoice_data.groupBox_6_position.layout()
         # Add item button
-        self.item_layout.addLayout(self.item_button_layout)
-        self.btn_add_item.clicked.connect(self.add_item)
-        self.btn_remove_item.clicked.connect(self.remove_item)
-        self.btn_remove_item.setEnabled(False)
+        self.ui_invoice_data.btn_add_item.clicked.connect(self.add_item)
+        self.ui_invoice_data.btn_remove_item.clicked.connect(self.remove_item)
+        self.ui_invoice_data.btn_remove_item.setEnabled(False)
 
         # add discount widget
         self.ui_invoice_data.discounts_widgets = []  # discounts widget list
@@ -262,7 +251,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.ui_invoice_data.de_accounting_date_from.dateChanged.connect(self.accounting_date_from_changed)
         self.ui_invoice_data.de_accounting_date_to.dateChanged.connect(self.accounting_date_to_changed)
 
-        self.ui_invoice_data.dsb_payed_amount.valueChanged.connect(self.update_total_data)
+        self.ui_invoice_data.dsb_paid_amount.valueChanged.connect(self.update_total_data)
         self.ui_invoice_data.dsb_rounded_amount.valueChanged.connect(self.update_total_data)
 
         self.cb_extended.clicked.connect(self.expand_mode_changed)
@@ -300,7 +289,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def set_default_data(self) -> None:
         """!
-        @brief Set default data
+        @brief Initialize the dialog with default invoice data.
         """
         dialog = self.ui_invoice_data
         actual_date = QDate.currentDate()
@@ -446,7 +435,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # bank name
         dialog.le_bank_name.setText(company_payment[ECompanyFields.BANK_NAME])
         # Verwendungszweck (BT-83)
-        dialog.le_payment_purpose.setText("")
+        dialog.le_payment_purpose.setText(self.default_payment_purpose)
         # Zahlungsbedingungen (BT-20)
         dialog.pte_payment_terms.setPlainText("")
 
@@ -482,7 +471,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Rechnungsgesamtbetrag einschließlich Umsatzsteuer (BT-112)
         set_spin_box_read_only(dialog.dsb_sum_gross, 0.0)
         # Vorauszahlungsbetrag (BT-113)
-        dialog.dsb_payed_amount.setValue(0.0)
+        dialog.dsb_paid_amount.setValue(0.0)
         # Rundungsbetrag (BT-114)
         dialog.dsb_rounded_amount.setValue(0.0)
         # Fälliger Zahlungsbetrag (BT-115)
@@ -490,7 +479,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def update_total_data(self) -> None:
         """!
-        @brief Update total data
+        @brief Recalculate and update all invoice totals and dependent fields.
         """
         invoice_data = self.read_ui_data_to_json()
         fill_invoice_data(invoice_data)
@@ -524,9 +513,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def item_billing_period_checkbox_changed(self, state: bool, item_index: int) -> None:
         """!
-        @brief Item billing period checkbox changed
-        @param state : enable state
-        @param item_index : item index
+        @brief Enable or disable the billing period fields for a line item.
+        @param state : Checkbox state
+        @param item_index : Index of the affected item
         """
         item_dialog: Ui_InvoiceItemData = self.ui_invoice_data.item_widgets[item_index]
         item_dialog.de_item_billing_period_start.setEnabled(state)
@@ -536,8 +525,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def accounting_date_checkbox_changed(self, state: int | bool) -> None:
         """!
-        @brief Accounting date checkbox changed
-        @param state : checkbox status
+        @brief Enable or disable the accounting period date fields.
+        @param state : Checkbox state
         """
         enable = bool(state)
         self.ui_invoice_data.de_accounting_date_from.setEnabled(enable)
@@ -546,8 +535,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def accounting_date_from_changed(self, from_date: QDate) -> None:
         """!
-        @brief Accounting date "from" changed
-        @param from_date : from date
+        @brief Validate the 'from' accounting date.
+        @param from_date : Selected start date
         """
         to_date = self.ui_invoice_data.de_accounting_date_to.date()
         if to_date < from_date:
@@ -555,8 +544,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def accounting_date_to_changed(self, to_date: QDate) -> None:
         """!
-        @brief Accounting date "to" changed
-        @param to_date : to date
+        @brief Validate the 'to' accounting date.
+        @param to_date : Selected end date
         """
         from_date = self.ui_invoice_data.de_accounting_date_from.date()
         if to_date < from_date:
@@ -564,54 +553,120 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def add_item(self) -> None:
         """!
-        @brief Add item
+        @brief Add a new invoice line item widget.
         """
         item_index = len(self.ui_invoice_data.item_widgets)
         if item_index <= I_MAX_POSITIONS:
             item_dialog = Ui_InvoiceItemData()  # new item instance
             widget = QWidget()  # new container widget
             item_dialog.setupUi(widget)
-            self.item_layout.insertWidget(self.item_layout.count() - 1, widget)  # insert widget in layout before buttons
+            self.ui_invoice_data.item_layout.addWidget(widget)
             item_dialog.groupBox.setTitle(f"Position {item_index + 1}")
             self.ui_invoice_data.item_widgets.append(item_dialog)  # store item ui for later use
             self.set_default_item_data(item_dialog)
             self.update_item_expand_status(item_dialog, self.cb_extended.isChecked())
             if item_index > 0:
-                self.btn_remove_item.setEnabled(True)
-            # date checkbox callback
-            item_dialog.cb_item_billing_period.stateChanged.connect(lambda state, idx=item_index: self.item_billing_period_checkbox_changed(state, idx))
-            # price callback
-            item_dialog.dsb_item_net_unit_price.valueChanged.connect(lambda: self.item_price_changed(item_index, False))
-            item_dialog.dsb_item_gross_unit_price.valueChanged.connect(lambda: self.item_price_changed(item_index, True))
-            item_dialog.dsb_item_vat_rate.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
-            item_dialog.cb_item_vat_code.currentTextChanged.connect(self.update_total_data)  # update for taxes
-            item_dialog.dsb_item_quantity.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
-            item_dialog.dsb_item_basis_quantity.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
+                self.ui_invoice_data.btn_remove_item.setEnabled(True)
+            else:
+                item_dialog.btn_delete.setVisible(False)
+                item_dialog.btn_up.setVisible(False)
+            item_dialog.btn_down.setVisible(False)
+            self.set_item_index_callbacks(item_index, connection_exists=False)
             item_dialog.line_charge.hide()  # TODO Nachlässe/Zulagen für Items umsetzen
+            self.update_all_index_callbacks()
             self.update_total_data()
         else:
             self.ui.set_status("Maximale Positionen erreicht.", b_highlight=True)
 
+    def set_item_index_callbacks(self, item_index, connection_exists: bool = True) -> None:
+        """!
+        @brief Assign callbacks for a specific line item.
+        @param item_index : Index of the item
+        @param connection_exists : If True, disconnect previous connections first
+        """
+        item_dialog = self.ui_invoice_data.item_widgets[item_index]
+        item_dialog.groupBox.setTitle(f"Position {item_index + 1}")
+        # date checkbox callback
+        if connection_exists:
+            item_dialog.cb_item_billing_period.stateChanged.disconnect()
+        item_dialog.cb_item_billing_period.stateChanged.connect(lambda state, idx=item_index: self.item_billing_period_checkbox_changed(state, idx))
+        # price callback
+        if connection_exists:
+            item_dialog.dsb_item_net_unit_price.valueChanged.disconnect()
+        item_dialog.dsb_item_net_unit_price.valueChanged.connect(lambda: self.item_price_changed(item_index, False))
+        if connection_exists:
+            item_dialog.dsb_item_gross_unit_price.valueChanged.disconnect()
+        item_dialog.dsb_item_gross_unit_price.valueChanged.connect(lambda: self.item_price_changed(item_index, True))
+        if connection_exists:
+            item_dialog.dsb_item_vat_rate.valueChanged.disconnect()
+        item_dialog.dsb_item_vat_rate.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
+        if connection_exists:
+            item_dialog.dsb_item_quantity.valueChanged.disconnect()
+        item_dialog.dsb_item_quantity.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
+        if connection_exists:
+            item_dialog.dsb_item_basis_quantity.valueChanged.disconnect()
+        item_dialog.dsb_item_basis_quantity.valueChanged.connect(lambda: self.item_price_changed(item_index, None))
+        # button callback
+        if connection_exists:
+            item_dialog.btn_up.clicked.disconnect()
+        item_dialog.btn_up.clicked.connect(lambda: self.item_swap_clicked(item_index, True))
+        if connection_exists:
+            item_dialog.btn_down.clicked.disconnect()
+        item_dialog.btn_down.clicked.connect(lambda: self.item_swap_clicked(item_index, False))
+        if connection_exists:
+            item_dialog.btn_delete.clicked.disconnect()
+        item_dialog.btn_delete.clicked.connect(lambda: self.item_delete_clicked(item_index))
+
+    def update_all_index_callbacks(self) -> None:
+        """!
+        @brief Refresh callbacks and button visibility for all line items.
+        """
+        total_items = len(self.ui_invoice_data.item_widgets)
+        for item_index, item_dialog in enumerate(self.ui_invoice_data.item_widgets):
+            if total_items <= 1:
+                item_dialog.btn_delete.setVisible(False)
+                item_dialog.btn_up.setVisible(False)
+                item_dialog.btn_down.setVisible(False)
+            elif item_index == 0:
+                item_dialog.btn_delete.setVisible(True)
+                item_dialog.btn_up.setVisible(False)
+                item_dialog.btn_down.setVisible(True)
+            elif (item_index + 1) == total_items:
+                item_dialog.btn_delete.setVisible(True)
+                item_dialog.btn_up.setVisible(True)
+                item_dialog.btn_down.setVisible(False)
+            else:
+                item_dialog.btn_delete.setVisible(True)
+                item_dialog.btn_up.setVisible(True)
+                item_dialog.btn_down.setVisible(True)
+            self.set_item_index_callbacks(item_index)
+
     def remove_item(self) -> None:
         """!
-        @brief Remove item
+        @brief Remove the last invoice line item.
         """
         item_index = len(self.ui_invoice_data.item_widgets)
         if item_index <= 2:
-            self.btn_remove_item.setEnabled(False)
+            self.ui_invoice_data.btn_remove_item.setEnabled(False)
         if item_index > 1:
             last_item = self.ui_invoice_data.item_widgets.pop()
             widget = last_item.groupBox.parentWidget()
-            self.item_layout.removeWidget(widget)
+            self.ui_invoice_data.item_layout.removeWidget(widget)
             widget.setParent(None)
+            self.update_all_index_callbacks()
             self.update_total_data()
 
     def set_default_item_data(self, item_dialog: Ui_InvoiceItemData) -> None:
         """!
-        @brief Set default item data
-        @param item_dialog : item dialog
+        @brief Initialize a line item with default values.
+        @param item_dialog : Line item widget instance
         """
         actual_date = QDate.currentDate()
+        # up, down and delete button
+        b_light_theme = self.ui.model.c_monitor.is_light_theme()
+        item_dialog.btn_delete.setIcon(QIcon(ICON_CROSS_RED))
+        item_dialog.btn_up.setIcon(QIcon(ICON_ARROW_UP_LIGHT if b_light_theme else ICON_ARROW_UP_DARK))
+        item_dialog.btn_down.setIcon(QIcon(ICON_ARROW_DOWN_LIGHT if b_light_theme else ICON_ARROW_DOWN_DARK))
         # Name (BT-153)
         item_dialog.le_item_name.setText("")
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
@@ -653,9 +708,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def item_price_changed(self, item_index: int, gross_changed: None | bool) -> None:
         """!
-        @brief Item price changed
-        @param item_index : item index
-        @param gross_changed : changed object True=gross False=net None=other (use last changed)
+        @brief Handle price changes and recalculate item totals.
+        @param item_index : Index of the affected item
+        @param gross_changed : True=gross changed, False=net changed, None=other trigger
         """
         if not self.lock_auto_price_edit:
             self.lock_auto_price_edit = True
@@ -691,9 +746,57 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         self.update_total_data()
 
+    def item_swap_clicked(self, item_index: int, up_clicked: bool) -> None:
+        """!
+        @brief Swap two invoice items in the layout and update the internal list.
+        @param item_index : Index of the item to swap.
+        @param up_clicked : True if moving the item up, False if moving down.
+        """
+        swap_index = item_index - 1 if up_clicked else item_index + 1
+        layout = self.ui_invoice_data.item_layout
+
+        # get widget from layout
+        w1 = layout.itemAt(item_index).widget()
+        w2 = layout.itemAt(swap_index).widget()
+        if up_clicked:
+            # delete layout
+            layout.removeWidget(w1)
+            layout.removeWidget(w2)
+            # add layout again
+            layout.insertWidget(swap_index, w1)
+            layout.insertWidget(item_index, w2)
+        else:
+            # get layout
+            layout.removeWidget(w1)
+            layout.removeWidget(w2)
+            # add layout again as swapped
+            layout.insertWidget(item_index, w2)
+            layout.insertWidget(swap_index, w1)
+
+        # swap items from list
+        self.ui_invoice_data.item_widgets[item_index], self.ui_invoice_data.item_widgets[swap_index] = \
+            self.ui_invoice_data.item_widgets[swap_index], self.ui_invoice_data.item_widgets[item_index]
+        self.update_all_index_callbacks()
+
+    def item_delete_clicked(self, item_index: int) -> None:
+        """!
+        @brief Delete an invoice item from the layout and internal list.
+        @param item_index : Index of the item to delete.
+        """
+        item = self.ui_invoice_data.item_widgets.pop(item_index)
+        widget = item.groupBox.parentWidget()
+        self.ui_invoice_data.item_layout.removeWidget(widget)
+        widget.setParent(None)
+        total_index = len(self.ui_invoice_data.item_widgets)
+        if total_index <= 2:
+            self.ui_invoice_data.btn_remove_item.setEnabled(False)
+        self.update_all_index_callbacks()
+        self.update_total_data()
+
     def add_discount(self) -> None:
         """!
-        @brief Add discount
+        @brief Add a new discount row to the invoice.
+               Automatically resizes the window if necessary and connects value change callbacks.
         """
         discount_index = len(self.ui_invoice_data.discounts_widgets)
         if discount_index == 0:
@@ -722,7 +825,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def remove_discount(self) -> None:
         """!
-        @brief Remove discount
+        @brief Remove the last discount from the invoice.
+               Updates layout and disables the remove button if only one discount remains.
         """
         discount_index = len(self.ui_invoice_data.discounts_widgets)
         if discount_index <= 1:
@@ -736,7 +840,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def add_surcharge(self) -> None:
         """!
-        @brief Add surcharge
+        @brief Add a new surcharge row to the invoice.
+               Automatically resizes the window if necessary and connects value change callbacks.
         """
         surcharge_index = len(self.ui_invoice_data.surcharges_widgets)
         if surcharge_index == 0:
@@ -765,7 +870,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def remove_surcharge(self) -> None:
         """!
-        @brief Remove surcharge
+        @brief Remove the last surcharge from the invoice.
+               Updates layout and disables the remove button if only one surcharge remains.
         """
         surcharge_index = len(self.ui_invoice_data.surcharges_widgets)
         if surcharge_index <= 1:
@@ -901,18 +1007,6 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Basismenge zum Artikelpreis (BT-149)
         item_dialog.lbl_item_basis_quantity.setVisible(b_visible)
         item_dialog.dsb_item_basis_quantity.setVisible(b_visible)
-        # Steuerbetrag
-        item_dialog.lbl_item_vat_amount.setVisible(b_visible)
-        item_dialog.dsb_item_vat_amount.setVisible(b_visible)
-        item_dialog.lbl_item_vat_amount_symbol.setVisible(b_visible)
-        # Gesamtpreis (Netto) (BT-131)
-        item_dialog.lbl_item_net_amount.setVisible(b_visible)
-        item_dialog.dsb_item_net_amount.setVisible(b_visible)
-        item_dialog.lbl_item_net_amount_symbol.setVisible(b_visible)
-        # Gesamtpreis (Brutto)
-        item_dialog.lbl_item_gross_price.setVisible(b_visible)
-        item_dialog.dsb_item_gross_price.setVisible(b_visible)
-        item_dialog.lbl_item_gross_price_symbol.setVisible(b_visible)
 
     def set_default_tax_data(self, tax_dialog: Ui_InvoiceTaxData) -> None:
         """!
@@ -1082,9 +1176,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.dsb_sum_discounts.setVisible(b_visible)
         dialog.lbl_sum_discounts_symbol.setVisible(b_visible)
         # Vorauszahlungsbetrag (BT-113)
-        dialog.lbl_payed_amount.setVisible(b_visible)
-        dialog.dsb_payed_amount.setVisible(b_visible)
-        dialog.lbl_payed_amount_symbol.setVisible(b_visible)
+        dialog.lbl_paid_amount.setVisible(b_visible)
+        dialog.dsb_paid_amount.setVisible(b_visible)
+        dialog.lbl_paid_amount_symbol.setVisible(b_visible)
         # Rundungsbetrag (BT-114)
         dialog.lbl_rounded_amount.setVisible(b_visible)
         dialog.dsb_rounded_amount.setVisible(b_visible)
@@ -1494,7 +1588,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         # Gesamtsummen (nur die Eingaben der Rest wird errechnet)
         data_totals = data.setdefault("totals", {})
-        data_totals["paidAmount"] = dialog.dsb_payed_amount.value() if b_extended else 0  # Vorauszahlungsbetrag (BT-113)
+        data_totals["paidAmount"] = dialog.dsb_paid_amount.value() if b_extended else 0  # Vorauszahlungsbetrag (BT-113)
         data_totals["roundingAmount"] = dialog.dsb_rounded_amount.value() if b_extended else 0  # Rundungsbetrag (BT-114)
 
         return data
@@ -1511,10 +1605,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             dialog.le_invoice_number.setText(data.get("number"))  # Rechnungsnummer (BT-1)
             # Rechnungsdatum (BT-2)
             invoice_date = data.get("issueDate")
-            if invoice_date:
-                invoice_date_datetime = datetime.strptime(str(invoice_date), DATE_FORMAT_XML)
-                qdate = QDate(invoice_date_datetime.year, invoice_date_datetime.month, invoice_date_datetime.day)
-                dialog.de_invoice_date.setDate(qdate)
+            set_date_optional(dialog.de_invoice_date, invoice_date)
         # Code für den Rechnungstyp (BT-3)
         set_combo_box_value(dialog.cb_invoice_type, data.get("typeCode"), D_INVOICE_TYPE)
         # Code für die Rechnungswährung (BT-5)
@@ -1522,28 +1613,16 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if import_all:
             # Fälligkeitsdatum der Zahlung (BT-9)
             due_date = data.get("dueDate")
-            if due_date:
-                due_date_datetime = datetime.strptime(str(due_date), DATE_FORMAT_XML)
-                qdate = QDate(due_date_datetime.year, due_date_datetime.month, due_date_datetime.day)
-                dialog.de_due_date.setDate(qdate)
+            set_date_optional(dialog.de_due_date, due_date)
             # Tatsächliches Lieferdatum (BT-72)
             deliver_date = data.get("deliveryDate")
-            if deliver_date:
-                deliver_date_datetime = datetime.strptime(str(deliver_date), DATE_FORMAT_XML)
-                qdate = QDate(deliver_date_datetime.year, deliver_date_datetime.month, deliver_date_datetime.day)
-                dialog.de_deliver_date.setDate(qdate)
+            set_date_optional(dialog.de_deliver_date, deliver_date)
             # Anfangsdatum des Rechnungszeitraums (BT-73)
             accounting_period_start = data.get("billingPeriodStartDate")
-            if accounting_period_start:
-                accounting_period_start_datetime = datetime.strptime(str(accounting_period_start), DATE_FORMAT_XML)
-                qdate = QDate(accounting_period_start_datetime.year, accounting_period_start_datetime.month, accounting_period_start_datetime.day)
-                dialog.de_accounting_date_from.setDate(qdate)
+            set_date_optional(dialog.de_accounting_date_from, accounting_period_start)
             # Enddatum des Rechnungszeitraums (BT-74)
             accounting_period_end = data.get("billingPeriodEndDate")
-            if accounting_period_end:
-                accounting_period_end_datetime = datetime.strptime(str(accounting_period_end), DATE_FORMAT_XML)
-                qdate = QDate(accounting_period_end_datetime.year, accounting_period_end_datetime.month, accounting_period_end_datetime.day)
-                dialog.de_accounting_date_to.setDate(qdate)
+            set_date_optional(dialog.de_accounting_date_to, accounting_period_end)
             self.ui_invoice_data.cb_accounting_date.setChecked(bool(accounting_period_start or accounting_period_end))
             dialog.le_buyer_reference.setText(data.get("buyerReference", ""))  # Käuferreferenz (BT-10)
             dialog.le_project_number.setText(data.get("projectReference", ""))  # Projektnummer (BT-11)
@@ -1555,10 +1634,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if receiving_advice_reference:
             dialog.le_receiving_referenced_document.setText(receiving_advice_reference.get("id", ""))
             receiving_advice_reference_date = receiving_advice_reference.get("issueDate")
-            if receiving_advice_reference_date:
-                receiving_advice_reference_date_datetime = datetime.strptime(str(receiving_advice_reference_date), DATE_FORMAT_XML)
-                qdate = QDate(receiving_advice_reference_date_datetime.year, receiving_advice_reference_date_datetime.month, receiving_advice_reference_date_datetime.day)
-                dialog.de_receiving_advice_referenced_document.setDate(qdate)
+            set_date_optional(dialog.de_receiving_advice_referenced_document, receiving_advice_reference_date)
         else:
             dialog.le_receiving_referenced_document.setText("")
         # Versandanzeige (BT-16)
@@ -1566,10 +1642,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if despatch_advice_reference:
             dialog.le_despatch_advice_referenced_document.setText(despatch_advice_reference.get("id", ""))
             despatch_advice_reference_date = despatch_advice_reference.get("issueDate")
-            if despatch_advice_reference_date:
-                despatch_advice_reference_date_datetime = datetime.strptime(str(despatch_advice_reference_date), DATE_FORMAT_XML)
-                qdate = QDate(despatch_advice_reference_date_datetime.year, despatch_advice_reference_date_datetime.month, despatch_advice_reference_date_datetime.day)
-                dialog.de_despatch_advice_referenced_document.setDate(qdate)
+            set_date_optional(dialog.de_despatch_advice_referenced_document, despatch_advice_reference_date)
         else:
             dialog.le_despatch_advice_referenced_document.setText("")
         # Ausschreibung/Los (BT-17)
@@ -1595,10 +1668,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if len(invoice_references) > 0:
             dialog.le_invoice_reference.setText(invoice_references[0].get("id", ""))
             invoice_references_date = invoice_references[0].get("issueDate")
-            if invoice_references_date:
-                invoice_references_date_datetime = datetime.strptime(str(invoice_references_date), DATE_FORMAT_XML)
-                qdate = QDate(invoice_references_date_datetime.year, invoice_references_date_datetime.month, invoice_references_date_datetime.day)
-                dialog.de_invoice_reference.setDate(qdate)
+            set_date_optional(dialog.de_invoice_reference, invoice_references_date)
         else:
             dialog.le_invoice_reference.setText("")
         dialog.pte_note.setPlainText(data.get("note", ""))  # Bemerkung (BT-22)
@@ -1689,16 +1759,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             item_dialog.le_item_id.setText(data_item.get("id", ""))  # Artikel-Nr. (BT-155)
             # Startdatum (BT-134)
             item_billing_period_start = data_item.get("billingPeriodStart")
-            if item_billing_period_start:
-                item_billing_period_start_datetime = datetime.strptime(str(item_billing_period_start), DATE_FORMAT_XML)
-                qdate = QDate(item_billing_period_start_datetime.year, item_billing_period_start_datetime.month, item_billing_period_start_datetime.day)
-                item_dialog.de_item_billing_period_start.setDate(qdate)
+            set_date_optional(item_dialog.de_item_billing_period_start, item_billing_period_start)
             # Enddatum (BT-135)
             item_billing_period_end = data_item.get("billingPeriodEnd")
-            if item_billing_period_end:
-                item_billing_period_end_datetime = datetime.strptime(str(item_billing_period_end), DATE_FORMAT_XML)
-                qdate = QDate(item_billing_period_end_datetime.year, item_billing_period_end_datetime.month, item_billing_period_end_datetime.day)
-                item_dialog.de_item_billing_period_end.setDate(qdate)
+            set_date_optional(item_dialog.de_item_billing_period_end, item_billing_period_end)
             item_dialog.cb_item_billing_period.setChecked(bool(item_billing_period_start or item_billing_period_end))
             item_dialog.le_item_order_position.setText(data_item.get("orderPosition", ""))  # Referenz zur Bestellposition (BT-132)
             # Objektkennung auf Ebene der Rechnungsposition (BT-128)
@@ -1745,5 +1809,5 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.update_tax_widget(data)  # update taxes to write exemption reason to UI
 
         data_totals = data.setdefault("totals", {})
-        dialog.dsb_payed_amount.setValue(data_totals.get("paidAmount", 0) or 0)  # Vorauszahlungsbetrag (BT-113)
+        dialog.dsb_paid_amount.setValue(data_totals.get("paidAmount", 0) or 0)  # Vorauszahlungsbetrag (BT-113)
         dialog.dsb_rounded_amount.setValue(data_totals.get("roundingAmount", 0) or 0)  # Rundungsbetrag (BT-114)

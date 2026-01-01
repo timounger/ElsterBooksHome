@@ -1,7 +1,3 @@
-\page invoice Rechnungen
-
-\tableofcontents
-
 # Rechnungen
 
 Auf der Registerkarte `Einkommen` können Sie über den Button `Rechnung erstellen` Rechnungen in verschiedenen Formaten erzeugen.

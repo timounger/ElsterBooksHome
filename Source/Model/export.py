@@ -144,7 +144,7 @@ class ExportReport:
         self.sheet_overview = worksheet
         worksheet.title = EReportSheet.OVERVIEW.value
         worksheet.sheet_properties.tabColor = COLOR_GREY
-        xls_creator.set_page_marcins(worksheet, left=1.8, right=0.8, top=1.2, bottom=0.8)
+        xls_creator.set_page_margins(worksheet, left=1.8, right=0.8, top=1.2, bottom=0.8)
         worksheet.column_dimensions["A"].width = 26
         worksheet.column_dimensions["B"].width = 15
         worksheet.column_dimensions["C"].width = 15
@@ -226,7 +226,7 @@ class ExportReport:
         if tab_color is not None:
             worksheet.sheet_properties.tabColor = tab_color
         Worksheet.set_printer_settings(worksheet, paper_size=9, orientation="landscape")
-        xls_creator.set_page_marcins(worksheet, left=1.5, right=1.5, top=1.0, bottom=1.0)
+        xls_creator.set_page_margins(worksheet, left=1.5, right=1.5, top=1.0, bottom=1.0)
         worksheet.column_dimensions["A"].width = 10  # INVOICE_DATE
         worksheet.column_dimensions["B"].width = 10  # INVOICE_NUMBER
         worksheet.column_dimensions["C"].width = 20  # TRADE_PARTNER
@@ -265,7 +265,7 @@ class ExportReport:
             d_vat_rate_breakdown[tax_rate] = 0
         l_relevant_data = []
         for entry in l_data:
-            if self.get_relevant_data_status(entry, sheet_type):
+            if (self.e_type == EReportType.EXPORT_TOTAL) or self.get_relevant_data_status(entry, sheet_type):
                 l_relevant_data.append(entry)
                 # Vat Rate breakdown
                 vat_rate = calc_vat_rate(entry[EReceiptFields.AMOUNT_GROSS], entry[EReceiptFields.AMOUNT_NET])
@@ -302,24 +302,25 @@ class ExportReport:
             receipt_idx += 1
             # add group data for eur
             if self.e_type in [EReportType.EUR, EReportType.GUV, EReportType.EXPORT_TOTAL]:
-                group = entry[EReceiptFields.GROUP]
-                data_date = datetime.strptime(entry[self.date_field], DATE_FORMAT_JSON)
-                month = data_date.month if (data_date.year == self.i_year) else 12
-                b_data_is_ust = bool(entry[EReceiptFields.GROUP] in [EReceiptGroup.UST_VA, EReceiptGroup.UST])
-                year = data_date.year - 1 if (b_data_is_ust and (data_date.month == 1) and (data_date.day <= UST_REGULATION_DAYS)) else data_date.year
-                match sheet_type:
-                    case EReportSheet.INCOME:
-                        if self.e_type in [EReportType.EUR, EReportType.GUV]:
-                            self.d_income_groups[group] = self.d_income_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
-                            self.d_income_month[month] = self.d_income_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
-                        if self.e_type == EReportType.EXPORT_TOTAL:
-                            self.d_income_year[year] = self.d_income_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
-                    case EReportSheet.EXPENDITURE:
-                        if self.e_type in [EReportType.EUR, EReportType.GUV]:
-                            self.d_expenditure_groups[group] = self.d_expenditure_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
-                            self.d_expenditure_month[month] = self.d_expenditure_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
-                        if self.e_type == EReportType.EXPORT_TOTAL:
-                            self.d_expenditure_year[year] = self.d_expenditure_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                if entry[self.date_field]:  # missing data for total export possible
+                    group = entry[EReceiptFields.GROUP]
+                    data_date = datetime.strptime(entry[self.date_field], DATE_FORMAT_JSON)
+                    month = data_date.month if (data_date.year == self.i_year) else 12
+                    b_data_is_ust = bool(entry[EReceiptFields.GROUP] in [EReceiptGroup.UST_VA, EReceiptGroup.UST])
+                    year = data_date.year - 1 if (b_data_is_ust and (data_date.month == 1) and (data_date.day <= UST_REGULATION_DAYS)) else data_date.year
+                    match sheet_type:
+                        case EReportSheet.INCOME:
+                            if self.e_type in [EReportType.EUR, EReportType.GUV]:
+                                self.d_income_groups[group] = self.d_income_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
+                                self.d_income_month[month] = self.d_income_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            if self.e_type == EReportType.EXPORT_TOTAL:
+                                self.d_income_year[year] = self.d_income_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                        case EReportSheet.EXPENDITURE:
+                            if self.e_type in [EReportType.EUR, EReportType.GUV]:
+                                self.d_expenditure_groups[group] = self.d_expenditure_groups.get(group, 0) + entry[EReceiptFields.AMOUNT_NET]
+                                self.d_expenditure_month[month] = self.d_expenditure_month.get(month, 0) + entry[EReceiptFields.AMOUNT_GROSS]
+                            if self.e_type == EReportType.EXPORT_TOTAL:
+                                self.d_expenditure_year[year] = self.d_expenditure_year.get(year, 0) + entry[EReceiptFields.AMOUNT_GROSS]
             # set data for CSV export
             if self.e_type == EReportType.DATEV:
                 l_append_data = []

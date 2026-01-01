@@ -94,7 +94,7 @@ class ColorFormatter(logging.Formatter):
 
     def format(self, record: LogRecord) -> str:
         """!
-        @brief Overwrite format method of logging.Formatter to use colors formatting
+        @brief Overwrite format method of logging.Formatter to use colored formatting
         @param record : log record
         @return formatted log record
         """
@@ -104,7 +104,7 @@ class ColorFormatter(logging.Formatter):
 
     def formatException(self, ei: tuple[type[BaseException], BaseException, TracebackType | None] | tuple[None, None, None]) -> str:
         """!
-        @brief Overwrite formatException method of logging. Formatter to use critical color formatting
+        @brief Overwrite formatException method of logging.Formatter to use critical color formatting
         @param ei : exception info
         @return formatted exception log record
         """

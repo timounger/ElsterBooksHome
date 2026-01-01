@@ -1,6 +1,4 @@
-\page CHANGELOG 📋️ Changelog
-
-\tableofcontents
+# Changelog
 
 ## Legende
 
@@ -10,6 +8,20 @@
 | 🔧 Bugfix         | Fehlerbehebungen, Stabilitätskorrekturen |
 | 🚀 Verbesserungen | Optimierungen, Performance, Reworks      |
 | 📚 Dokumentation  | Änderungen an Dokumentation & Texten     |
+
+## [v0.4.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.4.0) latest
+
+- ✨ Mistral als KI für intelligente Belegerkennung verfügbar
+- 🔧 Export Übersicht Gesamt: Auch nicht bezahlte Belege auflisten
+- 🔧 Ausschreibung/Los (BT-17) korrekt schreiben (hat Wareneingangsmeldung (BT-15) überschrieben)
+- 🔧 Ollama eigene Modellauswahl
+- 🔧 Export Tab: Nach dem Jahreswechsel wird für weitere 10 Tage das vorherige Jahr angezeigt.
+- 🚀 Artikelpositionen in Rechnungen verschieben und Löschen
+- 🚀 Verwendungszweck: abhängig von der Rechnungsnummer in den Einstellungen definierbar
+- 🚀 KI-Assistent verfasst Beschreibungsfeld für Belegerkennung auf Deutsch
+- 🚀 ZUGFeRD letzte Tab Ansicht persistieren (PDF oder XML)
+- 📚 Positionssumme bei Rechnung erstellen immer anzeigen
+- 📚 ToolTip bei E-Rechnungsfeldern hinzugefügt
 
 ## [v0.3.1](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.1) Testversion Release 29.11.2025
 

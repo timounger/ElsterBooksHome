@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_contact.py
-@brief  Create contact dialog
+@brief  Contact management dialog
 ********************************************************************************
 """
 
@@ -32,10 +32,10 @@ EMAIL_REGEX = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
 class ContactDialog(QDialog, Ui_DialogContact):
     """!
-    @brief Contact dialog.
+    @brief Dialog for creating and editing contact records.
     @param ui : main window
-    @param data : contact data
-    @param uid : UID of contact
+    @param data : Optional existing contact data to edit
+    @param uid : Optional unique ID of the contact
     """
 
     def __init__(self, ui: "MainWindow", data: Optional[dict[EContactFields, str]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
@@ -52,6 +52,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
         self.b_city_auto_change = False
 
         self.lbl_vat_status.setText("")
+        self.lbl_vat_status.hide()
         self.vat_validator = VatValidation()
         self.vat_validator.finish_signal.connect(self.vat_result)
         self.le_vat.textChanged.connect(self.vat_id_changed)
@@ -60,7 +61,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Initialize content and display the contact dialog modally.
         """
         log.debug("Starting Contact dialog")
 
@@ -102,7 +103,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
+        @brief Default close Event Method to handle dialog close
         @param event : arrived event
         """
         self.vat_validator.terminate()
@@ -111,8 +112,9 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def vat_id_changed(self, vat_id: str) -> None:
         """!
-        @brief VAT ID changed
-        @param vat_id : VAT id
+        @brief Triggered when the VAT ID text changes.
+               Starts format validation and background VAT verification if applicable.
+        @param vat_id : Entered VAT ID
         """
         self.vat_validator.terminate()
         if vat_id:
@@ -124,13 +126,15 @@ class ContactDialog(QDialog, Ui_DialogContact):
             else:
                 self.lbl_vat_status.setText("VAT Nummer ungültiges Format")
                 self.lbl_vat_status.setStyleSheet("color: grey")
+            self.lbl_vat_status.show()
         else:
             self.lbl_vat_status.setText("")
+            self.lbl_vat_status.hide()
 
     def vat_result(self, result: dict) -> None:
         """!
-        @brief VAT result
-        @param result : vat result
+        @brief Handle the result of the asynchronous VAT validation.
+        @param result : VAT validation result dictionary
         """
         valid_status = result.get("valid", None)
         if valid_status is None:
@@ -142,10 +146,11 @@ class ContactDialog(QDialog, Ui_DialogContact):
         else:
             self.lbl_vat_status.setText("VAT Nummer nicht bekannt")
             self.lbl_vat_status.setStyleSheet("color: red")
+        self.lbl_vat_status.show()
 
     def city_changed(self) -> None:
         """!
-        @brief City changed
+        @brief Triggered when the city field changes. Controls automatic PLZ -> city updates.
         """
         if self.b_city_auto_change:
             self.b_city_auto_change = False
@@ -155,7 +160,8 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def plz_changed(self) -> None:
         """!
-        @brief PLZ changed
+        @brief Triggered when the postal code (PLZ) changes.
+               Automatically updates the city field if possible.
         """
         if (not self.b_lock_auto_city_data) and (self.ui.model.d_plz_data is not None):
             plz = self.le_plz.text().strip()
@@ -169,7 +175,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def delete_clicked(self) -> None:
         """!
-        @brief Delete button clicked.
+        @brief Delete the current contact entry, if a UID exists.
         """
         if self.uid is not None:
             remove_contact(self.ui.model.data_path, self.uid)
@@ -180,7 +186,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def save_clicked(self) -> None:
         """!
-        @brief Save button clicked.
+        @brief Validate and save the current contact data. Creates a new contact or updates an existing one.
         """
         valid = self.set_data()
         if valid:
@@ -196,7 +202,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def copy_contact(self) -> None:
         """!
-        @brief Copy contact button clicked.
+        @brief Create a duplicate of the current contact and save it as a new entry.
         """
         valid = self.set_data()
         if valid:
@@ -210,8 +216,8 @@ class ContactDialog(QDialog, Ui_DialogContact):
 
     def set_data(self) -> bool:
         """!
-        @brief If data valid set data.
-        @return status if contact data are valid to save
+        @brief Validate all contact fields and, if valid, update the internal data structure.
+        @return True if the contact data is valid and stored, otherwise False
         """
         organization = self.pte_name.toPlainText()
         vat_id = self.le_vat.text()

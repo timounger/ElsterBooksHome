@@ -45,6 +45,7 @@ class MonitorScale:
         log.debug("Select Theme: %s", self.e_style)
         self.e_actual_theme = ETheme.LIGHT
         self.check_for_style_change(self.e_style)
+        self.update_icons()  # force update icons
 
     def check_for_style_change(self, e_style: Optional[ETheme] = None) -> None:
         """!
@@ -79,7 +80,6 @@ class MonitorScale:
         self.check_for_style_change(self.e_style)
         self.set_dialog_style(self.ui, update_dashboard=True)
         self.set_change_theme_status()
-        self.update_icons()
 
     def set_change_theme_status(self) -> None:
         """!

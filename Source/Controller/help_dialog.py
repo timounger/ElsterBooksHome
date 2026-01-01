@@ -43,6 +43,5 @@ def create_help_dialog(ui: "MainWindow") -> QDialog:
     for q_text_browser, s_source_file in d_help_text_source_link.items():
         with open(os.path.join(HELP_PATH + s_source_file), mode="r", encoding="utf-8") as f:
             text = f.read()
-            text = text[text.find("#"):]
             q_text_browser.setHtml(markdown.markdown(text))
     return dialog_help

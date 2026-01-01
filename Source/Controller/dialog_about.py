@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_about.py
-@brief  Create about dialog
+@brief  Provides the “About” dialog and license view
 ********************************************************************************
 """
 
@@ -16,6 +16,7 @@ from PyQt6.QtCore import Qt, QTimer, QRectF
 from PyQt6.QtSvg import QSvgRenderer
 
 from Source.version import __title__, __description__, __version__, __website__, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
+from Source.version import BUILD_NAME
 from Source.Util.app_data import ICON_APP, ICON_UPDATE_LIGHT, ICON_UPDATE_DARK, ICON_TICK_GREEN, ICON_CROSS_RED, thread_dialog, \
     ICON_LICENSE_LIGHT, ICON_LICENSE_DARK, LICENSE_FILE
 from Source.Views.dialogs.dialog_about_ui import Ui_AboutDialog
@@ -29,7 +30,7 @@ log = logging.getLogger(__title__)
 
 class LicenseDialog(QDialog):
     """!
-    @brief License dialog.
+    @brief Dialog to display the application license text.
     @param ui : main window
     """
 
@@ -42,14 +43,13 @@ class LicenseDialog(QDialog):
         te_text.setReadOnly(True)
         with open(LICENSE_FILE, mode="r", encoding="utf-8") as f:
             text = f.read()
-            text = text[text.find("#"):]
             te_text.setHtml(markdown.markdown(text))
         layout.addWidget(te_text)
         thread_dialog(self)
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Display the license dialog modally.
         """
         self.show()
         self.exec()
@@ -57,12 +57,12 @@ class LicenseDialog(QDialog):
 
 class AboutDialog(QDialog, Ui_AboutDialog):
     """!
-    @brief About dialog.
+    @brief Dialog showing application information and update status.
     @param ui : main window
-    @param auto_update : start update direct
+    @param auto_update : If True, the update process starts automatically when the dialog is opened.
     """
 
-    def __init__(self, ui: "MainWindow", auto_update: bool = False, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, ui: "MainWindow", auto_update: bool = False, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
         self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
@@ -70,10 +70,11 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.ui = ui
         self.auto_update = auto_update
 
-        self.b_download_finished = False
+        self.download_finished = False
         self.angle = 0
         self.timer = QTimer(self.lbl_update_icon)
         self.timer.timeout.connect(self.rotate)
+        self.rotation_pixmap = None
 
         self.update_downloader = UpdateDownloader()
         self.update_downloader.status_signal.connect(self.download_update_status)
@@ -83,7 +84,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Initialize and display the About dialog modally.
         """
         log.debug("Starting About dialog")
 
@@ -92,49 +93,52 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.lbl_productName.setText(__title__)
         self.lbl_productDescription.setText(__description__)
 
-        btn_text = ""
-        lbl_text = ""
-        icon = ""
-        newer_tool_version = get_tool_update_status()
-        if newer_tool_version is not None:
-            if newer_tool_version:
-                btn_text = f"Update auf Version {newer_tool_version} durchführen"
-                self.update_downloader.latest_version = newer_tool_version
+        if not BUILD_NAME:
+            btn_text = ""
+            lbl_text = ""
+            icon = ""
+            newer_tool_version = get_tool_update_status()
+            if newer_tool_version is not None:
+                if newer_tool_version:
+                    btn_text = f"Update auf Version {newer_tool_version} durchführen"
+                    self.update_downloader.latest_version = newer_tool_version
+                else:
+                    lbl_text = f"{__title__} ist aktuell"
+                    icon = ICON_TICK_GREEN
             else:
-                lbl_text = f"{__title__} ist aktuell"
-                icon = ICON_TICK_GREEN
-        else:
-            lbl_text = "Die Versionsaktualität konnte nicht überprüft werden."
-            icon = ICON_CROSS_RED
+                lbl_text = "Die Versionsaktualität konnte nicht überprüft werden."
+                icon = ICON_CROSS_RED
 
-        # buttons
-        self.btn_update.clicked.connect(self.update_btn_clicked)
-        if not btn_text:
+            # buttons
+            self.btn_update.clicked.connect(self.update_btn_clicked)
+            if not btn_text:
+                self.btn_update.hide()
+            self.btn_update.setText(btn_text)
+            # icon
+            if icon:
+                self.lbl_update_icon.setPixmap(QPixmap(icon))
+            else:
+                self.lbl_update_icon.hide()
+            # label
+            if not lbl_text:
+                self.lbl_update_status.hide()
+            self.lbl_update_status.setText(lbl_text)
+
+            if self.auto_update:
+                self.update_btn_clicked()
+        else:
             self.btn_update.hide()
-        self.btn_update.setText(btn_text)
-        # icon
-        if icon:
-            self.lbl_update_icon.setPixmap(QPixmap(icon))
-        else:
             self.lbl_update_icon.hide()
-        # label
-        if not lbl_text:
             self.lbl_update_status.hide()
-        self.lbl_update_status.setText(lbl_text)
-
-        if self.auto_update:
-            self.update_btn_clicked()
 
         # Version info text
         version_info = f"Version: {__version__}"
-        version_info += "  Prerelease Build"
-        self.lbl_version.setStyleSheet("color: orange;")
         license_text = __license__
         home_link = f"Home: <a href=\"{__website__}\">{__website__}</a>"
         if GIT_SHORT_SHA is not None:
             version_info += f"\nGit SHA: {GIT_SHORT_SHA}"
         if BUILD_NAME:
-            version_info += f'\nonly for "{BUILD_NAME}"'
+            version_info += f"\nBuild: {BUILD_NAME}"
         self.lbl_version.setText(version_info)
         self.lbl_copyright.setText(__copyright__)
         self.lbl_license.setText(license_text)
@@ -153,7 +157,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         """!
         @brief Update button clicked
         """
-        if not self.b_download_finished:
+        if not self.download_finished:
             if self.timer.isActive():
                 self.timer.stop()
             # buttons
@@ -173,7 +177,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             self.lbl_update_icon.setPixmap(pixmap)
             self.lbl_update_icon.setFixedSize(container_size, container_size)
             self.lbl_update_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.lbl_update_icon._original_pixmap = pixmap  # Save original for rotation
+            self.rotation_pixmap = pixmap
             # label
             self.lbl_update_status.show()
             lbl_text = "Update wird heruntergeladen"
@@ -187,10 +191,9 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
     def rotate(self) -> None:
         """!
-        @brief Rotate update icon
+        @brief Rotate the update icon while the download is running.
         """
-        original = self.lbl_update_icon._original_pixmap
-        size = original.width()
+        size = self.rotation_pixmap.width()
         rotated_pixmap = QPixmap(size, size)
         rotated_pixmap.fill(Qt.GlobalColor.transparent)
 
@@ -203,37 +206,37 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         transform.translate(-size / 2, -size / 2)
 
         painter.setTransform(transform)
-        painter.drawPixmap(0, 0, original)
+        painter.drawPixmap(0, 0, self.rotation_pixmap)
         painter.end()
 
-        step_deg = 5
+        step_deg = 5  # rotation degree per call
         self.lbl_update_icon.setPixmap(rotated_pixmap)
         self.angle = (self.angle + step_deg) % 360
 
     def start_label_rotation(self) -> None:
         """!
-        @brief Start rotation
+        @brief Start the animation timer for the rotating icon.
         """
         speed_ms = 25
         self.timer.start(speed_ms)
 
     def stop_label_rotation(self) -> None:
         """!
-        @brief Stop rotation
+        @brief Stop the animation timer for the rotating icon.
         """
         self.timer.stop()
 
     def download_update_status(self, text: str) -> None:
         """!
-        @brief Update download status
-        @param text : update process status text
+        @brief Update the status text during the download process.
+        @param text : Status message of the update process
         """
         self.lbl_update_status.setText(f"Update wird heruntergeladen - {text}")
 
     def download_update_finish(self, success_status: bool) -> None:
         """!
-        @brief Download update finished
-        @param success_status : success status of download
+        @brief Handle completion of the update download.
+        @param success_status : True if the download was successful
         """
         if self.timer.isActive():
             self.timer.stop()
@@ -245,7 +248,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             self.lbl_update_icon.hide()
             # label
             self.lbl_update_status.hide()
-            self.b_download_finished = True
+            self.download_finished = True
         else:
             # buttons
             self.btn_update.show()
@@ -259,7 +262,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
+        @brief Default close Event Method to handle dialog close
         @param event : arrived event
         """
         self.update_downloader.terminate()

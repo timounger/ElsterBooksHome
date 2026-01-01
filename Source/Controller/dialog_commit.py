@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_commit.py
-@brief  Create commit dialog
+@brief  Dialog for creating a Git commit
 ********************************************************************************
 """
 
@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt
 
 from Source.version import __title__
+from Source.Util.app_data import thread_dialog
 from Source.Model.data_handler import tortoise_git_check_for_mod, TORTOISE_GIT_EXE
 from Source.Views.dialogs.dialog_commit_ui import Ui_CommitDialog
 if TYPE_CHECKING:
@@ -23,9 +24,9 @@ log = logging.getLogger(__title__)
 
 class CommitDialog(QDialog, Ui_CommitDialog):
     """!
-    @brief Commit dialog.
+    @brief Dialog for reviewing changes and creating a Git commit.
     @param ui : main window
-    @param changes : Git Changes text
+    @param changes : Git change summary text
     """
 
     def __init__(self, ui: "MainWindow", changes: str, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
@@ -36,11 +37,11 @@ class CommitDialog(QDialog, Ui_CommitDialog):
         self.changes = changes
         self.b_commit = False
         self.commit_message = ""
-        self.show_commit_dialog()
+        thread_dialog(self)
 
-    def show_commit_dialog(self) -> None:
+    def show_dialog(self) -> None:
         """!
-        @brief Show commit dialog.
+        @brief Initialize and display the commit dialog modally.
         """
         log.debug("Starting Commit dialog")
 

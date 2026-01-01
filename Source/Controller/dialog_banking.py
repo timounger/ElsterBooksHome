@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_banking.py
-@brief  Create banking dialog
+@brief  Banking configuration and FinTS connection dialog
 ********************************************************************************
 """
 
@@ -27,16 +27,16 @@ UNKNOWN_INSTITUTE_NAME = "Unbekannt"
 
 def build_institute_name(fints_institute: FinTSInstitute) -> str:
     """!
-    @brief Build institute name
-    @param fints_institute : institute
-    @return institute name
+    @brief Build the display name of a FinTS institute entry.
+    @param fints_institute : FinTS institute object
+    @return Formatted institute name including bank code (BLZ)
     """
     return f"{fints_institute.institute} (BLZ: {fints_institute.blz})"
 
 
 class BankingDialog(QDialog, Ui_DialogBanking):
     """!
-    @brief Banking dialog.
+    @brief Dialog for configuring banking data and connecting via FinTS.
     @param ui : main window
     """
 
@@ -47,14 +47,12 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.setMinimumWidth(600)
         self.setMinimumHeight(500)
         self.ui = ui
-
         self.fin_ts = FinTs(self.ui, self.pte_text)
-
         thread_dialog(self)
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Initialize dialog content and display the banking dialog modally.
         """
         log.debug("Starting Banking dialog")
 
@@ -100,7 +98,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.btn_clear.clicked.connect(self.clear_btn_clicked)
         self.btn_connect.clicked.connect(self.connect_btn_clicked)
         self.btn_get_transactions.clicked.connect(self.get_transactions_btn_clicked)
-        self.btn_payed_check.clicked.connect(self.confirm_btn_validate_payments)
+        self.btn_paid_check.clicked.connect(self.confirm_btn_validate_payments)
 
         self.setWindowTitle("Bankverbindung")
 
@@ -109,7 +107,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
 
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
+        @brief Default close Event Method to handle dialog close
         @param event : arrived event
         """
         if event is not None:
@@ -117,8 +115,8 @@ class BankingDialog(QDialog, Ui_DialogBanking):
 
     def institute_activated(self, _index: int) -> None:
         """!
-        @brief Institute was selected. Update institute data.
-        @param _index : index of selected institute entry
+        @brief Triggered when a bank institute is selected. Updates BLZ and FinTS URL fields accordingly.
+        @param _index : Index of the selected entry
         """
         institute = self.cb_institutes.currentData()
         if institute is not None:
@@ -132,7 +130,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
 
     def bank_data_changed(self) -> None:
         """!
-        @brief Bank data changed
+        @brief Called when BLZ or URL fields change. Tries to match the data to a known FinTS institute entry.
         """
         blz = self.le_blz.text()
         url = self.le_url.text()
@@ -154,9 +152,9 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         if not b_found:
             self.cb_institutes.setCurrentText(UNKNOWN_INSTITUTE_NAME)
 
-    def clear_btn_clicked(self):
+    def clear_btn_clicked(self) -> None:
         """!
-        @brief Clear button clicked.
+        @brief Clear all stored FinTS configuration and delete cached transactions.
         """
         blz = ""
         url = ""
@@ -171,9 +169,10 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         write_fints_auth_data(alias, pin)
         delete_transaction_files()
 
-    def connect_btn_clicked(self):
+    def connect_btn_clicked(self) -> None:
         """!
-        @brief Connect button clicked.
+        @brief Connect to the bank using the entered FinTS credentials.
+               Validates inputs, stores credentials, and retrieves account information.
         """
         blz = self.le_blz.text()
         url = self.le_url.text()
@@ -223,9 +222,9 @@ class BankingDialog(QDialog, Ui_DialogBanking):
                     if mechanism_key == self.fin_ts.tan_mechanism:
                         self.cb_tan_mechanisms.setCurrentIndex(i)
 
-    def get_transactions_btn_clicked(self):
+    def get_transactions_btn_clicked(self) -> None:
         """!
-        @brief Get transactions button clicked.
+        @brief Retrieve transactions for the selected account and store them locally.
         """
         iban = self.cb_accounts.currentData()
         tan_mechanism = self.cb_tan_mechanisms.currentData()
@@ -239,11 +238,11 @@ class BankingDialog(QDialog, Ui_DialogBanking):
 
         self.pte_text.setPlainText(success_text)
 
-    def confirm_btn_validate_payments(self):
+    def confirm_btn_validate_payments(self) -> None:
         """!
-        @brief Validate payments button clicked.
+        @brief Validate payments by comparing stored transactions with income and expenditure entries.
         """
         l_transaction = self.fin_ts.get_transactions()
-        self.ui.tab_income.check_for_payed(l_transaction)
-        self.ui.tab_expenditure.check_for_payed(l_transaction)
+        self.ui.tab_income.check_for_paid(l_transaction)
+        self.ui.tab_expenditure.check_for_paid(l_transaction)
         self.ui.set_status("Zahlungen wurden überprüft und zugeordnet")

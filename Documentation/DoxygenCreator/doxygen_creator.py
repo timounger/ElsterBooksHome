@@ -96,7 +96,7 @@ class OpenNotepad(Thread):
 class DoxygenCreator:
     """!
     @brief Class to generate Doxygen documentation for any code documentation with uniform settings and styling.
-    @param s_webside : URL to website
+    @param s_website : URL to website
     """
     d_settings: dict[str, str | list[str] | int] = {
         "PROJECT_NAME": "MyProject",  # important to define default user name to create output folder and files
@@ -143,8 +143,8 @@ class DoxygenCreator:
         "DOT_CLEANUP": YES,
     }
 
-    def __init__(self, s_webside: Optional[str] = None) -> None:
-        self.s_webside = s_webside
+    def __init__(self, s_website: Optional[str] = None) -> None:
+        self.s_website = s_website
         self.l_warnings: list[str] = []
         self.s_output_dir = ""
         self.s_doxyfile_name = ""
@@ -210,7 +210,7 @@ class DoxygenCreator:
             s_version = self.get_configuration("PROJECT_NUMBER")
             if s_version:
                 try:
-                    packaging.version.Version(s_version)  # test if s_sersion is a valid versions string
+                    packaging.version.Version(s_version)  # test if s_version is a valid versions string
                     self.set_configuration("PROJECT_NUMBER", f"v{s_version}")
                 except packaging.version.InvalidVersion:
                     pass  # not a valid version, do not prefix with "v"
@@ -353,8 +353,8 @@ class DoxygenCreator:
             @brief Add Github corner and tab icon
             """
             s_folder = f"{self.s_output_dir}/html/"
-            if self.s_webside is not None:
-                s_corner_text = S_GITHUB_CORNER_FIRST + self.s_webside + S_GITHUB_CORNER_LAST
+            if self.s_website is not None:
+                s_corner_text = S_GITHUB_CORNER_FIRST + self.s_website + S_GITHUB_CORNER_LAST
             else:
                 s_corner_text = None
             for html_file in os.listdir(s_folder):

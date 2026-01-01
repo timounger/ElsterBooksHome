@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   main_window.py
-@brief  View controller for the main window
+@brief  Controller for the main application window
 ********************************************************************************
 """
 
@@ -9,11 +9,12 @@ import logging
 from typing import Optional, Any
 import webbrowser
 
-from PyQt6.QtGui import QIcon, QStatusTipEvent, QCloseEvent, QResizeEvent
+from PyQt6.QtGui import QIcon, QCloseEvent
 from PyQt6.QtWidgets import QMainWindow, QMessageBox
-from PyQt6.QtCore import QObject, pyqtSignal, QEvent, QTimer
+from PyQt6.QtCore import QTimer
 
 from Source.version import __title__, __issue__
+from Source.version import BUILD_NAME
 from Source.Util.app_data import save_window_state, ICON_APP, ETab, group_menu, \
     ICON_HELP_LIGHT, ICON_HELP_DARK, ETheme, read_last_tab, write_last_tab, \
     read_update_version, write_update_version
@@ -49,25 +50,6 @@ HIGHLIGHT_STYLE = "red"
 LOCKED_STYLE = "grey"
 
 
-class StatusTipFilter(QObject):
-    """!
-    @brief Event Filter.
-    """
-
-    def eventFilter(self, watched: Optional[QObject], event: Optional[QEvent]) -> bool:  # pylint: disable=invalid-name
-        """!
-        @brief Filter to prevent tip event (statusbar message no longer disappears on menu hover).
-        @param watched : object
-        @param event : arrived event
-        @return return event filter
-        """
-        if isinstance(event, QStatusTipEvent):
-            b_return = True
-        else:
-            b_return = super().eventFilter(watched, event)
-        return b_return
-
-
 class MainWindow(QMainWindow, Ui_MainWindow):
     """!
     @brief The view-controller for main window. Entry point of application.
@@ -75,7 +57,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @param qt_exception_hook : exception hook
     @param log_config : log configuration of the application
     """
-    resized = pyqtSignal()  # need to defined out of scope
 
     def __init__(self, qt_exception_hook: UncaughtHook, log_config: LogConfig, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
         log.debug("Initializing Main Window")
@@ -93,7 +74,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.model = Model(self, log_config)
         log_config.ui = self
-
         self.model.c_monitor.update_darkmode_status(self.model.c_monitor.e_style)
 
         self.status_timer = QTimer(self)  # statusbar timer
@@ -121,8 +101,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_about_app.triggered.connect(lambda: AboutDialog(self))
         self.action_support.triggered.connect(lambda: webbrowser.open(__issue__))
 
-        self.menubar.installEventFilter(StatusTipFilter(self))
-
         # Set tabs
         self.tab_settings = TabSettings(self, ETab.SETTINGS)  # call settings first -> used in other tabs
         self.tab_dashboard = TabDashboard(self, ETab.DASHBOARD)
@@ -137,14 +115,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # active tab
         self.tabWidget.setCurrentIndex(read_last_tab())
 
-        delete_temp_update_files()
+        # handel update
+        if not BUILD_NAME:
+            delete_temp_update_files()
 
-        newer_tool_version = get_tool_update_status()
-        if newer_tool_version and (compare_versions(read_update_version(), newer_tool_version)):
-            self.lbl_update_banner.setText("Neue Version verfügbar!")
-            self.btn_update.setText(f"Update auf Version {newer_tool_version} durchführen")
-            self.btn_close_update_banner.clicked.connect(lambda: self.close_update_banner_clicked(newer_tool_version))
-            self.btn_update.clicked.connect(self.update_btn_clicked)
+            newer_tool_version = get_tool_update_status()
+            # show newer version if present and not hided before
+            if newer_tool_version and (compare_versions(read_update_version(), newer_tool_version)):
+                self.lbl_update_banner.setText("Neue Version verfügbar!")
+                self.btn_update.setText(f"Update auf Version {newer_tool_version} durchführen")
+                self.btn_close_update_banner.clicked.connect(lambda: self.close_update_banner_clicked(newer_tool_version))
+                self.btn_update.clicked.connect(self.update_btn_clicked)
+            else:
+                self.frame_update_banner.setVisible(False)
         else:
             self.frame_update_banner.setVisible(False)
 
@@ -154,22 +137,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_btn_clicked(self) -> None:
         """!
-        @brief Update button clicked
+        @brief Handles the Update button click and starts the update dialog.
         """
         self.frame_update_banner.setVisible(False)
         AboutDialog(self, auto_update=True)
 
     def close_update_banner_clicked(self, newer_tool_version: str) -> None:
         """!
-        @brief Close update banner clicked
-        @param newer_tool_version : newer tool version
+        @brief Hides the update banner and stores the newer tool version.
+        @param newer_tool_version : Latest available tool version
         """
         write_update_version(newer_tool_version)  # write newest version for don't remember again
         self.frame_update_banner.setVisible(False)
 
     def update_all_tabs(self, update: bool = False, rename: bool = False) -> None:
         """!
-        @brief Update all tabs
+        @brief Updates the data displayed in all tabs.
         @param update : update status of JSON file
         @param rename : rename status of file name
         """
@@ -181,17 +164,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tab_dashboard.check_data()
         self.tab_dashboard.update_dashboard_data()
 
-    def resizeEvent(self, _event: Optional[QResizeEvent]) -> None:
-        """!
-        @brief Default resize Event Method to handle change of window size
-        @param _event : arrived event
-        """
-        self.resized.emit()
-
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
-        @param event : arrived event
+        @brief Handles application shutdown and triggers optional auto-commit.
+        @param event : Close event
         """
         log.debug("Close Event")
         write_last_tab(self.tabWidget.currentIndex())
@@ -207,10 +183,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def confirm_dialog(self, s_title: str, s_text: str) -> bool:
         """!
-        @brief Show confirm dialog to accept with yes or no.
-        @param s_title : title
-        @param s_text : text
-        @return return accept status
+        @brief Shows a confirmation dialog with Yes/No options.
+        @param s_title : Dialog title
+        @param s_text : Dialog message
+        @return True if the user selects Yes
         """
         dialog = QMessageBox(self)
         dialog.setWindowTitle(s_title)
@@ -231,8 +207,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_ui(self, b_state: bool) -> None:
         """!
-        @brief Blocks/Unblock the main UI elements.
-        @param b_state : state if UI should blocked or unblocked, True: Enable, False: Disable
+        @brief Enables or disables the main UI controls.
+        @param b_state : True to enable, False to disable
         """
         self.menu_settings.setEnabled(b_state)
         self.menu_help.setEnabled(b_state)
@@ -240,7 +216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def block_ui(self) -> None:
         """!
-        @brief Blocks the main UI elements.
+        @brief Disables the main UI to prevent user interaction.
         """
         log.debug("Block UI")
         self.set_ui(False)
@@ -249,7 +225,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def unblock_ui(self) -> None:
         """!
-        @brief Unblock the main UI elements.
+        @brief Re-enables the main UI after a blocking operation finishes.
         """
         log.debug("Unblock UI")
         self.set_ui(True)
@@ -259,7 +235,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show_help_dialog(self) -> None:
         """!
-        @brief Show help dialog.
+        @brief Opens the application help dialog.
         """
         log.debug("Starting help dialog")
         icon = ICON_HELP_LIGHT if self.model.c_monitor.is_light_theme() else ICON_HELP_DARK
@@ -269,7 +245,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_status(self, text: str, b_warning: bool = False, i_timeout: Optional[int] = None, b_highlight: bool = False) -> None:
         """!
-        @brief Logs a status message to status bar (with timer) and logging handler
+        @brief Displays a status message and logs it, optionally highlighted or timed.
         @param text : text to set
         @param b_warning : [True] Text is a warning; [False] normal info
         @param b_highlight : [True] highlight text; [False] normal text
@@ -311,8 +287,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def clear_status(self, b_override: bool = False) -> None:
         """!
-        @brief Logs a status message to status bar (with timer) and logging handler
-        @param b_override : status if actual status should override
+        @brief Clears the current status bar message unless a warning is active.
+        @param b_override : True to force clearing even if a message is active
         """
         if not self.gui_locked:
             if not self.status_timer.isActive() or (b_override and not self.b_warning_active):

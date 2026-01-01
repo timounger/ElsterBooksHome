@@ -13,10 +13,10 @@ from drafthorse.models.document import Document
 
 def normalize_decimal(value: Any, max_decimals: int = 4) -> Decimal:
     """!
-    @brief Normalize decimal
-    @param value : value
-    @param max_decimals : maximal decimals
-    @return decimal value
+    @brief Normalize a number to a Decimal with a maximum number of decimal places.
+    @param value : value to normalize
+    @param max_decimals : maximum number of decimal places
+    @return normalized Decimal
     """
     d = Decimal(str(value)).quantize(Decimal("1." + "0" * max_decimals), rounding=ROUND_HALF_UP)
     s = format(d.normalize(), 'f')  # Convert to f-format to avoid exponents
@@ -33,7 +33,7 @@ def convert_to_amount(entry: Any) -> float | None:
     @param entry : entry to convert
     @return float value
     """
-    if entry and (entry != " "):
+    if entry and (str(entry).strip() != ""):
         float_value = float(entry)
     else:
         float_value = None
@@ -47,9 +47,7 @@ def convert_to_date_string(entry: Any) -> str:
     @return date string value
     """
     string_value = str(entry)
-    if string_value and (string_value != "None") and (string_value != " "):
-        string_value = str(entry)
-    else:
+    if string_value in ["None", " ", ""]:
         string_value = ""
     return string_value
 
@@ -155,7 +153,7 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         if child.id._scheme_id == "VA":
             data_buyer["vatId"] = str(child.id._text)  # Umsatzsteuer-ID (BT-48)
     data_buyer["electronicAddress"] = str(buyer.electronic_address.uri_ID._text)  # Elektronische Adresse (BT-49)
-    data_buyer["electronicAddressTypeCode"] = str(seller.electronic_address.uri_ID._scheme_id)  # Elektronische Adresse (schemeID) (BT-49)
+    data_buyer["electronicAddressTypeCode"] = str(buyer.electronic_address.uri_ID._scheme_id)  # Elektronische Adresse (schemeID) (BT-49)
     # Anschrift
     data_buyer_address = data_buyer.setdefault("address", {})
     data_buyer_address["city"] = str(buyer.address.city_name)  # Ort (BT-52)

@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_company.py
-@brief  Create company dialog
+@brief  Dialog for creating and editing company profile data.
 ********************************************************************************
 """
 
@@ -11,11 +11,12 @@ from typing import Optional, Any, TYPE_CHECKING
 import shutil
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QCloseEvent
+from PyQt6.QtGui import QIcon, QPixmap, QCloseEvent
 from PyQt6.QtWidgets import QDialog, QLineEdit, QFileDialog
 
 from Source.version import __title__
-from Source.Util.app_data import EAiType, write_ai_type, write_api_key, thread_dialog
+from Source.Util.app_data import EAiType, write_ai_type, thread_dialog
+from Source.Util.app_data import ICON_OLLAMA_LIGHT, ICON_OLLAMA_DARK, ICON_OPEN_AI_LIGHT, ICON_OPEN_AI_DARK, ICON_MISTRAL  # pylint: disable=wrong-import-position
 from Source.Model.data_handler import COMPANY_LOGO_TYPES  # pylint: disable=wrong-import-position
 from Source.Model.ZUGFeRD.drafthorse_data import D_COUNTRY_CODE  # pylint: disable=wrong-import-position
 from Source.Views.dialogs.dialog_company_ui import Ui_DialogCompany  # pylint: disable=wrong-import-position
@@ -24,7 +25,8 @@ from Source.Model.company import ECompanyFields, add_company, LOGO_BRIEF_PATH, D
 from Source.Model.ZUGFeRD.drafthorse_import import set_combo_box_items  # pylint: disable=wrong-import-position
 from Source.Worker.vat_validation import VatValidation, check_vat_format  # pylint: disable=wrong-import-position
 from Source.Worker.open_ai import DEFAULT_GPT_MODEL  # pylint: disable=wrong-import-position
-from Source.Worker.ollama_ai import EOllamaModel  # pylint: disable=wrong-import-position
+from Source.Worker.mistral_ai import DEFAULT_MISTRAL_MODEL  # pylint: disable=wrong-import-position
+from Source.Worker.ollama_ai import DEFAULT_OLLAMA_MODEL  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -33,9 +35,9 @@ log = logging.getLogger(__title__)
 
 def parse_number(s_string: str) -> float | int | None:
     """!
-    @brief parse number to int or float
-    @param s_string : string to check
-    @return number
+    @brief Convert a string to int or float if possible.
+    @param s_string : Input string
+    @return Parsed number or None if conversion fails
     """
     try:
         number = float(s_string)
@@ -48,10 +50,10 @@ def parse_number(s_string: str) -> float | int | None:
 
 class CompanyDialog(QDialog, Ui_DialogCompany):
     """!
-    @brief Company dialog.
+    @brief Dialog for viewing and editing company data.
     @param ui : main window
-    @param company_data : company data
-    @param uid : UID of company
+    @param company_data : Existing company data (optional)
+    @param uid : Company UID (optional)
     """
 
     def __init__(self, ui: "MainWindow", company_data: Optional[dict[Any, Any]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
@@ -69,6 +71,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         self.logo_path = None  # path to import
 
         self.lbl_vat_status.setText("")
+        self.lbl_vat_status.hide()
         self.vat_validator = VatValidation()
         self.vat_validator.finish_signal.connect(self.vat_result)
         self.le_vat.textChanged.connect(self.vat_id_changed)
@@ -77,7 +80,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog.
+        @brief Initialize dialog widgets and display the dialog modally.
         """
         log.debug("Starting Company dialog")
 
@@ -138,13 +141,14 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             self.rb_ustva_quaterly.setChecked(True)
         else:
             self.rb_ustva_monthly.setChecked(True)
-        self.cb_payed.setChecked(company_default[ECompanyFields.PAYED])
-        self.cb_bar_payed.setChecked(company_default[ECompanyFields.BAR_PAYED])
+        self.cb_paid.setChecked(company_default[ECompanyFields.PAID])
+        self.cb_bar_paid.setChecked(company_default[ECompanyFields.BAR_PAID])
         self.le_default_group_income.setText(company_default[ECompanyFields.INCOME_GROUP])
         self.le_default_group_expenditure.setText(company_default[ECompanyFields.EXPENDITURE_GROUP])
         self.pte_group_list.setPlainText("\n".join(company_default[ECompanyFields.GROUPS]))
         self.le_invoice_number.setText(company_default[ECompanyFields.INVOICE_NUMBER])
         self.sb_payment_days.setValue(company_default[ECompanyFields.PAYMENT_DAYS])
+        self.le_payment_purpose.setText(company_default[ECompanyFields.PAYMENT_PURPOSE])
         self.le_mail_subtract.setText(company_default[ECompanyFields.MAIL_SUBJECT])
         self.pte_mail_template.setPlainText(company_default[ECompanyFields.MAIL_TEXT])
         # AI
@@ -153,16 +157,24 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
                 self.rb_ai_deactivated.setChecked(True)
             case EAiType.OPEN_AI:
                 self.rb_ai_chatgpt.setChecked(True)
+            case EAiType.MISTRAL:
+                self.rb_ai_mistral.setChecked(True)
             case EAiType.OLLAMA:
                 self.rb_ai_ollama.setChecked(True)
             case _:
                 log.warning("Invalid AI type: %s", self.ui.model.ai_type)
+        # logo
+        b_light_theme = self.ui.model.c_monitor.is_light_theme()
+        self.rb_ai_chatgpt.setIcon(QIcon(ICON_OPEN_AI_LIGHT if b_light_theme else ICON_OPEN_AI_DARK))
+        self.rb_ai_mistral.setIcon(QIcon(ICON_MISTRAL))
+        self.rb_ai_ollama.setIcon(QIcon(ICON_OLLAMA_LIGHT if b_light_theme else ICON_OLLAMA_DARK))
+        # callback
         self.rb_ai_deactivated.toggled.connect(self.ai_changed)
         self.rb_ai_chatgpt.toggled.connect(self.ai_changed)
+        self.rb_ai_mistral.toggled.connect(self.ai_changed)
         self.rb_ai_ollama.toggled.connect(self.ai_changed)
         # API key
         self.le_ai_api_key.setEchoMode(QLineEdit.EchoMode.Password)
-        self.le_ai_api_key.setText(self.ui.model.c_open_ai.api_key)
         self.ai_changed()  # update ai widgets depend on model
         # External tools
         self.line_external_tools.hide()
@@ -186,7 +198,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
+        @brief Default close Event Method to handle dialog close
         @param event : arrived event
         """
         self.vat_validator.terminate()
@@ -195,8 +207,8 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def vat_id_changed(self, vat_id: str) -> None:
         """!
-        @brief VAT ID changed
-        @param vat_id : VAT id
+        @brief Triggered when the VAT ID text changes.
+        @param vat_id : Entered VAT number
         """
         self.vat_validator.terminate()
         if vat_id:
@@ -208,13 +220,15 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             else:
                 self.lbl_vat_status.setText("VAT Nummer ungültiges Format")
                 self.lbl_vat_status.setStyleSheet("color: grey")
+            self.lbl_vat_status.show()
         else:
             self.lbl_vat_status.setText("")
+            self.lbl_vat_status.hide()
 
     def vat_result(self, result: dict) -> None:
         """!
-        @brief VAT result
-        @param result : vat result
+        @brief Handle result of VAT validation service.
+        @param result : Dictionary containing validation data
         """
         valid_status = result.get("valid", None)
         if valid_status is None:
@@ -226,11 +240,12 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         else:
             self.lbl_vat_status.setText("VAT Nummer nicht bekannt")
             self.lbl_vat_status.setStyleSheet("color: red")
+        self.lbl_vat_status.show()
 
     def select_logo(self, fix_logo: Optional[str] = None) -> None:
         """!
-        @brief Open file dialog to select logo and setup preview
-        @param fix_logo : set fix logo file without dialog asking
+        @brief Select a company logo file and update preview.
+        @param fix_logo : Optional path to logo file (no dialog opened if set)
         """
         if fix_logo:
             logo_path = fix_logo
@@ -247,7 +262,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def city_changed(self) -> None:
         """!
-        @brief City changed
+        @brief Triggered when the city text field changes. Used to control automatic PLZ -> city updates.
         """
         if self.b_city_auto_change:
             self.b_city_auto_change = False
@@ -257,7 +272,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def plz_changed(self) -> None:
         """!
-        @brief PLZ changed
+        @brief Triggered when the postal code changes. Automatically fills the city field if data is available.
         """
         if (not self.b_lock_auto_city_data) and (self.ui.model.d_plz_data is not None):
             plz = self.le_plz.text().strip()
@@ -271,7 +286,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def ai_changed(self) -> None:
         """!
-        @brief AI changed
+        @brief Update AI-related widgets based on selected AI provider.
         """
         show_model = False
         show_api_key = False
@@ -280,10 +295,17 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         elif self.rb_ai_chatgpt.isChecked():
             self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_GPT_MODEL}")
             self.le_ai_model.setText(self.ui.model.c_open_ai.model)
+            self.le_ai_api_key.setText(self.ui.model.c_open_ai.api_key)
+            show_model = True
+            show_api_key = True
+        elif self.rb_ai_mistral.isChecked():
+            self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_MISTRAL_MODEL}")
+            self.le_ai_model.setText(self.ui.model.c_mistral_ai.model)
+            self.le_ai_api_key.setText(self.ui.model.c_mistral_ai.api_key)
             show_model = True
             show_api_key = True
         elif self.rb_ai_ollama.isChecked():
-            self.le_ai_model.setPlaceholderText(f"Default: {EOllamaModel.LLAMA3_1_8B.value}")
+            self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_OLLAMA_MODEL}")
             self.le_ai_model.setText(self.ui.model.c_ollama_ai.model)
             show_model = True
         else:
@@ -295,7 +317,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def save_clicked(self) -> None:
         """!
-        @brief Save button clicked.
+        @brief Save button handler. Writes data and closes dialog.
         """
         self.set_data()
         if self.company_data is not None:
@@ -307,7 +329,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
 
     def set_data(self) -> None:
         """!
-        @brief Set data
+        @brief Collect values from the dialog and store them in the company data structure.
         """
         company = self.company_data
         company_address = company[COMPANY_ADDRESS_FIELD]
@@ -351,13 +373,14 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         company_booking[ECompanyFields.TAX_RATES] = l_tax_rates
         # default
         company_default[ECompanyFields.QUARTERLY_SALES_TAX] = self.rb_ustva_quaterly.isChecked()
-        company_default[ECompanyFields.PAYED] = self.cb_payed.isChecked()
-        company_default[ECompanyFields.BAR_PAYED] = self.cb_bar_payed.isChecked()
+        company_default[ECompanyFields.PAID] = self.cb_paid.isChecked()
+        company_default[ECompanyFields.BAR_PAID] = self.cb_bar_paid.isChecked()
         company_default[ECompanyFields.INCOME_GROUP] = self.le_default_group_income.text()
         company_default[ECompanyFields.EXPENDITURE_GROUP] = self.le_default_group_expenditure.text()
         company_default[ECompanyFields.GROUPS] = self.pte_group_list.toPlainText().splitlines()
         company_default[ECompanyFields.INVOICE_NUMBER] = self.le_invoice_number.text()
         company_default[ECompanyFields.PAYMENT_DAYS] = self.sb_payment_days.value()
+        company_default[ECompanyFields.PAYMENT_PURPOSE] = self.le_payment_purpose.text()
         company_default[ECompanyFields.MAIL_SUBJECT] = self.le_mail_subtract.text()
         company_default[ECompanyFields.MAIL_TEXT] = self.pte_mail_template.toPlainText()
         # AI settings
@@ -367,15 +390,22 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         elif self.rb_ai_chatgpt.isChecked():
             ai_type = EAiType.OPEN_AI
             self.ui.model.c_open_ai.set_model(custom_model)
+            self.ui.model.c_open_ai.set_api_key(self.le_ai_api_key.text())
+            self.ui.model.c_open_ai.initialize_openai_client()
+        elif self.rb_ai_mistral.isChecked():
+            ai_type = EAiType.MISTRAL
+            self.ui.model.c_mistral_ai.set_model(custom_model)
+            self.ui.model.c_mistral_ai.set_api_key(self.le_ai_api_key.text())
+            self.ui.model.c_mistral_ai.initialize_mistral_client()
         elif self.rb_ai_ollama.isChecked():
             ai_type = EAiType.OLLAMA
             self.ui.model.c_ollama_ai.set_model(custom_model)
+            self.ui.model.c_ollama_ai.initialize_ollama()
         else:
             ai_type = EAiType.DEACTIVATED
             log.warning("Invalid AI type: %s", self.ui.model.ai_type)
         self.ui.model.ai_type = ai_type
         write_ai_type(ai_type)
-        write_api_key(self.le_ai_api_key.text())
         # logo
         if self.logo_path:
             logo_path = os.path.join(self.ui.model.data_path, LOGO_BRIEF_PATH)

@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_export.py
-@brief  Export Tab
+@brief  Tab for exporting reports, backups, and PDFs.
 ********************************************************************************
 """
 
@@ -40,9 +40,9 @@ PRE_TAX_DAY_LIMIT = 10
 
 class TabExport:
     """!
-    @brief Export dialog tab.
+    @brief Controller for the Export tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of this tab in the tab widget
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -67,6 +67,8 @@ class TabExport:
         self.ui_export.btn_eur.clicked.connect(self.eur_btn_clicked)
         self.ui_export.btn_datev.setText(EReportType.DATEV)
         self.ui_export.btn_datev.clicked.connect(self.datev_btn_clicked)
+        self.ui_export.btn_homeoffice_flat.hide()
+        self.ui_export.btn_travel_expenses.hide()
         # export buttons
         self.ui_export.btn_export.setText(EReportType.EXPORT_TOTAL)
         self.ui_export.btn_export.clicked.connect(self.export_btn_clicked)
@@ -117,7 +119,7 @@ class TabExport:
         active_year = current_year
         if (current_month == 1) and (current_day <= PRE_TAX_DAY_LIMIT):
             active_year -= 1
-        self.ui_export.sb_year.setValue(current_year)
+        self.ui_export.sb_year.setValue(active_year)
 
         self.tools_downloader = ToolsDownloader()
         self.tools_downloader.status_signal.connect(self.download_tools_status)
@@ -132,7 +134,7 @@ class TabExport:
 
     def update_export_data(self) -> None:
         """!
-        @brief Update export data.
+        @brief Updates UI elements and buttons for the export tab.
         """
         self.ui_export.company_logo.setPixmap(QPixmap(os.path.join(self.ui.model.data_path, LOGO_BRIEF_PATH)))
 
@@ -157,14 +159,14 @@ class TabExport:
 
     def update_eur_btn(self) -> None:
         """!
-        @brief Update EUR button.
+        @brief Updates the EUR/GUV button text depending on profit calculation settings.
         """
         btn_text = EReportType.GUV if (self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.PROFIT_CALCULATION_CAPITAL]) else EReportType.EUR
         self.ui_export.btn_eur.setText(btn_text)
 
     def create_export(self, e_type: EReportType) -> None:
         """!
-        @brief Create export
+        @brief Creates the selected export report.
         @param e_type : report type
         """
         i_year = None
@@ -204,7 +206,7 @@ class TabExport:
 
     def create_backup(self) -> None:
         """!
-        @brief Create backup
+        @brief Creates a ZIP backup of the project folder and copies it to the clipboard.
         """
         source_folder = Path(REL_PATH)
         if source_folder.exists():
@@ -225,7 +227,7 @@ class TabExport:
 
     def combine_pdf(self) -> None:
         """!
-        @brief Combine PDF
+        @brief Combines multiple PDF files into a single PDF.
         """
         l_select_files, _ = QFileDialog.getOpenFileNames(parent=self.ui, caption="PDF kombinieren",
                                                          directory=self.ui.model.get_last_path(),
@@ -247,38 +249,38 @@ class TabExport:
 
     def ust_pre_btn_clicked(self) -> None:
         """!
-        @brief UST pre button clicked.
+        @brief Handles the UST pre-report button click.
         """
         self.create_export(EReportType.UST_PRE)
 
     def ust_btn_clicked(self) -> None:
         """!
-        @brief UST button clicked.
+        @brief Handles the UST report button click.
         """
         self.create_export(EReportType.UST)
 
     def eur_btn_clicked(self) -> None:
         """!
-        @brief EUR button clicked.
+        @brief Handles the EUR or GUV report button click.
         """
         e_report_type = EReportType.EUR if (self.ui_export.btn_eur.text() == EReportType.EUR) else EReportType.GUV
         self.create_export(e_report_type)
 
     def export_btn_clicked(self) -> None:
         """!
-        @brief Export button clicked.
+        @brief Handles the total export button click.
         """
         self.create_export(EReportType.EXPORT_TOTAL)
 
     def datev_btn_clicked(self) -> None:
         """!
-        @brief DATEV button clicked.
+        @brief Handles the DATEV export button click.
         """
         self.create_export(EReportType.DATEV)
 
     def open_export_folder_btn_clicked(self) -> None:
         """!
-        @brief Open export folder button clicked.
+        @brief Opens the export folder in the file explorer.
         """
         if not os.path.exists(EXPORT_PATH):
             os.makedirs(EXPORT_PATH)
@@ -286,33 +288,33 @@ class TabExport:
 
     def transactions_btn_clicked(self) -> None:
         """!
-        @brief Transactions button clicked.
+        @brief Opens the banking dialog.
         """
         BankingDialog(self.ui)
 
     def pdf_combine_btn_clicked(self) -> None:
         """!
-        @brief PDF combine button clicked.
+        @brief Calls the PDF combine routine.
         """
         self.combine_pdf()
 
     def update_btn_clicked(self) -> None:
         """!
-        @brief Update data button clicked.
+        @brief Updates all tabs data without renaming files.
         """
         self.ui.update_all_tabs(update=True, rename=False)
         self.ui.set_status("Daten wurden aktualisiert")
 
     def update_all_btn_clicked(self) -> None:
         """!
-        @brief Update data inclusive file renaming button clicked.
+        @brief Updates all tabs data including file renaming.
         """
         self.ui.update_all_tabs(update=True, rename=True)
         self.ui.set_status("Daten inklusive Dateiumbenennung wurden vorgenommen")
 
     def git_commit_btn_clicked(self) -> None:
         """!
-        @brief Git commit button clicked.
+        @brief Opens commit dialog and commits changes if confirmed.
         """
         b_changes, s_changes = check_git_changes()
         if b_changes:
@@ -337,7 +339,7 @@ class TabExport:
 
     def git_create_repo_btn_clicked(self) -> None:
         """!
-        @brief Git create repo button clicked.
+        @brief Creates a new Git repository and writes a .gitignore template.
         """
         success = create_repo()
         if success:
@@ -356,7 +358,7 @@ class TabExport:
 
     def clean_data_clicked(self) -> None:
         """!
-        @brief Clean data button clicked.
+        @brief Cleans all data in tabs (documents, income, expenditure).
         """
         self.ui.update_all_tabs()
         self.ui.tab_document.clean_data()
@@ -366,21 +368,21 @@ class TabExport:
 
     def download_tools_btn_clicked(self) -> None:
         """!
-        @brief Download tools button clicked.
+        @brief Starts downloading external tools.
         """
         self.ui_export.btn_download_tools.setEnabled(False)
         self.tools_downloader.start()
 
     def download_tools_status(self, text: str) -> None:
         """!
-        @brief Download tools status.
+        @brief Updates status message during download.
         @param text : download status
         """
         self.ui.set_status(text)
 
     def download_tools_finish(self) -> None:
         """!
-        @brief Download tools finish.
+        @brief Called when tool download finishes and updates UI.
         """
         self.ui_export.btn_download_tools.setEnabled(True)
         self.update_export_data()

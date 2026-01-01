@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_expenditure.py
-@brief  Expenditure Tab
+@brief  Tab for managing expenditure.
 ********************************************************************************
 """
 
@@ -19,7 +19,7 @@ from Source.Controller.table_filter import TableFilter, CellData, L_RECEIPT_ROW_
     I_DATE_IDX
 from Source.Controller.dialog_receipt import ReceiptDialog, EReceiptType
 from Source.Model.expenditure import read_expenditure, EXPENDITURE_FILE_PATH, export_expenditure, delete_expenditure, clean_expenditure
-from Source.Model.expenditure import check_payed_expenditure
+from Source.Model.expenditure import check_paid_expenditure
 from Source.Model.data_handler import INVOICE_FILE_TYPES, clear_dialog_data, EReceiptFields, get_status, \
     find_file, L_INVOICE_FILE_TYPES
 from Source.Model.company import ECompanyFields, COMPANY_DEFAULT_FIELD
@@ -32,9 +32,9 @@ log = logging.getLogger(__title__)
 
 class TabExpenditure:
     """!
-    @brief Expenditure dialog tab.
+    @brief Controller for the Expenditure tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of this tab in the tab widget
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -58,7 +58,7 @@ class TabExpenditure:
 
     def set_table_data(self, update: bool = False, rename: bool = False, update_dashboard: bool = True) -> None:
         """!
-        @brief Read expenditure data and update table.
+        @brief Reads expenditure data and updates the table.
         @param update : update status of JSON file
         @param rename : rename status of file name
         @param update_dashboard : update dashboard
@@ -103,22 +103,22 @@ class TabExpenditure:
 
     def clean_data(self) -> None:
         """!
-        @brief Clean data
+        @brief Removes invalid or orphaned expenditure entries.
         """
         clean_expenditure(self.ui.model.data_path)
         self.set_table_data()
 
-    def check_for_payed(self, l_transaction: list[Transaction]) -> None:
+    def check_for_paid(self, l_transaction: list[Transaction]) -> None:
         """!
-        @brief Check for payed
-        @param l_transaction : transactions
+        @brief Matches bank transactions to mark expenditures as paid.
+        @param l_transaction : List of banking transactions
         """
-        check_payed_expenditure(self.ui.model.data_path, l_transaction)
+        check_paid_expenditure(self.ui.model.data_path, l_transaction)
         self.set_table_data()
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!
-        @brief Callback for double click on table entry.
+        @brief Callback for double-click events on table entries.
         @param row : clicked row index
         @param col : clicked column index
         @param _value : value of clicked cell
@@ -140,7 +140,7 @@ class TabExpenditure:
 
     def open_invoice_file(self, uid: str) -> None:
         """!
-        @brief Open invoice file.
+        @brief Opens the attached invoice file for the given UID.
         @param uid : uid
         """
         expenditure_path = os.path.join(self.ui.model.data_path, EXPENDITURE_FILE_PATH)
@@ -151,7 +151,7 @@ class TabExpenditure:
 
     def new_expenditure(self, import_file: Optional[str] = None) -> None:
         """!
-        @brief Create new expenditure.
+        @brief Creates a new expenditure entry and optionally imports a file.
         @param import_file : file to import
         """
         if import_file:

@@ -52,7 +52,6 @@ L_EXCLUDE_MODULES = [
     "pygments",
     "rich",
     "mypy",
-    "mypy_extensions",
     "toml",
     "cairo",
     "freetype",
@@ -77,16 +76,19 @@ add_data = [
     "..\\Resources\\splash.gif;Resources\\",
     "..\\Resources\\app.ico;Resources\\",
     "..\\Resources\\FinTS\\;Resources\\FinTS\\",
+    "..\\Resources\\Fonts\\;Resources\\Fonts\\",
     "..\\Resources\\Git\\;Resources\\Git\\",
     "..\\Resources\\Help\\;Resources\\Help\\",
     "..\\Resources\\Icon\\;Resources\\Icon\\",
-    "..\\Resources\\schemata\\;Resources\\schemata\\",
     "..\\Resources\\InvoiceImage\\;Resources\\InvoiceImage\\",
+    "..\\Resources\\schemata\\;Resources\\schemata\\",
     f"{sys.prefix}\\Lib\\site-packages\\drafthorse\\schema\\;drafthorse\\schema\\"  # add drafthorse resource file
 ]
 
 L_HIDDEN_IMPORT = [
-    "tzdata"
+    "tzdata",
+    "openpyxl",
+    "reportlab"
 ]
 
 

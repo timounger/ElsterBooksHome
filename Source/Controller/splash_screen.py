@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   splash_screen.py
-@brief  Create splash screen
+@brief  Splash screen dialog shown during application startup
 ********************************************************************************
 """
 
@@ -23,8 +23,8 @@ log = logging.getLogger(__title__)
 
 def create_splash_screen() -> QDialog:
     """!
-    @brief Create splash screen
-    @return splash screen dialog
+    @brief Creates and configures the application splash screen dialog.
+    @return The initialized splash screen dialog.
     """
     splash = QDialog()
     splash.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
@@ -40,10 +40,9 @@ def create_splash_screen() -> QDialog:
     ui_splash.lbl_productName.setStyleSheet("color: black;")
     ui_splash.lbl_version.setStyleSheet("color: black;")
 
-    ui_splash.lbl_prerelease.setStyleSheet("color: red;")
-    ui_splash.lbl_prerelease.show()
+    ui_splash.lbl_prerelease.hide()
     if BUILD_NAME:
-        ui_splash.lbl_build_name.setText(f'only for "{BUILD_NAME}"')
+        ui_splash.lbl_build_name.setText(f"Build: {BUILD_NAME}")
         ui_splash.lbl_build_name.setStyleSheet("color: yellow;")
         ui_splash.lbl_build_name.show()
     else:

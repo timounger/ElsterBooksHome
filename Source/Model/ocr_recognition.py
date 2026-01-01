@@ -29,13 +29,13 @@ def convert_pdf_to_images(file: str) -> list[PILImage]:
     @param file : file to convert
     @return images for OCR recognition
     """
-    pdf_document = fitz.open(file)
     images = []
 
-    for page in pdf_document:
-        pix = page.get_pixmap(dpi=300)
-        image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
-        images.append(image)
+    with fitz.open(file) as pdf_document:
+        for page in pdf_document:
+            pix = page.get_pixmap(dpi=300)
+            image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+            images.append(image)
 
     return images
 

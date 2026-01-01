@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_income.py
-@brief  Invoice Tab
+@brief  Tab for managing income.
 ********************************************************************************
 """
 
@@ -20,7 +20,7 @@ from Source.Controller.table_filter import TableFilter, CellData, L_RECEIPT_ROW_
 from Source.Controller.dialog_receipt import ReceiptDialog, EReceiptType
 from Source.Controller.dialog_invoice import InvoiceDialog
 from Source.Model.income import read_income, INCOME_FILE_PATH, export_income, delete_income, clean_income
-from Source.Model.income import check_payed_income
+from Source.Model.income import check_paid_income
 from Source.Model.data_handler import INVOICE_FILE_TYPES, clear_dialog_data, EReceiptFields, get_status, \
     find_file, L_INVOICE_FILE_TYPES
 from Source.Model.company import ECompanyFields, COMPANY_DEFAULT_FIELD
@@ -33,9 +33,9 @@ log = logging.getLogger(__title__)
 
 class TabIncome:
     """!
-    @brief Income dialog tab.
+    @brief Controller for the Income tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of this tab in the tab widget
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -60,7 +60,7 @@ class TabIncome:
 
     def set_table_data(self, update: bool = False, rename: bool = False, update_dashboard: bool = True) -> None:
         """!
-        @brief Read income data and update table.
+        @brief Reads income data and updates the table.
         @param update : update status of JSON file
         @param rename : rename status of file name
         @param update_dashboard : update dashboard
@@ -105,22 +105,22 @@ class TabIncome:
 
     def clean_data(self) -> None:
         """!
-        @brief Clean data
+        @brief Removes invalid or orphaned income entries.
         """
         clean_income(self.ui.model.data_path)
         self.set_table_data()
 
-    def check_for_payed(self, l_transaction: list[Transaction]) -> None:
+    def check_for_paid(self, l_transaction: list[Transaction]) -> None:
         """!
-        @brief Check for payed
+        @brief Matches bank transactions to mark income as paid.
         @param l_transaction : transactions
         """
-        check_payed_income(self.ui.model.data_path, l_transaction)
+        check_paid_income(self.ui.model.data_path, l_transaction)
         self.set_table_data()
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!
-        @brief Callback for double click on table entry.
+        @brief Callback for double-click events on table entries.
         @param row : clicked row index
         @param col : clicked column index
         @param _value : value of clicked cell
@@ -142,7 +142,7 @@ class TabIncome:
 
     def open_invoice_file(self, uid: str) -> None:
         """!
-        @brief Open invoice file.
+        @brief Opens the attached invoice file for the given UID.
         @param uid : uid
         """
         income_path = os.path.join(self.ui.model.data_path, INCOME_FILE_PATH)
@@ -153,7 +153,7 @@ class TabIncome:
 
     def create_invoice(self, uid: Optional[str] = None) -> None:
         """!
-        @brief Create invoice.
+        @brief Opens an invoice creation dialog.
         @param uid : uid of contact
         """
         invoice_dialog: Any = None
@@ -162,7 +162,7 @@ class TabIncome:
 
     def new_income(self, import_file: Optional[str] = None) -> None:
         """!
-        @brief Create new income.
+        @brief Creates a new income entry and optionally imports a file.
         @param import_file : file to import
         """
         if import_file:

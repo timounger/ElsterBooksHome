@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   table_filter.py
-@brief  Table filter controller
+@brief  Table filter controller: Manages tabular data display, filtering, and context menus
 ********************************************************************************
 """
 
@@ -54,9 +54,9 @@ log = logging.getLogger(__title__)
 
 class DropFilter(QObject):
     """!
-    @brief Drop filter for import
-    @param label : label object
-    @param callback : callback function
+    @brief Drop filter for drag-and-drop imports.
+    @param label : QLabel to accept drops
+    @param callback : Callback function to handle dropped file path
     """
 
     def __init__(self, label: QLabel, callback: Callable[[str], None]) -> None:
@@ -88,7 +88,7 @@ class DropFilter(QObject):
 
 class CellData(NamedTuple):
     """!
-    @brief properties of printed article
+    @brief Container for table cell data
     """
     text: str = ""
     icon: str | None = None
@@ -98,11 +98,11 @@ class CellData(NamedTuple):
 
 class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     """!
-    @brief General Filter Tab.
+    @brief General tab for table filtering and display.
     @param ui : main window
-    @param tab_widget : tab widget
-    @param tab_idx : tab index
-    @param s_title : tab name
+    @param tab_widget : QTabWidget containing this tab
+    @param tab_idx : Index of this tab in the tab widget
+    @param s_title : Tab display title
     @param title_folder_link : create folder link on title lable
     @param btn_1_name : name of button 1
     @param btn_1_icon : icon paths of button 1 (light, dark)
@@ -237,8 +237,8 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def create_column_menu(self) -> QMenu:
         """!
-        @brief Create column menu for button
-        @return menu
+        @brief Creates the column visibility menu for the config button
+        @return config menu
         """
         menu = QMenu(self.ui)
         self.column_actions = []
@@ -255,7 +255,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def column_menu_callback(self, col: int, checked: bool) -> None:
         """!
-        @brief Handles right click to pop up context menu
+        @brief Handles column show/hide changes and saves them persistently
         @param col : column number
         @param checked : last check status
         """
@@ -265,7 +265,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def show_context_menu(self, point: QPoint) -> None:
         """!
-        @brief Handles right click to pop up context menu
+        @brief Displays context menu on right-click of a table row
         @param point : The position of the context menu event that the widget receives.
         """
         class ContextActions(str, Enum):
@@ -274,6 +274,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
             """
             ACTION_CREATE_INVOICE = "Rechnung erstellen"
             ACTION_DELETE_ENTRY = "Eintrag löschen"
+            ACTION_CUSTOM_FUNCTION = "Stundenliste erstellen"
 
         index = self.table.indexAt(point)
         if index.isValid():
@@ -298,12 +299,14 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
                             self.delete_fnc(self.ui.model.data_path, uid)
                             self.update_table_func()
                             self.ui.set_status("Eintrag gelöscht")
+                    case ContextActions.ACTION_CUSTOM_FUNCTION:
+                        log.warning("Unknown header context menu action selected: %s", selected_action.text())
                     case _:
                         log.warning("Unknown header context menu action selected: %s", selected_action.text())
 
     def get_attach_icon(self, attachment_file: str) -> str:
         """!
-        @brief Get attachment icon depend on file type.
+        @brief Returns icon path depending on attachment type (PDF, XML, other)
         @param attachment_file : attachment name
         @return attachment icon
         """
@@ -318,7 +321,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def check_entry_relevant(self, data: list[CellData]) -> bool:
         """!
-        @brief Check if table item is in filter option.
+        @brief Returns True if the row matches the active filter
         @param data : data to check for relevant at search
         @return status if entry is relevant for search
         """
@@ -340,7 +343,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def update_table(self, l_data: Optional[list[list[CellData]]] = None) -> None:
         """!
-        @brief Update table view.
+        @brief Updates the table model, applies filters, resizing, sorting, and column visibility
         @param l_data : optional to update with new table data
         """
         if l_data is not None:  # optional update data
@@ -429,7 +432,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def on_item_double_clicked(self, index: QModelIndex) -> None:
         """!
-        @brief Double click callback for QTableView.
+        @brief Calls the double-click callback with row, column, and value
         @param index : QModelIndex of the clicked cell
         """
         row = index.row()
@@ -441,21 +444,21 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def enter_pressed(self) -> None:
         """!
-        @brief Enter pressed to filter table.
+        @brief Filters table on Enter pressed in search box
         """
         text = self.input_filter.text()
         self.set_filter(text)
 
     def reset_filter_clicked(self, _event: QMouseEvent) -> None:
         """!
-        @brief Reset filter clicked.
+        @brief Clears the filter
         @param _event : call event
         """
         self.set_filter(None)
 
     def set_search_boarder(self, color: Optional[str]) -> None:
         """!
-        @brief Set border of search widget.
+        @brief Sets the border color of the search input (green/orange/red)
         @param color : color to set
         """
         if color is None:
@@ -465,7 +468,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def set_filter(self, filter_text: Optional[str]) -> None:
         """!
-        @brief Set filter.
+        @brief Activates or clears the text filter and refreshes the table
         @param filter_text : filter text
         """
         if filter_text:

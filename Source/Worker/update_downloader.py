@@ -61,7 +61,7 @@ class UpdateDownloader(QThread):
 
     def download_update(self) -> bool:
         """!
-        @brief Download update
+        @brief Download the latest update, save it locally, and optionally emit progress signals
         @return success_status : download success status
         """
         success_status = False
@@ -103,7 +103,7 @@ class UpdateDownloader(QThread):
 
     def run(self) -> None:
         """!
-        @brief Run tools download
+        @brief Execute the update download in a separate thread and emit finish signal when done
         """
         success_status = self.download_update()
         self.finish_signal.emit(success_status)

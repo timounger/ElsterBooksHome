@@ -34,7 +34,7 @@ class ToolsDownloader(QThread):
 
     def download_tools(self) -> None:
         """!
-        @brief Download tools
+        @brief Download the tools ZIP from GitHub, extract it to the tools folder, and delete the ZIP file afterwards.
         """
         url = TOOLS_DOWNLOAD_LINK
         dest_dir = os.path.join(TOOLS_FOLDER, "../")
@@ -73,7 +73,7 @@ class ToolsDownloader(QThread):
 
     def run(self) -> None:
         """!
-        @brief Run tools download
+        @brief Execute the tools download in a separate thread and emit finish_signal when done.
         """
         self.download_tools()
         self.finish_signal.emit()

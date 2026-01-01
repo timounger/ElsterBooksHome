@@ -1,6 +1,4 @@
-\mainpage ElsterBooks
-
-\tableofcontents
+# ElsterBooks
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/timounger/ElsterBooksHome)](https://github.com/timounger/ElsterBooksHome/releases/latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-red.svg)](https://github.com/timounger/ElsterBooksHome/blob/master/LICENSE.md)
@@ -41,7 +39,7 @@ ElsterBooks unterstützt Sie bei der elektronischen Buchführung für Ihr Untern
 
 Im Tool kann über das Menüband (`Hilfe` → `Hilfe anzeigen`) die Hilfe zur Bedienung und Konfiguration aufgerufen werden.
 
-<!-- TODO Dokumentation verlinken wenn vorhanden -->
+Ausführliche Dokumentation auf der [Homepage](https://timounger.github.io/ElsterBooksHome/)
 
 ## 🐞 Bugs & 🚀 Verbesserungen
 
@@ -51,7 +49,7 @@ Aufgetretene Fehler werden in der Logdatei `app_log.log` gespeichert.
 
 ## 📄 Lizenz
 
-ElsterBooks steht unter der ➡️ \ref LICENSE "GPLv3".
+ElsterBooks steht unter der ➡️ [GPLv3](LICENSE.md).
 
 ## 👥 Credits
 

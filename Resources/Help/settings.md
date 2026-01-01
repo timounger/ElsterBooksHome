@@ -1,7 +1,3 @@
-\page settings Einstellungen
-
-\tableofcontents
-
 # Einstellungen
 
 ## Unternehmensdaten

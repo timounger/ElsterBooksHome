@@ -198,6 +198,10 @@
           "type": "integer",
           "description": "Zahlungsziel in Tage"
         },
+        "payment_purpose": {
+          "type": "string",
+          "description": "Verwendungszweck"
+        },
         "mail_subject": {
           "type": "string",
           "description": "Mail Betreff"
@@ -215,11 +219,12 @@
           "groups",
           "invoice_number",
           "payment_days",
+          "payment_purpose",
           "mail_subject",
           "mail_text"
         ],
         "additionalProperties": false,
-        "maxProperties": 10
+        "maxProperties": 11
       }
     }
   },

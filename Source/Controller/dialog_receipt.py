@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_receipt.py
-@brief  Receipt dialog
+@brief  Dialog for viewing, editing, and managing receipts.
 ********************************************************************************
 """
 
@@ -20,7 +20,8 @@ from PyQt6.QtPdfWidgets import QPdfView
 
 from Source.version import __title__
 from Source.Util.app_data import ICON_SEARCH_LIST_LIGHT, ICON_SEARCH_LIST_DARK, EAiType, thread_dialog, \
-    ICON_ARROW_LEFT_LIGHT, ICON_ARROW_LEFT_DARK, ICON_ARROW_RIGHT_LIGHT, ICON_ARROW_RIGHT_DARK, ICON_WARNING
+    ICON_ARROW_LEFT_LIGHT, ICON_ARROW_LEFT_DARK, ICON_ARROW_RIGHT_LIGHT, ICON_ARROW_RIGHT_DARK, ICON_WARNING, \
+    DocView, read_doc_view, write_last_doc_view
 from Source.Views.dialogs.dialog_receipt_ui import Ui_DialogReceipt
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
 from Source.Model.income import delete_income, export_income, INCOME_FILE_PATH
@@ -39,6 +40,8 @@ from Source.Model.ai_data import InvoiceData
 
 log = logging.getLogger(__title__)
 
+B_DEBUG_AI_CHECK = False
+
 
 class EReceiptType(str, enum.Enum):
     """!
@@ -49,22 +52,14 @@ class EReceiptType(str, enum.Enum):
     GENERAL = "Beleg"
 
 
-class DocView(enum.IntEnum):
-    """!
-    @brief Index ob document view
-    """
-    PDF = 0
-    XML = 1
-
-
 class ReceiptDialog(QDialog, Ui_DialogReceipt):
     """!
-    @brief Receipt dialog.
+    @brief Dialog for displaying and editing receipt information.
     @param ui : main window
-    @param data : document data
-    @param uid : UID of receipt
-    @param file_path : receipt file
-    @param receipt_type : receipt type
+    @param data : Optional dictionary with existing document data
+    @param uid : Optional UID of the receipt
+    @param file_path :  Optional path to the receipt file
+    @param receipt_type : Type of receipt
     """
 
     def __init__(self, ui: "MainWindow", data: Optional[dict[EReceiptFields, Any]] = None, uid: Optional[str] = None, file_path: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
@@ -81,7 +76,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         self.b_gross_changed = False
         self.b_net_changed = False
         self.b_pay_data_changed = False
-        self.b_lock_auto_payed_data = False
+        self.b_lock_auto_paid_data = False
         self.receipt_type = receipt_type
         self.xml_warnings = ""
         self.default_tax_rate = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES][0]
@@ -106,7 +101,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         # document view toggle PDF/XML
         self.btn_view_pdf.clicked.connect(lambda: self.doc_view_changed(DocView.PDF))
         self.btn_view_xml.clicked.connect(lambda: self.doc_view_changed(DocView.XML))
-        self.doc_view_changed(DocView.PDF)  # set default view
+        self.doc_view_changed(read_doc_view(), persist=False)  # set default view
 
         # add splitter for left/right distance
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -120,7 +115,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Displays the dialog and populates it with receipt data if available.
         """
         log.debug("Starting Receipt dialog")
 
@@ -154,12 +149,11 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
             self.dsb_net.setValue(self.data[EReceiptFields.AMOUNT_NET])
             # payment
             self.b_pay_data_changed = True
-            pay_date = QDate.fromString(self.data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT)
-            if pay_date:
-                b_payed = True
+            if self.data[EReceiptFields.PAYMENT_DATE]:
+                b_paid = True
                 pay_date = QDate.fromString(self.data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT)
             else:
-                b_payed = False
+                b_paid = False
                 pay_date = current_date
             self.de_payment_date.setDate(pay_date)
             bar_checked = self.data[EReceiptFields.BAR]
@@ -176,9 +170,11 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
                 preview_file = find_file(data_path, self.uid, file_name=self.data[EReceiptFields.ATTACHMENT])
             else:
                 preview_file = self.file_path
+            if B_DEBUG_AI_CHECK:
+                _b_ai_started = self.start_ai_detection(preview_file)
         else:
-            b_payed = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYED]
-            bar_checked = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.BAR_PAYED]
+            b_paid = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAID]
+            bar_checked = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.BAR_PAID]
             # set actual date date
             actual_date = current_date
             self.de_invoice_date.setDate(actual_date)
@@ -194,26 +190,8 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
             self.le_group.setText(group_text)
             self.lbl_ai_assist_status.setText("")
             b_use_file_name_for_content = True
-            if self.file_path.lower().endswith(PDF_TYPE.lower()):
-                match self.ui.model.ai_type:
-                    case EAiType.OPEN_AI:
-                        if self.ui.model.c_open_ai.get_ready_state():
-                            self.lbl_ai_assist_status.setText("Erkennung läuft...")
-                            self.lbl_ai_assist_status.setStyleSheet("color: orange;")
-                            self.ui.model.c_open_ai.file_path = self.file_path
-                            self.ui.model.c_open_ai.finish_signal.connect(self.set_detected_invoice_data)
-                            self.ui.model.c_open_ai.start()
-                            b_use_file_name_for_content = False
-                    case EAiType.OLLAMA:
-                        if self.ui.model.c_ollama_ai.get_ready_state():
-                            self.lbl_ai_assist_status.setText("Erkennung läuft...")
-                            self.lbl_ai_assist_status.setStyleSheet("color: orange;")
-                            self.ui.model.c_ollama_ai.file_path = self.file_path
-                            self.ui.model.c_ollama_ai.finish_signal.connect(self.set_detected_invoice_data)
-                            self.ui.model.c_ollama_ai.start()
-                            b_use_file_name_for_content = False
-                    case _:
-                        b_use_file_name_for_content = True
+            b_ai_started = self.start_ai_detection(self.file_path)
+            b_use_file_name_for_content = not b_ai_started
             if b_use_file_name_for_content:
                 file_date, file_content = get_file_name_content(self.file_path)
                 if file_date is not None:
@@ -235,12 +213,14 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
                     xml_content = extract_xml_from_pdf(preview_file)
                     visualize_xml_invoice(self.ui_invoice_data, xml_content)
                 else:
+                    self.doc_view_changed(DocView.PDF, persist=False)  # set default view
                     self.btn_view_pdf.hide()
                     self.btn_view_xml.hide()
             else:
                 if check_xinvoice(preview_file):
                     xml_content = extract_xml_from_xinvoice(preview_file)
                     visualize_xml_invoice(self.ui_invoice_data, xml_content)
+                    self.doc_view_changed(DocView.XML, persist=False)  # set default view
                     self.btn_view_pdf.hide()
                     self.btn_view_xml.hide()
                     self.doc_view.setCurrentWidget(self.page_xml)  # show xml tab
@@ -277,10 +257,10 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
             self.lbl_page_number.hide()
 
         self.setWindowTitle(self.receipt_type.value)
-        self.cb_pay_check.setChecked(b_payed)
-        self.cb_pay_check.stateChanged.connect(self.on_payed_changed)
+        self.cb_pay_check.setChecked(b_paid)
+        self.cb_pay_check.stateChanged.connect(self.on_paid_changed)
         self.cb_bar_check.setChecked(bar_checked)
-        self.on_payed_changed(b_payed)
+        self.on_paid_changed(b_paid)
         self.dsb_gross.valueChanged.connect(self.gross_changed)
         self.dsb_net.valueChanged.connect(self.net_changed)
         self.de_invoice_date.dateChanged.connect(self.on_invoice_data_changed)
@@ -299,7 +279,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def detect_data(self) -> None:
         """!
-        @brief Detect data.
+        @brief Automatically detects and imports receipt data from the file, if possible.
         """
         is_income = bool(self.receipt_type == EReceiptType.INCOME)
         file_path = self.file_path
@@ -357,7 +337,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle application close
+        @brief Default close Event Method to handle dialog close
         @param event : arrived event
         """
         self.ui.model.c_open_ai.terminate()
@@ -367,8 +347,8 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def update_pdf_page(self, direction: bool | None) -> None:
         """!
-        @brief Update PDF page
-        @param direction : page direction  (None: init first, False: prev, True: next)
+        @brief Updates the displayed PDF page
+        @param direction : Page navigation direction: None = initial load, False = previous, True = next
         """
         total_pages = self.pdf_document.pageCount()
         if total_pages > 1:
@@ -399,14 +379,15 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def open_xml_warnings(self):
         """!
-        @brief Open xml warning dialog
+        @brief Opens a dialog showing XML validation warnings
         """
         QMessageBox.warning(self, "XML Warnungen", self.xml_warnings)
 
-    def doc_view_changed(self, doc_view: DocView) -> None:
+    def doc_view_changed(self, doc_view: DocView, persist: bool = True) -> None:
         """!
-        @brief Doc view changed. Set doc widget and update button color
-        @param doc_view : doc view index
+        @brief Switches between PDF and XML document views
+        @param doc_view : The selected document view
+        @param persist : persist last state
         """
         if self.ui.model.c_monitor.is_light_theme():
             active_fg = "white"
@@ -433,19 +414,59 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
                 self.lbl_page_number.hide()
             case _:
                 log.warning("Invalid doc view %s", doc_view)
+        if persist:
+            write_last_doc_view(doc_view)
 
     def preview_clicked(self, attachment_file: str) -> None:
         """!
-        @brief On preview clicked
-        @param attachment_file : attachment file
+        @brief Opens the selected attachment in the default system viewer
+        @param attachment_file : Path to the attachment file
         """
         with subprocess.Popen(["start", "", attachment_file], shell=True):
             pass
 
+    def start_ai_detection(self, pdf_file: str) -> bool:
+        """!
+        @brief Starts AI-based detection of invoice data from a PDF file.
+        @param pdf_file : PDF file to detect
+        @return True if AI detection started successfully, False otherwise
+        """
+        b_ai_started = False
+        if pdf_file.lower().endswith(PDF_TYPE.lower()):
+            match self.ui.model.ai_type:
+                case EAiType.OPEN_AI:
+                    if self.ui.model.c_open_ai.get_ready_state():
+                        self.lbl_ai_assist_status.setText("Erkennung läuft...")
+                        self.lbl_ai_assist_status.setStyleSheet("color: orange;")
+                        self.ui.model.c_open_ai.file_path = pdf_file
+                        self.ui.model.c_open_ai.finish_signal.connect(self.set_detected_invoice_data)
+                        self.ui.model.c_open_ai.start()
+                        b_ai_started = True
+                case EAiType.MISTRAL:
+                    if self.ui.model.c_mistral_ai.get_ready_state():
+                        self.lbl_ai_assist_status.setText("Erkennung läuft...")
+                        self.lbl_ai_assist_status.setStyleSheet("color: orange;")
+                        self.ui.model.c_mistral_ai.file_path = pdf_file
+                        self.ui.model.c_mistral_ai.finish_signal.connect(self.set_detected_invoice_data)
+                        self.ui.model.c_mistral_ai.start()
+                        b_ai_started = True
+                case EAiType.OLLAMA:
+                    if self.ui.model.c_ollama_ai.get_ready_state():
+                        self.lbl_ai_assist_status.setText("Erkennung läuft...")
+                        self.lbl_ai_assist_status.setStyleSheet("color: orange;")
+                        self.ui.model.c_ollama_ai.file_path = pdf_file
+                        self.ui.model.c_ollama_ai.finish_signal.connect(self.set_detected_invoice_data)
+                        self.ui.model.c_ollama_ai.start()
+                        b_ai_started = True
+                case _:
+                    b_ai_started = False
+        return b_ai_started
+
     def set_detected_invoice_data(self, invoice_data: InvoiceData) -> None:
         """!
-        @brief Set detected invoice data. Do not add if user input text before
-        @param invoice_data : invoice data
+        @brief Fills detected invoice data into the dialog fields.
+               Fields are only updated if the user has not manually entered data yet.
+        @param invoice_data : Detected invoice data
         """
         if invoice_data is not None:
             # invoice number
@@ -468,12 +489,32 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
             # net
             if invoice_data.net_amount and not self.dsb_net.value():
                 self.dsb_net.setValue(invoice_data.net_amount)
+            if B_DEBUG_AI_CHECK:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("Rechnungsnummer: ", self.le_invoice_number.text())
+                if self.le_invoice_number.text() != invoice_data.invoice_number:
+                    if invoice_data.invoice_number:
+                        log.error(invoice_data.invoice_number)
+                    else:
+                        print("  Keine Rechnungnummer erkannt")
+                de_invoice_date_string = self.de_invoice_date.date().toString("dd.MM.yyyy")
+                print("Rechnungsdatum: ", de_invoice_date_string)
+                if de_invoice_date_string != invoice_data.invoice_date:
+                    log.error(invoice_data.invoice_date)
+                print("Brutto: ", self.dsb_gross.value())
+                diff = abs(self.dsb_gross.value() - invoice_data.gross_amount)
+                if diff >= 0.02:
+                    log.error(invoice_data.gross_amount)
+                print("Netto: ", self.dsb_net.value())
+                diff = abs(self.dsb_net.value() - invoice_data.net_amount)
+                if diff >= 0.02:
+                    log.error(invoice_data.net_amount)
         self.lbl_ai_assist_status.setText("Erkennung abgeschlossen!")
         self.lbl_ai_assist_status.setStyleSheet("color: green;")
 
     def gross_changed(self) -> None:
         """!
-        @brief Gross changed.
+        @brief Callback triggered when the gross amount changes; updates net amount accordingly.
         """
         gross_price = self.dsb_gross.value()
         if gross_price is not None:
@@ -491,7 +532,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def net_changed(self) -> None:
         """!
-        @brief Net changed.
+        @brief Callback triggered when the net amount changes; updates gross amount accordingly.
         """
         net_price = self.dsb_net.value()
         if net_price is not None:
@@ -509,17 +550,17 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def set_vat_rate(self) -> None:
         """!
-        @brief Set VAT rate.
+        @brief Calculates and updates the VAT rate based on gross and net amounts.
         """
         gross = self.dsb_gross.value()
         net = self.dsb_net.value()
         vat_rate = calc_vat_rate(gross, net)
         self.le_tax.setText(str(vat_rate))
 
-    def on_payed_changed(self, state: bool) -> None:
+    def on_paid_changed(self, state: bool) -> None:
         """!
-        @brief Payed setting changed. Update visibility of payed date and bar widget.
-        @param state : payed state
+        @brief Updates visibility of payment-related fields based on paid state.
+        @param state : paid state
         """
         if state:
             self.de_payment_date.show()
@@ -534,26 +575,26 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def on_invoice_data_changed(self, date: QDate) -> None:
         """!
-        @brief Invoice date changed.
-        @param date : date
+        @brief Callback for when the invoice date is changed; may adjust the payment date.
+        @param date : New invoice date
         """
         if not self.b_pay_data_changed:
-            self.b_lock_auto_payed_data = True
+            self.b_lock_auto_paid_data = True
             self.de_payment_date.setDate(date)
 
     def on_pay_data_changed(self, _date: QDate) -> None:
         """!
-        @brief Pay date changed.
-        @param _date : date
+        @brief Callback for when the payment date is changed.
+        @param _date : New payment date
         """
-        if self.b_lock_auto_payed_data:
-            self.b_lock_auto_payed_data = False
+        if self.b_lock_auto_paid_data:
+            self.b_lock_auto_paid_data = False
         else:
             self.b_pay_data_changed = True
 
     def show_group_dialog(self) -> None:
         """!
-        @brief Shows the dialog for selection of the group
+        @brief Opens a dialog to select a receipt group/category.
         """
         d_receipt_group = {}
         for key, _value in D_RECEIPT_GROUP.items():
@@ -567,7 +608,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def delete_clicked(self) -> None:
         """!
-        @brief Delete button clicked.
+        @brief Deletes the current receipt.
         """
         if self.uid is not None:
             match self.receipt_type:
@@ -584,7 +625,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def save_clicked(self) -> None:
         """!
-        @brief Save button clicked.
+        @brief Saves the current receipt data after validation.
         """
         valid = self.set_data()
         if valid:
@@ -606,8 +647,8 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
     def set_data(self) -> bool:
         """!
-        @brief Set receipt data.
-        @return status if contact data are valid to save
+        @brief Validates and sets receipt data from dialog fields.
+        @return True if data is valid and can be saved, False otherwise
         """
         valid = False
         trade_partner = self.pte_trade_partner.toPlainText()
@@ -620,7 +661,7 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         if net_price % 1 == 0:
             net_price = int(net_price)
         # reset sheet style before set new
-        self.pte_description.setStyleSheet("border: 1px solid palette(dark);")
+        self.pte_trade_partner.setStyleSheet("border: 1px solid palette(dark);")
         self.pte_description.setStyleSheet("border: 1px solid palette(dark);")
         self.dsb_gross.setStyleSheet("border: 1px solid palette(dark);")
         self.dsb_net.setStyleSheet("border: 1px solid palette(dark);")
@@ -668,10 +709,10 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
 
 class GroupDialog(QDialog):
     """!
-    @brief Get dialog with list of receipt group
+    @brief Dialog to select a receipt group from available options.
     @param main_window_controller : the main window controller, needed to display status bar updates for example
-    @param groups : possible group options
-    @param line_edit : the QLineEdit from where this dialog was called
+    @param groups : Dictionary of available group options
+    @param line_edit : QLineEdit to populate with the selected group
     """
 
     def __init__(self, main_window_controller: "MainWindow", groups: dict[str, str], line_edit: QLineEdit) -> None:
@@ -703,8 +744,8 @@ class GroupDialog(QDialog):
 
     def on_select_group(self, line_edit: QLineEdit) -> None:
         """!
-        @brief "Select" button callback to copy the dropdown define to the line edit
-        @param line_edit : QLineEdit to copy the define name to
+        @brief Copies the selected group from the dropdown to the provided line edit and closes the dialog.
+        @param line_edit : Target line edit to update.
         """
         selected_value = self.group_dropdown.currentText()
         waiting_time_define = self.group_options[selected_value]

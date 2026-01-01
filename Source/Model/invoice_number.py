@@ -64,7 +64,7 @@ class InvoiceNumber:
         @brief Set date in pattern
         @param date : date
         @param pattern : pattern
-        @return replaced pattern
+        @return pattern with date placeholders replaced
         """
         date_replacements = {
             "{YYYY}": str(date.year()),
@@ -103,9 +103,10 @@ class InvoiceNumber:
             Supported Pattern:
             - {YYYY} 4-digit year
             - {YY} 2-digit year
+            - {Y} 1-digit year
             - {MM} month (01-12)
             - {DD} day (01-31)
-            - {SEQ:reset:length:start:increment} parameter after SEQ are optional
+            - {SEQ:reset:length:start:increment} - parameters after SEQ are optional
         @param date : date to create invoice number
         @return invoice number
         """
@@ -129,9 +130,7 @@ class InvoiceNumber:
                     last_sequence = last_number.replace(last_compare, "")
                     if len(last_sequence) == seq_length and last_sequence.isdigit():
                         last_seq_int = int(last_sequence)
-                        if self.needs_reset(reset_mode, last_qdate, date):
-                            seq_start = seq_start
-                        else:
+                        if not self.needs_reset(reset_mode, last_qdate, date):
                             seq_start = last_seq_int + seq_increment
                         break
 

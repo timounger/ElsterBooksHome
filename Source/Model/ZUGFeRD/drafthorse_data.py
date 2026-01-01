@@ -738,7 +738,6 @@ D_DEFAULT_INVOICE_DATA = \
             "methods": [
                 {
                     "accountName": "",  # Kontoinhaber (BT-85)
-                    "ban": "",
                     "bankName": "",  # Name der Bank
                     "bic": "",  # BIC (BT-86)
                     "iban": "",  # IBAN (BT-84)

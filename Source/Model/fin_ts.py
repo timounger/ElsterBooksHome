@@ -11,7 +11,7 @@ import logging
 import enum
 import csv
 from datetime import datetime
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 from fints.utils import minimal_interactive_cli_bootstrap
 from fints.client import FinTS3PinTanClient, NeedTANResponse
 from fints.exceptions import FinTSClientError, FinTSClientPINError, FinTSClientTemporaryAuthError, FinTSSCARequiredError, \
@@ -19,12 +19,14 @@ from fints.exceptions import FinTSClientError, FinTSClientPINError, FinTSClientT
     FinTSUnsupportedOperation, FinTSNoResponseError
 from fints.hhd.flicker import terminal_flicker_unix
 
-from PyQt6.QtWidgets import QMessageBox, QInputDialog
+from PyQt6.QtWidgets import QMessageBox, QInputDialog, QPlainTextEdit
 
 from Source.version import __title__
 from Source.Util.app_data import EXPORT_PATH, FINTS_INSTITUTE_FILE
 from Source.Util.openpyxl_util import XLSCreator, NUMBER_FORMAT_EUR, NUMBER_FORMAT_DATETIME, COLOR_RED
 from Source.Model.data_handler import DATE_FORMAT_JSON, delete_file
+if TYPE_CHECKING:
+    from Source.Controller.main_window import MainWindow
 
 log = logging.getLogger(__title__)
 
@@ -173,7 +175,7 @@ class FinTs:
     @param pte_output : text widget for result response
     """
 
-    def __init__(self, ui, pte_output) -> None:
+    def __init__(self, ui: "MainWindow", pte_output: QPlainTextEdit) -> None:
         self.ui = ui
         self.pte_output = pte_output
         self.l_fints_institutes = get_fints_institutes()
@@ -214,8 +216,7 @@ class FinTs:
         self.pte_output.setPlainText(response.challenge)
         if getattr(response, 'challenge_hhduc', None):
             if B_GUI_INPUT:
-                if False:
-                    self.pte_output.setPlainText(response.challenge_hhduc)  # TODO in GUI not work
+                pass  # self.pte_output.setPlainText(response.challenge_hhduc)  # TODO in GUI not work
             else:
                 try:
                     terminal_flicker_unix(response.challenge_hhduc)
@@ -282,7 +283,7 @@ class FinTs:
                     success_text = f"FinTS Fehler: {err_msg}"
         except Exception as e:
             err_msg = str(e)
-            success_text = "Unbekannter Fehler: {err_msg}"
+            success_text = f"Unbekannter Fehler: {err_msg}"
         else:
             success_text = "Erfolgreich verbunden"
             success = True

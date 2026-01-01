@@ -12,6 +12,8 @@ from typing import Optional, Any
 from datetime import datetime
 from decimal import Decimal
 import copy
+import shutil
+from pathlib import Path
 from lxml import etree
 
 from drafthorse.models.accounting import ApplicableTradeTax, TradeAllowanceCharge, CategoryTradeTax
@@ -25,7 +27,7 @@ from drafthorse.models.payment import PaymentMeans
 from drafthorse.pdf import attach_xml
 
 from Source.version import __title__
-from Source.Util.app_data import SCHEMATA_PATH
+from Source.Util.app_data import SCHEMATA_PATH, run_subprocess
 from Source.Model.data_handler import DATE_FORMAT_XML, delete_file
 from Source.Model.ZUGFeRD.drafthorse_data import EN_16931
 from Source.Model.ZUGFeRD.drafthorse_convert import normalize_decimal
@@ -35,8 +37,8 @@ from Source.Model.company import ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_
 
 log = logging.getLogger(__title__)
 
-FACTURE_X_EN16931_SCHEMA_FILE = "3. Factur-X_1.07.3_EN16931/Factur-X_1.07.3_EN16931.xsd"
-FACTURE_X_EXTENDED_SCHEMA_FILE = "4. Factur-X_1.07.3_EXTENDED/Factur-X_1.07.3_EXTENDED.xsd"
+FACTURE_X_EN16931_SCHEMA_FILE = "3_Factur-X_1.08_EN16931/FACTUR-X_EN16931.xsd"
+FACTURE_X_EXTENDED_SCHEMA_FILE = "4_Factur-X_1.08_EXTENDED/FACTUR-X_EXTENDED.xsd"
 
 TAX_TYPE = "VAT"  # fixed value
 TAX_CODE = "FC"
@@ -109,7 +111,7 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
         trade_party.contact.telephone.number = phone
 
 
-def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
+def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
     """!
     @brief Convert JSON to drafthorse document
     @param invoice_data : invoice data
@@ -149,8 +151,8 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any]) -> Document:
     despatch_advice_reference = invoice_data.get("despatchAdviceReference", {})  # Versandanzeige (BT-16)
     if despatch_advice_reference:
         if despatch_advice_reference["id"]:  # write only date if reference exists
-            doc.trade.delivery.receiving_advice.issuer_assigned_id = despatch_advice_reference["id"]
-            doc.trade.delivery.receiving_advice.issue_date_time = datetime.strptime(despatch_advice_reference["issueDate"], DATE_FORMAT_XML)
+            doc.trade.delivery.despatch_advice.issuer_assigned_id = despatch_advice_reference["id"]
+            doc.trade.delivery.despatch_advice.issue_date_time = datetime.strptime(despatch_advice_reference["issueDate"], DATE_FORMAT_XML)
     tender_references = invoice_data.get("tenderReferences", {})  # Ausschreibung/Los (BT-17)
     if tender_references:
         for tender_reference in tender_references:
@@ -481,7 +483,7 @@ def write_customer_to_json(invoice_data: dict, contact: dict[str, str | dict[str
         data_buyer_contact["phone"] = contact_data[EContactFields.PHONE]  # Telefonnummer der Kontaktstelle des Käufers (BT-57)
 
 
-def write_company_to_json(invoice_data: dict, company: dict, logo_path: Optional[str] = None) -> None:
+def write_company_to_json(invoice_data: dict, company: dict[Any, Any], logo_path: Optional[str] = None) -> None:
     """!
     @brief Write customer to buyer in JSON
     @param invoice_data : invoice data
@@ -537,6 +539,9 @@ def fill_invoice_data(invoice_data: dict) -> None:
         invoice_data["seller"]["vatId"] = "KEINE"  # required for seller
     if "taxId" not in invoice_data["buyer"]:
         invoice_data["buyer"]["taxId"] = ""  # set empty for common trade party
+
+    INVOICE_NUMBER_PATTERN = "{number}"
+    invoice_data["payment"]["reference"] = invoice_data["payment"]["reference"].replace(INVOICE_NUMBER_PATTERN, invoice_data["number"])
 
     tax_data = {}
     items_net_amount = 0
@@ -619,3 +624,33 @@ def add_xml_to_pdf(pdf_file: str, xml_file: str) -> None:
 
     with open(pdf_file, "wb") as f:
         f.write(new_pdf_bytes)
+
+
+def set_valid_pdf_profile(pdf_file: str) -> None:
+    """!
+    @brief Set valid profile in PDF via ghostscript.
+    @param pdf_file : PDF file
+    """
+    file_path = Path(pdf_file)
+    temp_file = file_path.with_name(file_path.stem + "_temp.pdf")
+    shutil.copy2(pdf_file, temp_file)
+    gs_command = [
+        "gswin64c",
+        "-dPDFA=3",
+        "-dBATCH",
+        "-dNOPAUSE",
+        "-sDEVICE=pdfwrite",
+        "-dPDFACompatibilityPolicy=1",
+        "-dUseCIEColor=true",  # zwingt CIE-basierte Farbkonvertierung
+        "-sColorConversionStrategy=RGB",
+        "-sProcessColorModel=DeviceRGB",
+        "-sPDFACompatibilityPolicy=1",
+        # r"-sOutputICCProfile=C:\Windows\System32\spool\drivers\color\sRGB Color Space Profile.icm",
+        # r"-sOutputICCProfile=C:\Program Files\gs\gs9.56.1\iccprofiles\srgb.icc",
+        "-dEmbedAllFonts=true",
+        "-dSubsetFonts=false",
+        f"-sOutputFile={pdf_file}",
+        temp_file,
+    ]
+    _result = run_subprocess(gs_command)
+    delete_file(temp_file)

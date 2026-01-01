@@ -45,7 +45,7 @@ NUMBER_FORMAT_TIME = "hh:mm"
 PAGE_MARGIN_FACTOR = 1 / 2.54  # convert inch to cm
 
 
-class XLSCreator():
+class XLSCreator:
     """!
     @brief XLS file creator
     @param font_name : default font name
@@ -71,7 +71,7 @@ class XLSCreator():
         @param max_col : maximum column
         @param max_row : maximum row
         @param min_col : minimum column (default is first column)
-        @param min_row : worksheet (default is first row)
+        @param min_row : minimum row (default is first row)
         """
         table_style = table.TableStyleInfo(name="TableStyleLight15",
                                            showRowStripes=True)
@@ -82,7 +82,7 @@ class XLSCreator():
                                 tableStyleInfo=table_style)
         worksheet.add_table(new_table)
 
-    def set_page_marcins(self, worksheet: Worksheet, left: Optional[float] = None, right: Optional[float] = None,
+    def set_page_margins(self, worksheet: Worksheet, left: Optional[float] = None, right: Optional[float] = None,
                          top: Optional[float] = None, bottom: Optional[float] = None) -> None:
         """!
         @brief Set page margins in cm

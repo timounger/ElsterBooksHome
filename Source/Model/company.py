@@ -17,7 +17,7 @@ from Source.Model.data_handler import read_json_file, validate_data, read_json_f
 
 log = logging.getLogger(__title__)
 
-JSON_VERSION_COMPANY = "02.02.00"
+JSON_VERSION_COMPANY = "02.03.00"
 
 COMPANY_FOLDER = "company"
 COMPANY_TYPE = "company"
@@ -73,13 +73,14 @@ class ECompanyFields(str, enum.Enum):
     TAX_RATES = "tax_rates"  # list with typical tax rates. first used as default
     # default
     QUARTERLY_SALES_TAX = "quarterly_sales_tax"  # True: quarterly UST; False: monthly UST
-    PAYED = "payed"  # default payed status for receipt
-    BAR_PAYED = "bar_payed"  # default bar payed status for receipt
+    PAID = "payed"  # default paid status for receipt
+    BAR_PAID = "bar_payed"  # default bar paid status for receipt
     INCOME_GROUP = "income_group"  # default income group
     EXPENDITURE_GROUP = "expenditure_group"  # default expenditure group
     GROUPS = "groups"  # receipt groups
     INVOICE_NUMBER = "invoice_number"  # invoice number
     PAYMENT_DAYS = "payment_days"  # payment days
+    PAYMENT_PURPOSE = "payment_purpose"  # payment purpose
     MAIL_SUBJECT = "mail_subject"  # mail subject
     MAIL_TEXT = "mail_text"  # mail text
 
@@ -137,13 +138,14 @@ D_COMPANY_TEMPLATE = {
     },
     COMPANY_DEFAULT_FIELD: {
         ECompanyFields.QUARTERLY_SALES_TAX: True,  # True: quarterly UST; False: monthly UST
-        ECompanyFields.PAYED: False,  # default payed status for receipt
-        ECompanyFields.BAR_PAYED: False,  # default bar payed status for receipt
+        ECompanyFields.PAID: False,  # default paid status for receipt
+        ECompanyFields.BAR_PAID: False,  # default bar paid status for receipt
         ECompanyFields.INCOME_GROUP: "",  # default income group
         ECompanyFields.EXPENDITURE_GROUP: "",  # default expenditure group
         ECompanyFields.GROUPS: [],  # receipt groups
         ECompanyFields.INVOICE_NUMBER: "",  # invoice number
         ECompanyFields.PAYMENT_DAYS: 14,  # payment days
+        ECompanyFields.PAYMENT_PURPOSE: "",  # payment purpose
         ECompanyFields.MAIL_SUBJECT: DEFAULT_MAIL_SUBJECT,  # mail subject
         ECompanyFields.MAIL_TEXT: DEFAULT_MAIL_TEXT  # mail text
     }
@@ -162,7 +164,7 @@ def validate_company(data: dict[str, Any]) -> list[str]:
     return error
 
 
-def read_company(path: str) -> dict[Any, Any] | None:
+def read_company(path: str) -> dict[str, Any] | None:
     """!
     @brief Read company.
     @param path : read in this path
@@ -180,7 +182,7 @@ def add_company(path: str, add: bool, company: dict[Any, Any], company_id: Optio
     @param add : GIT add status
     @param company : contact data to export
     @param company_id : contact ID
-    @param rename : status if file name should renamed depend on actual data
+    @param rename : whether the file name should be renamed based on receipt data
     """
     s_id = set_general_json_data(company, COMPANY_TYPE, ECompanyFields.JSON_TYPE,
                                  ECompanyFields.JSON_VERSION, JSON_VERSION_COMPANY,

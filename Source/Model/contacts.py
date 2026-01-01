@@ -112,7 +112,7 @@ def add_contact(path: str, add: bool, contact: dict[EContactFields, str],
     @param add : GIT add status
     @param contact : contact data to export
     @param contact_id : contact ID
-    @param rename : status if file name should renamed depend on actual data
+    @param rename : whether the file name should be renamed based on receipt data
     """
     s_id = set_general_json_data(contact, CONTACT_TYPE, EContactFields.JSON_TYPE,
                                  EContactFields.JSON_VERSION, JSON_VERSION_CONTACT,

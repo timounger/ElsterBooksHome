@@ -13,7 +13,7 @@ from openai import AuthenticationError
 from PyQt6.QtCore import QThread, pyqtSignal
 
 from Source.version import __title__
-from Source.Util.app_data import read_api_key, read_gpt_model, write_gpt_model
+from Source.Util.app_data import read_gpt_api_key, read_gpt_model, write_gpt_model, write_gpt_api_key
 from Source.Model.ai_data import InvoiceData, create_user_message, validate_answer, get_ai_document_text, EMPTY_INVOICE_DATA
 
 log = logging.getLogger(__title__)
@@ -35,7 +35,7 @@ class OpenAI(QThread):
         self.openai_client = None
         self.model = DEFAULT_GPT_MODEL
         self.set_model(read_gpt_model())
-        self.api_key = read_api_key()
+        self.api_key = read_gpt_api_key()
         self.initialize_openai_client()
 
     def set_model(self, model: str) -> None:
@@ -45,6 +45,14 @@ class OpenAI(QThread):
         """
         self.model = model if model else DEFAULT_GPT_MODEL
         write_gpt_model(self.model)
+
+    def set_api_key(self, api_key: str) -> None:
+        """!
+        @brief Set API key
+        @param api_key : API key
+        """
+        self.api_key = api_key
+        write_gpt_api_key(self.api_key)
 
     def get_ready_state(self) -> bool:
         """!
@@ -57,9 +65,10 @@ class OpenAI(QThread):
 
     def initialize_openai_client(self) -> None:
         """!
-        @brief Initialize OpenAI client
+        @brief Initialize OpenAI client with the current API key
         """
         self.init_check = True
+        self.b_ready = False
         self.openai_client = None
         if self.api_key:
             try:
@@ -90,12 +99,12 @@ class OpenAI(QThread):
             }]
 
         try:
-            response = self.openai_client.beta.chat.completions.parse(
-                model=self.model,  # only this model support structured output
-                messages=messages,
-                response_format=InvoiceData,
+            response = self.openai_client.responses.parse(
+                model=self.model,
+                input=messages,
+                text_format=InvoiceData,
             )
-            document_data = response.choices[0].message.parsed
+            document_data = response.output_parsed
         except Exception as e:
             log.warning("Error during ask OpenAI: %s", e)
             document_data = None
@@ -106,7 +115,7 @@ class OpenAI(QThread):
 
     def run(self) -> None:
         """!
-        @brief Run OpenAI to get invoice data from PDF
+        @brief Extract text from PDF and get invoice data via OpenAI
         """
         invoice_data = None
         text = get_ai_document_text(self.file_path)

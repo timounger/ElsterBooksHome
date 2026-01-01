@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_document.py
-@brief  Document Tab
+@brief  Tab for managing and viewing documents.
 ********************************************************************************
 """
 
@@ -30,9 +30,9 @@ I_ATTACH_IDX = L_ROW_DESCRIPTION.index(ATTACH)
 
 class TabDocument:
     """!
-    @brief Document dialog tab.
+    @brief Controller for the Documents tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of this tab in the tab widget
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -51,7 +51,7 @@ class TabDocument:
 
     def set_table_data(self, update: bool = False, rename: bool = False, update_dashboard: bool = True) -> None:
         """!
-        @brief Read document data and update table.
+        @brief Reads document data and updates the table.
         @param update : update status of JSON file
         @param rename : rename status of file name
         @param update_dashboard : update dashboard
@@ -75,14 +75,14 @@ class TabDocument:
 
     def clean_data(self) -> None:
         """!
-        @brief Clean data
+        @brief Removes invalid or orphaned document entries.
         """
         clean_documents(self.ui.model.data_path)
         self.set_table_data()
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!
-        @brief Callback for double click on table entry.
+        @brief Callback for double-click events on table entries.
         @param row : clicked row index
         @param col : clicked column index
         @param _value : value of clicked cell
@@ -104,7 +104,7 @@ class TabDocument:
 
     def open_document_file(self, uid: str) -> None:
         """!
-        @brief Open document file.
+        @brief Opens the attached document file for the given UID.
         @param uid : uid
         """
         document_path = os.path.join(self.ui.model.data_path, DOCUMENT_FILE_PATH)
@@ -115,7 +115,7 @@ class TabDocument:
 
     def new_document(self, import_file: Optional[str] = None) -> None:
         """!
-        @brief Add new document.
+        @brief Creates a new document entry and optionally imports a file.
         @param import_file : file to import
         """
         if import_file:

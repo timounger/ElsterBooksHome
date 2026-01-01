@@ -1,5 +1,3 @@
-\page general Allgemein
-
 # Allgemein
 
 ## Über 🥇

@@ -2,35 +2,127 @@
 
 ## Pflicht zur elektronischen Rechnungserstellung 👨‍⚖️
 
-Die Bundesregierung hat mit dem [Wachstumschancengesetz](https://www.unternehmenssteuer-infos.de/ebooks/wachstumschancengesetz/?af=SEM_B2B_SUB_GAW_BCS_Wachstumschancengesetz_X&gad_source=1&gclid=EAIaIQobChMI1vvzhN_bhAMVPZWDBx1pUgAXEAAYASAAEgLgwPD_BwE) die E-Rechnungspflicht eingeführt, um Unternehmen wettbewerbsfähiger zu machen und den Standort Deutschland zu stärken.  
+Mit der Einführung der E-Rechnung hat sich das gesetzlich definierte Rechnungsformat grundlegend geändert.
 
-Die elektronische Rechnungsstellung erfordert eine digitale Buchhaltung, da eingehende und ausgehende Rechnungen strukturiert verarbeitet, geprüft und archiviert werden müssen.  
+Bislang galt die Papierrechnung als Standard. Elektronische Rechnungen konnten zwar verwendet werden, setzten jedoch die Zustimmung des Rechnungsempfängers voraus. Zudem bestand grundsätzlich ein Anspruch auf Ausstellung einer Papierrechnung.
+
+Seit dem **1. Januar 2025** ist für bestimmte Umsätze die **E-Rechnung gemäß EU-Norm EN 16931** vorgesehen.  
+Papierrechnungen sowie unstrukturierte elektronische Formate (z. B. einfache PDFs) gelten seitdem nur noch als **sonstige Rechnungen** und erfüllen nicht die Anforderungen an eine E-Rechnung.
+
+---
+
+## Wann muss eine E-Rechnung ausgestellt werden?
+
+Eine E-Rechnung ist erforderlich bei:
+
+- **Inländischen Unternehmen**, die **umsatzsteuerpflichtige Lieferungen oder Leistungen** an andere Unternehmen (B2B) erbringen  
+- **Unternehmen, die der Umsatzsteuerpflicht unterliegen**, auch wenn die Umsätze nach § 4 Nr. 8–29 UStG steuerfrei sind  
+- **Rechnungen mit einem Betrag über 250 € brutto**  
+- **Rechnungen an Bundesbehörden** – hier ist die E-Rechnung **immer verpflichtend**, auch bei Kleinbetragsrechnungen  
+
+---
 
 ## Wer ist betroffen?
 
-- Inländische Unternehmen, die umsatzsteuerpflichtige Lieferungen oder Leistungen an andere Unternehmen (B2B) erbringen  
-- Unternehmen, die der Umsatzsteuerpflicht unterliegen ([§ 4 Nr. 8–29 UStG](https://www.gesetze-im-internet.de/ustg_1980/__4.html))  
+Da E-Rechnungen nicht nur ausgestellt, sondern auch **empfangen und verarbeitet** werden müssen, sind **mittelbar alle inländischen Unternehmen betroffen**, unabhängig davon, ob sie selbst E-Rechnungen ausstellen.
 
-## Geltungszeitraum
+---
 
-### Phase 1: 01.01.2025 – 31.12.2025
+## Daraus resultierende Pflichten
 
-- Lieferanten können elektronische Rechnungen ohne Zustimmung des Kunden ausstellen  
-- Eingehende E-Rechnungen müssen verarbeitet werden können
+Unternehmen müssen sicherstellen:
 
-### Phase 2: 01.01.2026 – 31.12.2026
+- Eine **E-Mail-Adresse oder einen geeigneten Empfangskanal** für E-Rechnungen  
+- **Software**, um E-Rechnungen **lesen, prüfen und verarbeiten** zu können  
+- **Software oder Systeme** zur **Ausstellung** von E-Rechnungen  
+- Einen **GoBD-konformen Archivierungsprozess** für elektronische Rechnungen  
 
-- E-Rechnungen sind bei einem Vorjahresumsatz ab 800.000 € verpflichtend  
-- Elektronische Rechnungen müssen erstellt und empfangen werden können
+---
 
-### Phase 3: 01.01.2026 – 31.12.2027
+## Mögliche Strafen und Risiken
 
-- Bei Zustimmung des Kunden können E-Rechnungen auch unterhalb der Umsatzgrenze von 800.000 € erstellt werden  
+Bei Verstößen drohen unter anderem:
 
-> Hinweis: Für alle Phasen ist eine digitale Buchhaltung notwendig, um die strukturierte Verarbeitung und Archivierung der E-Rechnungen zu gewährleisten.
+- **Nichtausstellung einer Rechnung**: Geldbuße bis zu **5.000 €** (§ 26a UStG)  
+- **Unterlassene oder fehlerhafte Aufzeichnungen**: Geldbuße bis zu **25.000 €** (§ 379 AO)  
+- **Zweifel an der Ordnungsmäßigkeit der Buchführung**: Schätzung der Besteuerungsgrundlagen für alle betroffenen Jahre (§ 162 AO)  
+- **Verlust des Vorsteuerabzugs**
 
-## ZUGFeRD
+---
 
-_Zentraler User Guide Forum elektronische Rechnung Deutschland_ – ein hybrides Format für elektronische Rechnungen (PDF + XML), das sowohl für Menschen als auch Maschinen lesbar ist.  
+## Übergangsregelungen
 
-Weitere Infos: [FeRD Forum](https://www.ferd-net.de/)
+### Ab 1. Januar 2025
+
+- Lieferanten dürfen **E-Rechnungen ohne Zustimmung des Empfängers** ausstellen  
+- Unternehmen müssen daher **eingehende E-Rechnungen empfangen, verarbeiten und GoBD-konform archivieren** können  
+
+### Ab 1. Januar 2026
+
+- Verpflichtende Ausstellung von E-Rechnungen für Unternehmen mit einem **Vorjahresumsatz ab 800.000 €**
+
+### Ab 1. Januar 2028
+
+- **Pflicht zur Ausstellung von E-Rechnungen für alle inländischen Unternehmen**
+
+---
+
+## E-Rechnungsformate
+
+### XRechnung
+
+Die **XRechnung** ist eine rein strukturierte elektronische Rechnung für die maschinelle Verarbeitung.
+
+**Eigenschaften:**
+
+- Reine **XML-Datei** (kein PDF)  
+- Maschinenlesbar, nicht für die manuelle Ansicht gedacht  
+- Gesetzlich definierter Standard in Deutschland gemäß **EN 16931**  
+- **Pflichtformat für Rechnungen an den Bund**
+
+**Vorteile:**
+
+- ✔ Erfüllt alle gesetzlichen Anforderungen  
+- ✔ Optimal für Behörden und große Organisationen  
+
+**Nachteile:**
+
+- ❌ Für Menschen nicht ohne Software lesbar  
+- ❌ Erfordert spezielle Viewer oder Buchhaltungssoftware  
+
+---
+
+### ZUGFeRD
+
+**ZUGFeRD** (_Zentraler User Guide des Forums elektronische Rechnung Deutschland_) ist ein **hybrides Rechnungsformat** (PDF + XML), das sowohl menschen- als auch maschinenlesbar ist.
+
+**Factur-X** ist das internationale Pendant zu ZUGFeRD und technisch identisch in den neueren Versionen.
+
+**Eigenschaften:**
+
+- Normales **PDF-Dokument** für Menschen  
+- **Eingebettete XML-E-Rechnung** für Maschinen  
+- Ein Dokument – zwei Nutzungsmöglichkeiten  
+- Weit verbreitet im **B2B-Bereich**
+
+**Vorteile:**
+
+- ✔ Lesbar für Menschen  
+- ✔ Automatisch verarbeitbar für Systeme  
+- ✔ Geeignet für Geschäfts- und Privatkunden  
+
+**Nachteile:**
+
+- ❌ Etwas komplexer in der Erstellung  
+
+Weitere Informationen: [Forum elektronische Rechnung Deutschland (FeRD)](https://www.ferd-net.de/)
+
+---
+
+## Vorteile der E-Rechnung
+
+- **Für Unternehmen:**  
+  Automatisierte, schnellere und fehlerärmere Rechnungsverarbeitung  
+
+- **Für den Staat:**  
+  Standardisierte Rechnungsübermittlung (z. B. über **PEPPOL**, Pan-European Public Procurement OnLine) zur **Reduzierung von Umsatzsteuerbetrug** und perspektivisch zur **Echtzeit-Umsatzsteuererhebung** (geplant ab ca. 2030)

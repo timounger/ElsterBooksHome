@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   vat_validation.py
-@brief  Check VAT ID with VAT ID for free
+@brief  VAT ID validation using regex and EU VIES web service
 ********************************************************************************
 """
 
@@ -16,7 +16,7 @@ from Source.version import __title__
 
 log = logging.getLogger(__title__)
 
-# Rules for valid VAT see: https://de.wikipedia.org/wiki/Umsatzsteuer-Identifikationsnummer
+# Rules for valid VAT IDs: https://de.wikipedia.org/wiki/Umsatzsteuer-Identifikationsnummer
 VAT_PATTERNS = {
     'AT': r'^ATU[0-9]{8}$',  # Österreich
     'BE': r'^BE[0-9]{9}$',  # Belgien
@@ -45,18 +45,18 @@ VAT_PATTERNS = {
     'SI': r'^SI[0-9]{8}$',  # Slowenien
     'SK': r'^SK[0-9]{10}$',  # Slowakei
     'XI': r'^XI[0-9]{9,12}$',  # Nordirland
-    # Nicht EU-Länder
-    'GB': r'^GB([0-9]{9,12}|GD[0-9]{3}|HA[0-9]{3})$',  # Vereinigtes Königreich / Isle of Man
+    # Nicht-EU-Länder
+    'GB': r'^GB([0-9]{9,12}|GD[0-9]{3}|HA[0-9]{3})$',  # UK / Isle of Man
     'SM': r'^SM([0-9]{3}|[0-9]{5})$',  # San Marino
 }
 
 
 def check_vat_format(vat_id: str, pattern: Optional[str] = None) -> bool:
     """!
-    @brief Check for valid VAT format depend on country
-    @param vat_id : VAT id
-    @param pattern : check fix pattern else use VAT_PATTERNS
-    @return valid vat format
+    @brief Check if VAT ID format is valid for a given country
+    @param vat_id : VAT ID to validate
+    @param pattern : Optional regex pattern, overrides default country patterns
+    @return True if valid, False otherwise
     """
     valid = False
     if pattern:
@@ -73,21 +73,21 @@ def check_vat_format(vat_id: str, pattern: Optional[str] = None) -> bool:
 
 class VatValidation(QThread):
     """!
-    @brief VAT validation
+    @brief Threaded VAT validation using EU VIES service
     """
     finish_signal = pyqtSignal(dict)
 
     def __init__(self) -> None:
         super().__init__()
-        self.vat_id = ""
+        self.vat_id: str = ""
 
-    def validate_vat(self) -> dict[str, Any] | None:
+    def validate_vat(self) -> dict[str, Any]:
         """!
-        @brief Validate VAT
-        @return response status
+        @brief Validate VAT ID with EU VIES service
+        @return dict with validation result or error
         """
-        vat_result = None
-        wsdl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl'  # do not use https to prevent warning
+        vat_result: dict[str, Any] = {}
+        wsdl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl'  # HTTPS avoided to suppress warnings
 
         country_code = self.vat_id[:2]
         vat_number = self.vat_id[2:]
@@ -105,6 +105,8 @@ class VatValidation(QThread):
             }
         except Exception as e:
             vat_result = {"error": str(e)}
+            log.warning("VAT validation error for %s: %s", self.vat_id, e)
+
         return vat_result
 
     def run(self) -> None:

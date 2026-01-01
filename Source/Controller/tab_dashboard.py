@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_dashboard.py
-@brief  Dashboard Tab
+@brief  Tab for displaying dashboard information.
 ********************************************************************************
 """
 
@@ -15,6 +15,7 @@ from collections import defaultdict
 from PyQt6.QtCharts import QBarCategoryAxis, QBarSeries, QBarSet, QChart, QChartView, QValueAxis
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
+from PyQt6.QtWidgets import QGraphicsSimpleTextItem
 
 from Source.version import __title__
 from Source.Model.company import LOGO_BRIEF_PATH, validate_company, COMPANY_BOOKING_FIELD, ECompanyFields
@@ -33,7 +34,7 @@ log = logging.getLogger(__title__)
 
 def round_to_nearest_integer(number: float, round_len: int = 2) -> int:
     """!
-    @brief round number to next step
+    @brief Rounds a number up to the next decimal step.
     @param number : number to round
     @param round_len : number of chars to round
     @return rounded number
@@ -52,7 +53,7 @@ def round_to_nearest_integer(number: float, round_len: int = 2) -> int:
 
 def calc_chart_data(l_invoice_date: list[str], l_value: list[float]) -> list[float]:
     """!
-    @brief Calculate chart data.
+    @brief Calculates the monthly chart data for the last 12 months.
     @param l_invoice_date : list with data
     @param l_value : list with values
     @return list with data of last 12 months
@@ -85,7 +86,8 @@ def calc_chart_data(l_invoice_date: list[str], l_value: list[float]) -> list[flo
 
 def check_valid_tax(gross: float, net: float, l_vat_rates: list[int | float]) -> bool:
     """!
-    @brief Check if tax is valid TODO abschaltbar oder konfigurierbar machen da bei mischrechnungen auftauchen kann.
+    @brief Checks whether the calculated tax is valid based on the configured VAT rates.
+           TODO abschaltbar oder konfigurierbar machen da bei mischrechnungen auftauchen kann.
     @param gross : gross
     @param net : net
     @param l_vat_rates : possible vat rates
@@ -97,9 +99,9 @@ def check_valid_tax(gross: float, net: float, l_vat_rates: list[int | float]) ->
 
 class TabDashboard:
     """!
-    @brief Dashboard dialog tab.
+    @brief Controller for the Dashboard tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of this tab in the tab widget
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -118,7 +120,7 @@ class TabDashboard:
 
     def update_dashboard_data(self) -> None:
         """!
-        @brief Update dashboard data.
+        @brief Updates the dashboard values, warnings and chart.
         """
         self.ui_dashboard.company_logo.setPixmap(QPixmap(os.path.join(self.ui.model.data_path, LOGO_BRIEF_PATH)))
         income_gross = self.ui.tab_income.total_gross
@@ -147,7 +149,7 @@ class TabDashboard:
 
     def update_chart(self) -> None:
         """!
-        @brief Update chart.
+        @brief Updates the bar chart with income and expenditure data.
         """
         # data
         l_income = calc_chart_data(self.ui.tab_income.l_invoice_date, self.ui.tab_income.l_value)
@@ -181,10 +183,10 @@ class TabDashboard:
         series.setBarWidth(0.8)
         series.setLabelsVisible(True)
         series.setLabelsPosition(QBarSeries.LabelsPosition.LabelsOutsideEnd)
+        income_color = QColor(0x40, 0xC0, 0x57) if self.ui.model.c_monitor.is_light_theme() else QColor("green")
+        expenditure_color = QColor(0xFA, 0x52, 0x52) if self.ui.model.c_monitor.is_light_theme() else QColor("red")
         for key, value in d_data.items():
             bar_set = QBarSet(key)
-            income_color = QColor("lightgreen") if self.ui.model.c_monitor.is_light_theme() else QColor("green")
-            expenditure_color = QColor(255, 71, 77) if self.ui.model.c_monitor.is_light_theme() else QColor("red")
             q_color = income_color if key == "Einnahmen" else expenditure_color
             bar_set.setBrush(q_color)
             bar_set.append(value)
@@ -216,10 +218,16 @@ class TabDashboard:
         series.attachAxis(axis_y)
 
         # Create chart view
-        color = "white" if self.ui.model.c_monitor.is_light_theme() else "lightgrey"  # default dark QColor(33, 33, 33)
+        color = QColor(0xF8, 0xF9, 0xFA) if self.ui.model.c_monitor.is_light_theme() else QColor(0xBE, 0xBE, 0xBE)  # default dark QColor(33, 33, 33)
         chart.setBackgroundBrush(QColor(color))
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)  # Antialiasing TextAntialiasing SmoothPixmapTransform
+
+        # note text
+        note = QGraphicsSimpleTextItem("Alle Bruttobeträge nach Rechnungsdatum")
+        note.setFont(QFont("Segoe UI", 10, weight=QFont.Weight.Bold))
+        chart.scene().addItem(note)
+        note.setPos(40, 40)
 
         # delete all old QChartView(s) before set new to prevent lagging
         for i in reversed(range(self.ui_dashboard.gridLayout_2.count())):
@@ -234,7 +242,7 @@ class TabDashboard:
 
     def check_data(self) -> None:
         """!
-        @brief Check data.
+        @brief Validates all stored data and collects warnings.
         """
         tax_rates = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES]
         self.l_warnings = []

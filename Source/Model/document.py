@@ -21,7 +21,7 @@ log = logging.getLogger(__title__)
 JSON_VERSION_DOCUMENT = "01.00.00"
 
 DOCUMENT_FOLDER = "document"
-DOCUMENT_FILE_PATH = DOCUMENT_FOLDER + "/files"
+DOCUMENT_FILE_PATH = os.path.join(DOCUMENT_FOLDER, "files")
 DOCUMENT_TYPE = "document"
 DOCUMENT_SCHEMA_FILE = "document_schema.json"
 
@@ -79,7 +79,7 @@ def add_document(path: str, add: bool, d_document_data: dict[EDocumentFields, st
     @param d_document_data : document data to export
     @param document_id : document ID
     @param appendix_file : document file
-    @param rename : status if file name should renamed depend on actual data
+    @param rename : whether the file name should be renamed based on receipt data
     """
     s_id = set_general_json_data(d_document_data, DOCUMENT_TYPE, EDocumentFields.JSON_TYPE,
                                  EDocumentFields.JSON_VERSION, JSON_VERSION_DOCUMENT,

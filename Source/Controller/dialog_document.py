@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   dialog_document.py
-@brief  Document dialog
+@brief  Dialog for creating and editing document entries.
 ********************************************************************************
 """
 
@@ -25,11 +25,11 @@ log = logging.getLogger(__title__)
 
 class DocumentDialog(QDialog, Ui_DialogDocument):
     """!
-    @brief Document dialog.
+    @brief Dialog for creating or editing a document entry.
     @param ui : main window
-    @param data : document data
-    @param uid : UID of contact
-    @param file_path : document file
+    @param data : Existing document data (optional)
+    @param uid : UID of the related document (optional)
+    @param file_path : Path to the attached document file (optional)
     """
 
     def __init__(self, ui: "MainWindow", data: Optional[dict[EDocumentFields, Any]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
@@ -45,7 +45,7 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
 
     def show_dialog(self) -> None:
         """!
-        @brief Show dialog
+        @brief Initialize the dialog fields and display the dialog modally.
         """
         log.debug("Starting Document dialog")
 
@@ -78,7 +78,7 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
 
     def delete_clicked(self) -> None:
         """!
-        @brief Delete button clicked.
+        @brief Handler for the delete button. Removes the stored document entry.
         """
         if self.uid is not None:
             remove_document(self.ui.model.data_path, self.uid)
@@ -89,7 +89,7 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
 
     def save_clicked(self) -> None:
         """!
-        @brief Save button clicked.
+        @brief Handler for the save button. Validates and writes document data.
         """
         valid = self.set_data()
         if valid:
@@ -105,8 +105,8 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
 
     def set_data(self) -> bool:
         """!
-        @brief Set document data.
-        @return status if contact data are valid to save
+        @brief Read dialog input fields and update the document data structure.
+        @return True if the data is valid and can be saved, otherwise False.
         """
         description = self.pte_description.toPlainText()
         attachment = self.data.get(EDocumentFields.ATTACHMENT) if (self.data is not None) else None

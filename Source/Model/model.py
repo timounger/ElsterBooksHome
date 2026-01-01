@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 from Source.Worker.ollama_ai import OllamaAI
 from Source.Worker.open_ai import OpenAI
+from Source.Worker.mistral_ai import MistralAI
 
 log = logging.getLogger(__title__)
 
@@ -30,7 +31,7 @@ S_WRITE_TEST_FILE_NAME = "_write_test.txt"
 
 def check_write_access(path: str) -> bool:
     """!
-    @brief Check write access of path
+    @brief Check write access of path. Requires an absolute path.
     @param path : path to check
     @return write access status
     """
@@ -39,7 +40,7 @@ def check_write_access(path: str) -> bool:
         with open(s_test_file, mode="w", encoding="utf-8") as file:
             file.write("Write Access Test")
         os.remove(s_test_file)
-    except BaseException:
+    except OSError:
         b_access = False
     else:
         b_access = True
@@ -62,6 +63,7 @@ class Model:
         self.d_plz_data = get_plz_data()
         self.c_ollama_ai = OllamaAI()
         self.c_open_ai = OpenAI()
+        self.c_mistral_ai = MistralAI()
         self.ai_type = read_ai_type()
         self.data_path = REL_PATH
         self.git_add = True

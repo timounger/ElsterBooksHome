@@ -19,7 +19,7 @@ from Source.Model.fin_ts import Transaction
 log = logging.getLogger(__title__)
 
 EXPENDITURE_FOLDER = "expenditure"
-EXPENDITURE_FILE_PATH = EXPENDITURE_FOLDER + "/files"
+EXPENDITURE_FILE_PATH = os.path.join(EXPENDITURE_FOLDER, "files")
 EXPENDITURE_TYPE = "expenditure"
 EXPENDITURE_SCHEMA_FILE = "expenditure_schema.json"
 
@@ -55,7 +55,7 @@ def export_expenditure(path: str, add: bool, expenditure: dict[EReceiptFields, A
     @param expenditure : expenditure data to export
     @param expenditure_id : expenditure ID
     @param file_path : receipt file
-    @param rename : status if file name should renamed depend on actual data
+    @param rename : whether the file name should be renamed based on receipt data
     """
     add_receipt(expenditure, EXPENDITURE_TYPE, os.path.join(path, EXPENDITURE_FOLDER), os.path.join(path, EXPENDITURE_FILE_PATH), uid=expenditure_id,
                 appendix_file=file_path, rename=rename, add=add)
@@ -70,48 +70,48 @@ def clean_expenditure(path: str) -> None:
     clean_data(path, l_data, EXPENDITURE_FOLDER, EXPENDITURE_FILE_PATH, EReceiptFields.ID, EReceiptFields.ATTACHMENT)
 
 
-def check_payed_expenditure(path: str, l_transaction: list[Transaction], b_validate_only: bool = False) -> None:
+def check_paid_expenditure(path: str, l_transaction: list[Transaction], b_validate_only: bool = False) -> None:
     """!
-    @brief Check expenditure for payed.
+    @brief Check expenditure for paid.
     @param path : data path
     @param l_transaction : transactions
-    @param b_validate_only : True = validate only; False = write found transaction date to file
+    @param b_validate_only : True to only validate, False to update payment date in file
     """
     today = datetime.now()
     l_data = read_expenditure(path)
     for data in l_data:
-        bar_payed = data[EReceiptFields.BAR]
+        bar_paid = data[EReceiptFields.BAR]
         invoice_date = datetime.strptime(data[EReceiptFields.INVOICE_DATE], DATE_FORMAT_JSON)
         if data[EReceiptFields.PAYMENT_DATE]:
-            payed_date = datetime.strptime(data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT_JSON)
+            payment_date = datetime.strptime(data[EReceiptFields.PAYMENT_DATE], DATE_FORMAT_JSON)
         else:
-            payed_date = None
+            payment_date = None
         amount_gross = data[EReceiptFields.AMOUNT_GROSS]
         invoice_number = data[EReceiptFields.INVOICE_NUMBER]
-        if not bar_payed and (amount_gross != 0) and (b_validate_only or not bar_payed) and (b_validate_only or not payed_date):
-            payed_date_high = None
-            payed_date_medium = None
-            payed_date_low = None
+        if not bar_paid and (amount_gross != 0) and (b_validate_only or not bar_paid) and (b_validate_only or not payment_date):
+            payment_date_high = None
+            _payment_date_medium = None
+            payment_date_low = None
             for transaction in l_transaction:
                 if (transaction.date >= (invoice_date - timedelta(days=14))) and (transaction.amount == -amount_gross):
-                    payed_date_low = transaction.date
+                    payment_date_low = transaction.date
                     invoice_number_cut = ''.join(ch for ch in invoice_number if ch.isdigit())
                     purpose_cut = ''.join(ch for ch in transaction.purpose if ch.isdigit())
                     if invoice_number_cut in purpose_cut:
-                        payed_date_medium = transaction.date
-                        if (invoice_number in transaction.purpose.split()) and (not b_validate_only or (transaction.date == payed_date)):
-                            if (payed_date is not None) and (payed_date == transaction.date):
-                                payed_date_high = transaction.date
+                        _payment_date_medium = transaction.date
+                        if (invoice_number in transaction.purpose.split()) and (not b_validate_only or (transaction.date == payment_date)):
+                            if (payment_date is not None) and (payment_date == transaction.date):
+                                payment_date_high = transaction.date
                                 break
             if b_validate_only:
-                if payed_date_high is None:
-                    if (payed_date is None) or (payed_date > (today - timedelta(days=1.5 * 365))):
-                        print(invoice_number, payed_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER], data[EReceiptFields.DESCRIPTION])
+                if payment_date_high is None:
+                    if (payment_date is None) or (payment_date > (today - timedelta(days=1.5 * 365))):
+                        print(invoice_number, payment_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER], data[EReceiptFields.DESCRIPTION])
                 else:
-                    print("FOUND", invoice_number, payed_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER], data[EReceiptFields.DESCRIPTION])
+                    print("FOUND", invoice_number, payment_date, invoice_date, amount_gross, data[EReceiptFields.TRADE_PARTNER], data[EReceiptFields.DESCRIPTION])
             else:
-                if payed_date_low:
-                    data[EReceiptFields.PAYMENT_DATE] = payed_date_low.strftime(DATE_FORMAT_JSON)
+                if payment_date_low:
+                    data[EReceiptFields.PAYMENT_DATE] = payment_date_low.strftime(DATE_FORMAT_JSON)
                     export_expenditure(path, False, data, data[EReceiptFields.ID])
 
 

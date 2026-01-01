@@ -76,6 +76,11 @@ L_ALLOWED_THIRD_PARTY_PACKAGES = [
     "openai",
     "distro",
     "jiter",
+    "mistralai",
+    "chardet",
+    "eval_type_backport",
+    "typing_inspect",
+    "mypy_extensions",
     # VAT Check
     "isodate",
     "platformdirs",

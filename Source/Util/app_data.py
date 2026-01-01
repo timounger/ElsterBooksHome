@@ -18,6 +18,7 @@ from subprocess import CompletedProcess
 import traceback
 import importlib.util
 import inspect
+from packaging.version import Version
 
 if platform.system() == 'Windows':
     import win32crypt
@@ -25,7 +26,7 @@ if platform.system() == 'Windows':
 from PyQt6.QtCore import QSettings, QByteArray  # pylint: disable=wrong-import-position
 from PyQt6.QtGui import QActionGroup, QAction  # pylint: disable=wrong-import-position
 
-from Source.version import __title__, __author__, running_as_exe, DISK_TYPE, DISK_MODEL, DISK_SERIAL_NUMBER  # pylint: disable=wrong-import-position
+from Source.version import __title__, __author__, running_as_exe  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -98,7 +99,8 @@ def open_subprocess(command: list[str]) -> None:
     """
     startupinfo = subprocess.STARTUPINFO()
     startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    subprocess.Popen(command, text=True, startupinfo=startupinfo)
+    with subprocess.Popen(command, text=True, startupinfo=startupinfo):
+        pass
 
 
 def get_computer_name() -> str:
@@ -111,35 +113,6 @@ def get_computer_name() -> str:
     except BaseException:
         hostname = ""
     return hostname
-
-
-def get_disk_info() -> str:
-    """!
-    @brief Get disk info using PowerShell
-    @return disk info
-    """
-    ps_script = (
-        "Get-WmiObject Win32_DiskDrive | "
-        "Select-Object Model, InterfaceType, SerialNumber | "
-        "Format-Table -AutoSize | Out-String"
-    )
-    result = run_subprocess(["powershell", "-Command", ps_script])
-    return result.stdout.strip()
-
-
-def validate_portable_edition() -> bool:
-    """!
-    @brief Check if valid portable device present
-    @return portable status
-    """
-    result = get_disk_info()
-    portable = False
-    for line in result.split("\n"):
-        line = line.strip()
-        if line.startswith(DISK_MODEL) and line.endswith(DISK_SERIAL_NUMBER) and DISK_TYPE in line:
-            portable = True
-            break
-    return portable
 
 
 def open_explorer(explorer_path: str, b_open_input: bool = False) -> None:
@@ -213,6 +186,7 @@ def function_accepts_params(func, *args):
 # https://ezgif.com/optimize
 # https://compress-image.net/compress-image-online/compress-ico
 # https://www.zamzar.com/compress-bmp/
+# https://invert.imageonline.co/de/
 # General Icon and Images
 ICON_APP_PATH = "Resources/app.ico"
 ICON_APP_FAVICON_PATH = "Resources/favicon.ico"
@@ -273,6 +247,10 @@ ICON_ARROW_LEFT_LIGHT = resource_path("Resources/Icon/arrow_left_light.png")
 ICON_ARROW_LEFT_DARK = resource_path("Resources/Icon/arrow_left_dark.png")
 ICON_ARROW_RIGHT_LIGHT = resource_path("Resources/Icon/arrow_right_light.png")
 ICON_ARROW_RIGHT_DARK = resource_path("Resources/Icon/arrow_right_dark.png")
+ICON_ARROW_UP_LIGHT = resource_path("Resources/Icon/arrow_up_light.png")
+ICON_ARROW_UP_DARK = resource_path("Resources/Icon/arrow_up_dark.png")
+ICON_ARROW_DOWN_LIGHT = resource_path("Resources/Icon/arrow_down_light.png")
+ICON_ARROW_DOWN_DARK = resource_path("Resources/Icon/arrow_down_dark.png")
 
 ICON_UPDATE_LIGHT = resource_path("Resources/Icon/update_light.svg")
 ICON_UPDATE_DARK = resource_path("Resources/Icon/update_dark.svg")
@@ -283,6 +261,12 @@ ICON_LICENSE_DARK = resource_path("Resources/Icon/license_dark.png")
 
 ICON_WARNING = resource_path("Resources/Icon/warning.png")
 
+ICON_OLLAMA_LIGHT = resource_path("Resources/Icon/ollama_light.png")
+ICON_OLLAMA_DARK = resource_path("Resources/Icon/ollama_dark.png")
+ICON_OPEN_AI_LIGHT = resource_path("Resources/Icon/openai_light.png")
+ICON_OPEN_AI_DARK = resource_path("Resources/Icon/openai_dark.png")
+ICON_MISTRAL = resource_path("Resources/Icon/mistral.png")
+
 # License
 LICENSE_FILE = resource_path("LICENSE.md")
 
@@ -292,12 +276,28 @@ SCHEMATA_PATH = resource_path("Resources/schemata/")
 # Git
 GIT_IGNORE_FILE = resource_path("Resources/Git/template.gitignore")
 
+# Fonts
+# https://github.com/liberationfonts/liberation-fonts/files/7261482/liberation-fonts-ttf-2.1.5.tar.gz
+FONT_LIBERATION_MONO_BOLD = resource_path("Resources/Fonts/LiberationMono-Bold.ttf")
+FONT_LIBERATION_MONO_BOLD_ITALIC = resource_path("Resources/Fonts/LiberationMono-BoldItalic.ttf")
+FONT_LIBERATION_MONO_ITALIC = resource_path("Resources/Fonts/LiberationMono-Italic.ttf")
+FONT_LIBERATION_MONO_REGULAR = resource_path("Resources/Fonts/LiberationMono-Regular.ttf")
+FONT_LIBERATION_SANS_BOLD = resource_path("Resources/Fonts/LiberationSans-Bold.ttf")
+FONT_LIBERATION_SANS_BOLD_ITALIC = resource_path("Resources/Fonts/LiberationSans-BoldItalic.ttf")
+FONT_LIBERATION_SANS_ITALIC = resource_path("Resources/Fonts/LiberationSans-Italic.ttf")
+FONT_LIBERATION_SANS_REGULAR = resource_path("Resources/Fonts/LiberationSans-Regular.ttf")
+FONT_LIBERATION_SERIF_BOLD = resource_path("Resources/Fonts/LiberationSerif-Bold.ttf")
+FONT_LIBERATION_SERIF_BOLD_ITALIC = resource_path("Resources/Fonts/LiberationSerif-BoldItalic.ttf")
+FONT_LIBERATION_SERIF_ITALIC = resource_path("Resources/Fonts/LiberationSerif-Italic.ttf")
+FONT_LIBERATION_SERIF_REGULAR = resource_path("Resources/Fonts/LiberationSerif-Regular.ttf")
+
 # FinTS
+# https://python-fints.readthedocs.io/en/latest/quickstart.html#register-for-a-product-id
 FINTS_INSTITUTE_FILE = resource_path("Resources/FinTS/fints_institute NEU mit BIC Master.csv")
 
 # Settings Registry
-COMPANY_NAME = __author__  # **HIDDEN_LINE** COMPANY_NAME = "<COMPANY_NAME>"
-APP_NAME = __title__  # **HIDDEN_LINE** APP_NAME = "<APP_NAME>"
+COMPANY_NAME = __author__
+APP_NAME = __title__
 settings_handle = QSettings(COMPANY_NAME, APP_NAME)
 
 
@@ -312,6 +312,14 @@ class ETab(int, enum.Enum):
     DOCUMENT = 4
     EXPORT = 5
     SETTINGS = 6
+
+
+class DocView(enum.IntEnum):
+    """!
+    @brief Index ob document view
+    """
+    PDF = 0
+    XML = 1
 
 
 class ETheme(str, enum.Enum):
@@ -340,6 +348,7 @@ class EAiType(str, enum.Enum):
     """
     DEACTIVATED = "Deactivated"
     OPEN_AI = "OpenAI"
+    MISTRAL = "Mistral"
     OLLAMA = "Ollama"
 
 
@@ -352,6 +361,8 @@ S_SECTION_FINTS = "FINTS"
 # keys and default values
 S_KEY_TAB = "last_tab"
 I_DEFAULT_TAB = ETab.DASHBOARD.value
+S_KEY_DOC_VIEW = "last_doc_view"
+E_DEFAULT_DOC_VIEW = DocView.PDF
 S_KEY_THEME = "darkmode"
 E_DEFAULT_THEME = ETheme.SYSTEM
 S_KEY_VERBOSITY = "verbosity"
@@ -379,8 +390,12 @@ S_KEY_OLLAMA_MODEL = "ollama_model"
 S_DEFAULT_OLLAMA_MODEL = ""
 S_KEY_GPT_MODEL = "gpt_model"
 S_DEFAULT_GPT_MODEL = ""
-S_KEY_API_KEY = "api_key"
-S_DEFAULT_API_KEY = ""
+S_KEY_MISTRAL_MODEL = "mistral_model"
+S_DEFAULT_MISTRAL_MODEL = ""
+S_KEY_GPT_API_KEY = "api_key"
+S_DEFAULT_GPT_API_KEY = ""
+S_KEY_MISTRAL_API_KEY = "mistral_api_key"
+S_DEFAULT_MISTRAL_API_KEY = ""
 
 S_KEY_BLZ = "blz"
 S_DEFAULT_BLZ = ""
@@ -464,6 +479,35 @@ def read_last_tab() -> int:
         i_tab_idx = I_DEFAULT_TAB
         handle.endGroup()
     return i_tab_idx
+
+
+def write_last_doc_view(e_view: DocView) -> None:
+    """!
+    @brief Writes the last document view to persistent storage
+    @param e_view : document view
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_SETTINGS)
+    handle.setValue(S_KEY_DOC_VIEW, e_view.value)
+    handle.endGroup()
+
+
+def read_doc_view() -> DocView:
+    """!
+    @brief Reads the last document view from persistent storage
+    @return last document view
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_SETTINGS)
+        i_view = int(get_registry_value(handle, S_KEY_DOC_VIEW))
+        e_view = DocView(i_view)
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("Last View not found, using default values (%s)", str(e))
+        e_view = E_DEFAULT_DOC_VIEW
+        handle.endGroup()
+    return e_view
 
 
 def write_output_path_settings(s_output_path: str) -> None:
@@ -576,6 +620,7 @@ def read_update_version() -> str:
     try:
         handle.beginGroup(S_SECTION_SETTINGS)
         version = str(get_registry_value(handle, S_KEY_UPDATE_VERSION))
+        _version = Version(version)  # try if valid valid
         handle.endGroup()
     except BaseException as e:
         log.debug("Update version settings not found, using default values (%s)", str(e))
@@ -741,7 +786,7 @@ def write_gpt_model(model: str) -> None:
 def read_gpt_model() -> str:
     """!
     @brief Reads the GPT model settings from persistent storage
-    @return AI type settings
+    @return GPT model settings
     """
     handle = get_settings_handle()
     try:
@@ -751,6 +796,34 @@ def read_gpt_model() -> str:
     except BaseException as e:
         log.debug("GPT model settings not found, using default values (%s)", str(e))
         model = S_DEFAULT_GPT_MODEL
+        handle.endGroup()
+    return model
+
+
+def write_mistral_model(model: str) -> None:
+    """!
+    @brief Writes the Mistral model settings to persistent storage
+    @param model : model
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_AI)
+    handle.setValue(S_KEY_MISTRAL_MODEL, model)
+    handle.endGroup()
+
+
+def read_mistral_model() -> str:
+    """!
+    @brief Reads the Mistral model settings from persistent storage
+    @return Mistral model settings
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(S_SECTION_AI)
+        model = str(get_registry_value(handle, S_KEY_MISTRAL_MODEL))
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("Mistral model settings not found, using default values (%s)", str(e))
+        model = S_DEFAULT_MISTRAL_MODEL
         handle.endGroup()
     return model
 
@@ -769,7 +842,7 @@ def write_ollama_model(model: str) -> None:
 def read_ollama_model() -> str:
     """!
     @brief Reads the Ollama model settings from persistent storage
-    @return AI type settings
+    @return Ollama model settings
     """
     handle = get_settings_handle()
     try:
@@ -783,9 +856,9 @@ def read_ollama_model() -> str:
     return model
 
 
-def write_api_key(api_key: str) -> None:
+def write_gpt_api_key(api_key: str) -> None:
     """!
-    @brief Writes API key to persistent storage
+    @brief Writes GPT API key to persistent storage
     @param api_key : current API key
     """
     if platform.system() == 'Windows':
@@ -794,20 +867,20 @@ def write_api_key(api_key: str) -> None:
         api_key_crypt = api_key
     handle = get_settings_handle()
     handle.beginGroup(S_SECTION_AI)
-    handle.setValue(S_KEY_API_KEY, api_key_crypt)
+    handle.setValue(S_KEY_GPT_API_KEY, api_key_crypt)
     handle.endGroup()
 
 
-def read_api_key() -> str:
+def read_gpt_api_key() -> str:
     """!
-    @brief Reads the API key from persistent storage
+    @brief Reads the GPT API key from persistent storage
     @return API key
     """
     handle = get_settings_handle()
     api_key: str
     try:
         handle.beginGroup(S_SECTION_AI)
-        api_key_crypt = get_registry_value(handle, S_KEY_API_KEY)
+        api_key_crypt = get_registry_value(handle, S_KEY_GPT_API_KEY)
         if platform.system() == 'Windows':
             _, bytes_api_key = win32crypt.CryptUnprotectData(api_key_crypt) if (len(api_key_crypt) > 0) else (None, bytes(api_key_crypt, "utf-8"))
             api_key = bytes_api_key.decode("utf-8")
@@ -816,7 +889,45 @@ def read_api_key() -> str:
         handle.endGroup()
     except BaseException as e:
         log.debug("API key not found, using default values (%s)", str(e))
-        api_key = S_DEFAULT_API_KEY
+        api_key = S_DEFAULT_GPT_API_KEY
+        handle.endGroup()
+    return api_key
+
+
+def write_mistral_api_key(api_key: str) -> None:
+    """!
+    @brief Writes Mistral API key to persistent storage
+    @param api_key : current API key
+    """
+    if platform.system() == 'Windows':
+        api_key_crypt = win32crypt.CryptProtectData(bytes(api_key, "utf-8")) if len(api_key) > 0 else ""
+    else:
+        api_key_crypt = api_key
+    handle = get_settings_handle()
+    handle.beginGroup(S_SECTION_AI)
+    handle.setValue(S_KEY_MISTRAL_API_KEY, api_key_crypt)
+    handle.endGroup()
+
+
+def read_mistral_api_key() -> str:
+    """!
+    @brief Reads the Mistral API key from persistent storage
+    @return API key
+    """
+    handle = get_settings_handle()
+    api_key: str
+    try:
+        handle.beginGroup(S_SECTION_AI)
+        api_key_crypt = get_registry_value(handle, S_KEY_MISTRAL_API_KEY)
+        if platform.system() == 'Windows':
+            _, bytes_api_key = win32crypt.CryptUnprotectData(api_key_crypt) if (len(api_key_crypt) > 0) else (None, bytes(api_key_crypt, "utf-8"))
+            api_key = bytes_api_key.decode("utf-8")
+        else:
+            api_key = api_key_crypt
+        handle.endGroup()
+    except BaseException as e:
+        log.debug("API key not found, using default values (%s)", str(e))
+        api_key = S_DEFAULT_MISTRAL_API_KEY
         handle.endGroup()
     return api_key
 

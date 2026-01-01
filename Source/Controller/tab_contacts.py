@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_contacts.py
-@brief  Contacts Tab
+@brief  Tab for managing contacts.
 ********************************************************************************
 """
 
@@ -32,9 +32,9 @@ I_EMAIL_IDX = L_ROW_DESCRIPTION.index(EMAIL)
 
 class TabContacts:
     """!
-    @brief Contacts dialog tab.
+    @brief Controller for the Contacts tab.
     @param ui : main window
-    @param tab_idx : tab index
+    @param tab_idx : Index of the tab in the tab widget.
     """
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
@@ -53,7 +53,7 @@ class TabContacts:
 
     def set_table_data(self, update: bool = False, rename: bool = False, update_dashboard: bool = True) -> None:
         """!
-        @brief Set table data
+        @brief Populates the contacts table with data.
         @param update : update status of JSON file
         @param rename : rename status of file name
         @param update_dashboard : update dashboard
@@ -83,7 +83,7 @@ class TabContacts:
 
     def get_mail_template(self, text: str) -> str:
         """!
-        @brief Get mail template
+        @brief Replaces placeholder fields in the mail template with company data.
         @param text : text
         @return mail text
         """
@@ -123,7 +123,7 @@ class TabContacts:
 
     def on_item_double_clicked(self, row: int, col: int, value: str) -> None:
         """!
-        @brief Callback for double click on table entry.
+        @brief Handles double-click events on a table entry.
         @param row : clicked row index
         @param col : clicked column index
         @param value : value of clicked cell
@@ -153,7 +153,7 @@ class TabContacts:
 
     def new_contact(self) -> None:
         """!
-        @brief Create new contact.
+        @brief Opens the dialog to create a new contact.
         """
         ContactDialog(self.ui)
         self.set_table_data()

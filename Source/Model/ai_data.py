@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   ai_data.py
-@brief  General AI data for Ollama and OpenAI
+@brief  General AI data
 ********************************************************************************
 """
 
@@ -53,9 +53,9 @@ def create_user_message(document_text: str) -> str:
     l_user_message = [
         "You are a helpful assistant. Tell me about document data.",
         "pattern code of invoice_date is: ^[0-9]{2}.[0-9]{2}.[0-9]{4}$",
-        "do not answer with pattern code string. Only with a valid date in this format",
-        "If not date detected return empty string",
-        "For description create maximal 3 words as summary of invoice goods or service",
+        "Do not respond with a pattern code string. Only enter a valid date in this format.",
+        "If the date is not detected, return an empty string.",
+        "For the description, create a summary of the invoice goods or services in German using a maximum of three words.",
         "Invoice Text:",
         document_text
     ]
@@ -70,6 +70,7 @@ def validate_answer(invoice_data: InvoiceData) -> InvoiceData:
     @param invoice_data : invoice data
     @return invoice data
     """
+    invoice_data.invoice_date = invoice_data.invoice_date.strip()
     if not is_date_format(invoice_data.invoice_date):
         invoice_data.invoice_date = invoice_data.invoice_date.replace(" ", ".")
         for i_month, s_month in enumerate(L_MONTH_NAMES, start=1):

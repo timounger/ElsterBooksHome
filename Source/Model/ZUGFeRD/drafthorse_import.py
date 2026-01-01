@@ -98,15 +98,33 @@ def set_combo_box_read_only(widget: QComboBox, entry: str, d_items: dict[str, st
     widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # disable mouse focus
 
 
+def parse_date_string_to_qdate(date_string: str) -> QDate:
+    """!
+    @brief Parse date as string in format DATE_FORMAT_XML to qdate
+    @param date_string : date as string
+    @return parsed qdate
+    """
+    dt = datetime.strptime(str(date_string), DATE_FORMAT_XML)
+    return QDate(dt.year, dt.month, dt.day)
+
+
+def set_date_optional(widget: QDateEdit, date_string: str) -> None:
+    """!
+    @brief Set date if possible
+    @param widget : widget
+    @param date_string : date to set
+    """
+    if date_string:
+        widget.setDate(parse_date_string_to_qdate(date_string))
+
+
 def set_date_read_only(widget: QDateEdit, date_string: str) -> None:
     """!
     @brief Set date as read only without focus
     @param widget : widget
     @param date_string : date as string in format DATE_FORMAT_XML
     """
-    date_datetime = datetime.strptime(str(date_string), DATE_FORMAT_XML)
-    qdate = QDate(date_datetime.year, date_datetime.month, date_datetime.day)
-    widget.setDate(qdate)
+    widget.setDate(parse_date_string_to_qdate(date_string))
     widget.setReadOnly(True)
     widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
     widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)  # disable mouse focus
@@ -469,6 +487,12 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.de_invoice_reference.hide()
     # Bemerkung (BT-22)
     set_optional_entry(dialog.pte_note, data["note"], dialog.lbl_note)
+    if data["note"]:
+        MAX_WIDGET_HEIGHT = 250
+        MIN_WIDGET_HEIGHT = 100
+        lines = len(data["note"].splitlines())
+        widget_height = max(MIN_WIDGET_HEIGHT, min(MAX_WIDGET_HEIGHT, lines * 50))
+        dialog.pte_note.setFixedHeight(widget_height)
     # Einleitungstext
     dialog.lbl_introduction_text.hide()
     dialog.pte_introduction_text.hide()
@@ -644,17 +668,17 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.groupBox_5_delivery.hide()
 
     # position
-    if dialog.groupBox_6_position.layout() is None:  # ensure that layout exists
-        layout = QVBoxLayout(dialog.groupBox_6_position)
-        dialog.groupBox_6_position.setLayout(layout)
-    else:
-        layout = dialog.groupBox_6_position.layout()
+    dialog.btn_add_item.hide()
+    dialog.btn_remove_item.hide()
     for item_pos, data_item in enumerate(data["items"]):
         # create item widget
         item_dialog = Ui_InvoiceItemData()  # new item instance
         widget = QWidget()  # new container widget
         item_dialog.setupUi(widget)
-        layout.addWidget(widget)  # insert widget in layout
+        dialog.item_layout.addWidget(widget)  # insert widget in layout
+        item_dialog.btn_delete.hide()
+        item_dialog.btn_up.hide()
+        item_dialog.btn_down.hide()
         # fill data
         item_dialog.groupBox.setTitle(f"Position {item_pos + 1}")
         # Name (BT-153)
@@ -863,7 +887,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Rechnungsgesamtbetrag einschließlich Umsatzsteuer (BT-112)
     set_optional_entry(dialog.dsb_sum_gross, data_totals["grossAmount"], [dialog.lbl_sum_gross, dialog.lbl_sum_gross_symbol])
     # Vorauszahlungsbetrag (BT-113)
-    set_optional_entry(dialog.dsb_payed_amount, data_totals["paidAmount"], [dialog.lbl_payed_amount, dialog.lbl_payed_amount_symbol])
+    set_optional_entry(dialog.dsb_paid_amount, data_totals["paidAmount"], [dialog.lbl_paid_amount, dialog.lbl_paid_amount_symbol])
     # Rundungsbetrag (BT-114)
     set_optional_entry(dialog.dsb_rounded_amount, data_totals["roundingAmount"], [dialog.lbl_rounded_amount, dialog.lbl_rounded_amount_symbol])
     # Fälliger Zahlungsbetrag (BT-115)

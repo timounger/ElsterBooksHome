@@ -1,7 +1,3 @@
-\page booking Buchhaltung
-
-\tableofcontents
-
 # Buchhaltung
 
 Dieses Modul dient zur Erfassung und Verwaltung aller buchhaltungsrelevanten Dokumente. Buchungen können ausschließlich zusammen mit einem Beleg im PDF- oder XML-Format erfasst werden.
