@@ -1,13 +1,11 @@
-\page LICENSE 📄 Lizenz
-
-\tableofcontents
+# Lizenz
 
 Describes the terms under which ElsterBooks is distributed.
 A copy of the GNU GPL is appended to this file.
 
 IMPORTANT ELSTERBOOKS LICENSE TERMS
 
-_Copyright © 2023-2025 Timo Unger_
+_Copyright © 2023-2026 Timo Unger_
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

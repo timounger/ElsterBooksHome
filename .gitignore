@@ -7,6 +7,7 @@
 # Source
 /Source/Util/git_version.py
 /Source/Views/app.pyproject.user
+/Source/plugins
 
 # Documentation
 /Documentation/DoxygenCreator/doxygen-*.windows.x64.bin.zip
@@ -18,6 +19,9 @@
 /Documentation/Installation/PackageInfos.xlsx
 /Documentation/docs/_assets/images/app.ico
 /Documentation/docs/_assets/images/favicon.ico
+/Documentation/docs/_assets/images/splash.gif
+/Documentation/docs/_assets/images/zugferd.svg
+/Documentation/public
 
 # Executable
 /Executable/build
