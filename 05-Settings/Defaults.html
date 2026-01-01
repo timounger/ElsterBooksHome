@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../_assets/images/favicon.ico">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
     
     
       
@@ -33,7 +33,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.618322db.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1669,35 +1669,37 @@
 <p>Mit den Standardwerten können bestimmte Felder in Belegen, Rechnungen und Buchungen automatisch mit vordefinierten Werten befüllt werden.<br />
 Dies erleichtert die Dateneingabe und sorgt für einheitliche Prozesse.</p>
 <ul>
-<li><strong>UStVA-Periode:</strong> Voreinstellung für den Abgabezeitraum der Umsatzsteuervoranmeldung (monatlich oder quartalsweise).  </li>
-<li><strong>Bezahlt:</strong> Legt fest, ob der Status „bezahlt“ bei neuen Belegen standardmäßig aktiviert ist.  </li>
-<li><strong>Bar bezahlt:</strong> Automatische Voreinstellung, ob ein neuer Beleg als Barzahlung gekennzeichnet wird.  </li>
-<li><strong>Standard Gruppe Einnahme:</strong> Vordefinierte Kategorie für neue Einnahmebelege.  </li>
-<li><strong>Standard Gruppe Ausgabe:</strong> Vordefinierte Kategorie für neue Ausgabenbelege.  </li>
-<li><strong>Liste aller Gruppen:</strong> Auflistung aller üblichen Einnahme- und Ausgabenkategorien für eine schnellere Auswahl.  </li>
-<li><strong>Rechnungsnummer:</strong> Siehe detaillierte Beschreibung unten.  </li>
-<li><strong>Zahlungsziel:</strong> Voreingestellte Anzahl an Tagen bis zur Fälligkeit einer Rechnung (z. B. 14, 30, 60 Tage).  </li>
+<li><strong>UStVA-Periode:</strong> Voreinstellung für den Abgabezeitraum der Umsatzsteuervoranmeldung (monatlich oder quartalsweise).</li>
+<li><strong>Bezahlt:</strong> Legt fest, ob der Status „bezahlt“ bei neuen Belegen standardmäßig aktiviert ist.</li>
+<li><strong>Bar bezahlt:</strong> Automatische Voreinstellung, ob ein neuer Beleg als Barzahlung gekennzeichnet wird.</li>
+<li><strong>Standard Gruppe Einnahme:</strong> Vordefinierte Kategorie für neue Einnahmebelege.</li>
+<li><strong>Standard Gruppe Ausgabe:</strong> Vordefinierte Kategorie für neue Ausgabenbelege.</li>
+<li><strong>Liste aller Gruppen:</strong> Auflistung aller üblichen Einnahme- und Ausgabenkategorien für eine schnellere Auswahl.</li>
+<li><strong>Rechnungsnummer:</strong> Siehe detaillierte Beschreibung unten.</li>
+<li><strong>Zahlungsziel:</strong> Voreingestellte Anzahl an Tagen bis zur Fälligkeit einer Rechnung (z. B. 14, 30, 60 Tage).</li>
+<li><strong>Verwendungszweck:</strong> Verwendungszweck mit Rechnungsnummer als Platzhalter <code>{number}</code>.</li>
 </ul>
 <h2 id="rechnungsnummer-detaillierte-beschreibung">Rechnungsnummer (detaillierte Beschreibung)<a class="headerlink" href="#rechnungsnummer-detaillierte-beschreibung" title="Permanent link">&para;</a></h2>
-<p>Die Rechnungsnummer kann flexibel über Platzhalter und Sequenzen aufgebaut werden, um individuelle Nummerierungssysteme abzubilden.  </p>
+<p>Die Rechnungsnummer kann flexibel über Platzhalter und Sequenzen aufgebaut werden, um individuelle Nummerierungssysteme abzubilden.</p>
 <p><strong>Verfügbare Platzhalter:</strong></p>
 <ul>
-<li><code>{YYYY}</code> – Vierstellige Jahreszahl (z. B. 2025)  </li>
-<li><code>{YY}</code> – Zweistellige Jahreszahl (z. B. 25)  </li>
-<li><code>{MM}</code> – Monat zweistellig (01–12)  </li>
-<li><code>{DD}</code> – Tag zweistellig (01–31)  </li>
-<li><code>{SEQ:&lt;reset&gt;:&lt;length&gt;:&lt;start&gt;:&lt;increment&gt;}</code> – Laufende Nummer  </li>
-<li><strong>reset:</strong> none / yearly / monthly / daily  </li>
-<li><strong>length:</strong> Stellenanzahl (mit führenden Nullen)  </li>
-<li><strong>start:</strong> Startwert der Sequenz  </li>
-<li><strong>increment:</strong> Schrittweite der Nummerierung  </li>
+<li><code>{YYYY}</code> – Vierstellige Jahreszahl (z. B. 2025)</li>
+<li><code>{YY}</code> – Zweistellige Jahreszahl (z. B. 25)</li>
+<li><code>{Y}</code> – Einstellige Jahreszahl (z. B. 5)</li>
+<li><code>{MM}</code> – Monat zweistellig (01–12)</li>
+<li><code>{DD}</code> – Tag zweistellig (01–31)</li>
+<li><code>{SEQ:&lt;reset&gt;:&lt;length&gt;:&lt;start&gt;:&lt;increment&gt;}</code> – Laufende Nummer</li>
+<li><strong>reset:</strong> none / yearly / monthly / daily (default: none)</li>
+<li><strong>length:</strong> Stellenanzahl (mit führenden Nullen) (default: 0)</li>
+<li><strong>start:</strong> Startwert der Sequenz (default: 1)</li>
+<li><strong>increment:</strong> Schrittweite der Nummerierung (default: 1)</li>
 </ul>
 <p><strong>Beispiele:</strong></p>
 <ul>
-<li><code>RE-{YYYY}-{SEQ:none:4:1:1}</code> → <code>RE-2025-0001</code>, <code>RE-2025-0002</code>  </li>
-<li><code>{YYYY}{MM}-{SEQ:monthly:3:1:1}</code> → Januar: <code>202501-001</code>, Februar: <code>202502-001</code>  </li>
-<li><code>{YY}{MM}{DD}-{SEQ:daily:2:0:1}</code> → <code>250312-00</code>, <code>250312-01</code>  </li>
-<li><code>{SEQ:none:6:1:1}</code> → <code>000001</code>, <code>000002</code>  </li>
+<li><code>RE-{YYYY}-{SEQ:none:4:1:1}</code> → <code>RE-2025-0001</code>, <code>RE-2025-0002</code></li>
+<li><code>{YYYY}{MM}-{SEQ:monthly:3:1:1}</code> → Januar: <code>202501-001</code>, Februar: <code>202502-001</code></li>
+<li><code>{YY}{MM}{DD}-{SEQ:daily:2:0:1}</code> → <code>250312-00</code>, <code>250312-01</code></li>
+<li><code>{SEQ:none:6:1:1}</code> → <code>000001</code>, <code>000002</code></li>
 </ul>
 
 
@@ -1774,7 +1776,7 @@ Dies erleichtert die Dateneingabe und sorgt für einheitliche Prozesse.</p>
       <div class="md-copyright">
   
     <div class="md-copyright__highlight">
-      Copyright &copy; 2023-2025 Timo Unger
+      Copyright &copy; 2023-2026 Timo Unger
     </div>
   
   
@@ -1809,10 +1811,10 @@ Dies erleichtert die Dateneingabe und sorgt für einheitliche Prozesse.</p>
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.7a47a382.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["announce.dismiss", "content.code.annotate", "content.code.copy", "content.tooltips", "navigation.footer", "navigation.indexes", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "In Zwischenablage kopiert", "clipboard.copy": "In Zwischenablage kopieren", "search.result.more.one": "1 weiteres Suchergebnis auf dieser Seite", "search.result.more.other": "# weitere Suchergebnisse auf dieser Seite", "search.result.none": "Keine Suchergebnisse", "search.result.one": "1 Suchergebnis", "search.result.other": "# Suchergebnisse", "search.result.placeholder": "Suchbegriff eingeben", "search.result.term.missing": "Es fehlt", "select.version": "Version ausw\u00e4hlen"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.e71a0d61.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="../_assets/javascripts/panzoom.min.js"></script>
       
