@@ -19,7 +19,7 @@ from Source.version import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_
 log = logging.getLogger("GenerateVersionFile")
 # autopep8: on
 
-versionInfo = VSVersionInfo(
+version_info = VSVersionInfo(
     ffi=FixedFileInfo(
         # filevers and prodvers should be always a tuple with four items: (1, 2, 3, 4)
         # Set not needed items to zero 0.
@@ -44,7 +44,7 @@ versionInfo = VSVersionInfo(
                 StringTable(
                     "040904E4",
                     [
-                        StringStruct("FileDescription", __description__),
+                        StringStruct("FileDescription", f"{__title__} - {__description__}"),
                         StringStruct("FileVersion", __version__),
                         StringStruct("LegalCopyright", __copyright__),
                         StringStruct("ProductName", __title__),
@@ -56,20 +56,20 @@ versionInfo = VSVersionInfo(
 )
 
 
-def generate_version_file(s_filename: str, s_workpath: str) -> None:
+def generate_version_file(filename: str, workpath: str) -> None:
     """!
-    @brief Generate version file
-    @param s_filename : version file name
-    @param s_workpath : workpath
+    @brief Generate Windows version info file (VSVersionInfo) for the PyInstaller executable.
+    @param filename : output filename for the version info text file
+    @param workpath : output directory (created if it does not exist)
     """
-    s_version_file = os.path.join(s_workpath, s_filename)
-    log.info("Generate version file %s (Version: %s)", s_version_file, __version__)
-    if not os.path.exists(s_workpath):
-        os.mkdir(s_workpath)
+    version_file_path = os.path.join(workpath, filename)
+    log.info("Generate version file %s (Version: %s)", version_file_path, __version__)
+    if not os.path.exists(workpath):
+        os.mkdir(workpath)
     else:
-        log.info("Directory %s already exists", s_workpath)
-    with open(s_version_file, mode="w", encoding="utf-8") as version_file:
-        version_file.write(str(versionInfo))
+        log.info("Directory %s already exists", workpath)
+    with open(version_file_path, mode="w", encoding="utf-8") as version_file:
+        version_file.write(str(version_info))
 
 
 if __name__ == "__main__":

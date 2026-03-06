@@ -9,7 +9,22 @@
 | 🚀 Verbesserungen | Optimierungen, Performance, Reworks      |
 | 📚 Dokumentation  | Änderungen an Dokumentation & Texten     |
 
-## [v0.4.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.4.0) latest
+## [v0.5.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.5.0) latest
+
+- ✨ Gemini von Google als KI für intelligente Belegerkennung verfügbar
+- 🔧 Verwendungszweck (BT-83) wird nicht mehr importiert, um das Überschreiben des Rechnungsnummern-Patterns zu vermeiden
+- 🔧 Logo kann im erweiterten Rechnungsmodus ausgetauscht werden
+- 🔧 Transaktionsabfrage: FinTS auf neues Datenformat umgestellt
+- 🔧 Ausschreibung/Los (BT-17) und Objektreferenz (BT-18) korrekt visualisieren
+- 🔧 Spaltenbreite korrekt berechnen
+- 🚀 Artikelpositionen verschieben und löschen bei Rechnungserstellung
+- 🚀 Prompt für automatische Belegerfassung verbessert
+- 🚀 Rechnungsdialog schließt sich nach dem Erstellen nicht mehr automatisch
+- 🚀 Hinweisdialog erscheint, wenn eine ZUGFeRD-Rechnung nicht erstellt werden kann, weil bereits eine Rechnung geöffnet ist
+- 🚀 Excel-Datei wird nach der PDF-Erstellung automatisch gelöscht
+- 🚀 Scrollen im Rechnungsdialog verändert keine Werte mehr
+
+## [v0.4.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.4.0) Release 01.01.2026
 
 - ✨ Mistral als KI für intelligente Belegerkennung verfügbar
 - 🔧 Export Übersicht Gesamt: Auch nicht bezahlte Belege auflisten
@@ -23,14 +38,14 @@
 - 📚 Positionssumme bei Rechnung erstellen immer anzeigen
 - 📚 ToolTip bei E-Rechnungsfeldern hinzugefügt
 
-## [v0.3.1](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.1) Testversion Release 29.11.2025
+## [v0.3.1](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.1) Release 29.11.2025
 
 - 🚀 Rechnungsnummern: Individuell in den Einstellungen mit Hilfe von Datum und Sequenz Pattern gestalten
 - 🚀 QR-Code: Letzte Einstellung wird gespeichert
 - 🚀 Verbesserte Darstellung erstellter Rechnungen
 - 📚 Lizenztext hinzugefügt
 
-## [v0.3.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0) Testversion Release 09.11.2025
+## [v0.3.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.3.0) Release 09.11.2025
 
 - ✨ Rechnungsvorlagen: Import von ZUGFeRD PDF oder XML möglich
 - ✨ Integrierter Update-Mechanismus für zukünftige ElsterBooks-Versionen
@@ -39,7 +54,7 @@
 - 🚀 Transaktionen: Daten-Löschen-Button hinzugefügt
 - 🚀 Dialog „Belege öffnen“ beschleunigt (Initial-Ressourcen vorladen)
 
-## [v0.2.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.2.0) Testversion Release 29.10.2025
+## [v0.2.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.2.0) Release 29.10.2025
 
 - ✨ Bankanbindung über FinTS und automatische Transaktionszuordnung
 - ✨ QR-Code für Rechnungen
@@ -57,6 +72,6 @@
 - 🚀 Rechnungen direkt an Kontakte ausstellen (über Kontextmenü)
 - 📚 Dokumentationshilfe für Export angepasst
 
-## [v0.1.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.1.0) Testversion Release 06.09.2025
+## [v0.1.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.1.0) Release 06.09.2025
 
 - ✨ Initiale Testversion

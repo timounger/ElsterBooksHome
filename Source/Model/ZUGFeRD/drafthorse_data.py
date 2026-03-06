@@ -1,9 +1,9 @@
 """!
 ********************************************************************************
 @file   drafthorse_data.py
-@brief  ZUGFeRD data
+@brief  ZUGFeRD invoice data definitions and Factur-X mappings.
         For new drafthorse data add to following functions:
-        - Doku: D_DEFAULT_INVOICE_DATA
+        - Doku: DEFAULT_INVOICE_DATA
         - View XML: convert_facturx_to_json
         - View XML: visualize_xml_invoice
         - Write XML: convert_json_to_drafthorse_doc
@@ -24,7 +24,7 @@ EN_16931 = "urn:cen.eu:en16931:2017"  # COMFORT
 # Version 11.26.1
 
 # Rechnungstyp (BT-3) Code für den Rechnungstyp
-D_INVOICE_TYPE = {
+INVOICE_TYPE = {
     # "71": "Request for payment",
     # "80": "Debit note related to goods or services",
     # "81": "Credit note related to goods or services",
@@ -85,7 +85,7 @@ D_INVOICE_TYPE = {
 # Währung (BT-5)
 # ISO 4217 Maintenance Agency „Codes for the representation of currencies and funds"
 # https://www.iso.org/iso-4217-currency-codes.html
-D_CURRENCY = {
+CURRENCY = {
     "AED": "United Arab Emirates Dirham - د.إ",
     "AFN": "Afghan Afghani - ؋",
     "ALL": "Albanian Lek - L",
@@ -252,7 +252,7 @@ D_CURRENCY = {
 }
 
 # Land (BT-40) (BT-55) (BT-80)
-D_COUNTRY_CODE = {
+COUNTRY_CODE = {
     "AD": "Andorra",
     "AT": "Austria",
     "AL": "Albania",
@@ -306,7 +306,7 @@ D_COUNTRY_CODE = {
 }
 
 # Zahlungsart (BT-81)
-D_PAYMENT_METHOD = {
+PAYMENT_METHOD = {
     "1": "Nicht definiert",
     "30": "Überweisung",
     "42": "Zahlung auf Bankkonto",
@@ -315,7 +315,7 @@ D_PAYMENT_METHOD = {
 }
 
 # Einheit (BT-130)
-D_UNIT = {
+UNIT = {
     "H87": "Stück",  # Default
     "C62": "Eins",
     "LS": "Pauschale",
@@ -340,7 +340,7 @@ D_UNIT = {
 }
 
 # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
-D_VAT_CODE = {
+VAT_CODE = {
     "S": "Standard Rate",  # default
     "Z": "Nach dem Nullsatz zu versteuernde Waren",
     "E": "Steuerbefreit",
@@ -353,7 +353,7 @@ D_VAT_CODE = {
 }
 
 # Code für Befreiungsgrund (BT-121)
-D_EXEMPTION_REASON_CODE = {
+EXEMPTION_REASON_CODE = {
     "": "",  # default
     "BR-AE-10": "Umkehrung der Steuerschuldnerschaft",
     "BR-E-10": "Steuerbefreit",
@@ -367,7 +367,7 @@ D_EXEMPTION_REASON_CODE = {
 }
 
 # Code für den Grund des Abschlag (BT-98) (BT-140)
-D_ALLOWANCE_REASON_CODE = {
+ALLOWANCE_REASON_CODE = {
     "": "",  # default
     "41": "Bonus for works ahead of schedule",
     "42": "Other bonus",
@@ -392,7 +392,7 @@ D_ALLOWANCE_REASON_CODE = {
 
 # Code für den Grund des Zuschlag (BT-105) (BT-145)
 # https://www.xrepository.de/details/urn:xoev-de:kosit:codeliste:untdid.7161_2
-D_CHARGE_REASON_CODE = {
+CHARGE_REASON_CODE = {
     "": "",  # default
     "AA": "Advertising",
     "AAA": "Telecommunication",
@@ -573,21 +573,21 @@ D_CHARGE_REASON_CODE = {
     "ZZZ": "Mutually defined"
 }
 
-D_DEFAULT_INVOICE_DATA = \
+DEFAULT_INVOICE_DATA = \
     {
         # Nachlässe
         "allowances": [
             {
-                "basisAmount": "",  # Grundbetrag (BT-100)
+                "basisAmount": "",  # Grundbetrag (BT-93)
                 "grossAmount": "",  # Betrag Brutto
-                "netAmount": "",  # Betrag (Netto) (BT-99)
-                "percent": "",  # Prozent (BT-101)
-                "reason": "",  # Grund (BT-104)
-                "reasonCode": "",  # Code des Grundes (BT-105)
+                "netAmount": "",  # Betrag (Netto) (BT-92)
+                "percent": "",  # Prozent (BT-94)
+                "reason": "",  # Grund (BT-97)
+                "reasonCode": "",  # Code des Grundes (BT-98)
                 "type": "percentage",  # not required TODO absolute oder percentage
                 "vatAmount": "",  # Steuerbetrag (Netto)
-                "vatCode": "S",  # Steuerkategorie (BT-102)
-                "vatRate": ""  # Steuersatz (BT-103)
+                "vatCode": "S",  # Steuerkategorie (BT-95)
+                "vatRate": ""  # Steuersatz (BT-96)
             }
         ],
         # Anlagen
@@ -598,7 +598,7 @@ D_DEFAULT_INVOICE_DATA = \
         "buyer": {
             "address": {
                 "city": "",  # Ort (BT-52)
-                "countryCode": "",  # Land (BT-55) D_COUNTRY_CODE
+                "countryCode": "",  # Land (BT-55) COUNTRY_CODE
                 "line1": "",  # Straße 1 (BT-50)
                 "line2": "",  # Straße 2 (BT-51)
                 "postCode": ""  # PLZ (BT-53)
@@ -609,7 +609,7 @@ D_DEFAULT_INVOICE_DATA = \
                 "phone": ""  # Telefon (BT-57)
             },
             "electronicAddress": "",  # Elektronische Adresse (BT-49)
-            "electronicAddressTypeCode": "EM",
+            "electronicAddressTypeCode": "EM",  # (BT-34-1)
             "id": "",  # Käuferkennung (BT-46)
             "idTypeCode": "id",
             "name": "",  # Unternehmen (BT-44)
@@ -623,27 +623,27 @@ D_DEFAULT_INVOICE_DATA = \
         # Zuschläge
         "charges": [
             {
-                "basisAmount": "",  # Grundbetrag (BT-93)
+                "basisAmount": "",  # Grundbetrag (BT-100)
                 "grossAmount": "",  # Betrag Brutto
-                "netAmount": "",  # Betrag (Netto) (BT-92)
-                "percent": "",  # Prozent (BT-94)
-                "reason": "",  # Grund (BT-97)
-                "reasonCode": "",  # Code des Grundes (BT-98)
+                "netAmount": "",  # Betrag (Netto) (BT-99)
+                "percent": "",  # Prozent (BT-101)
+                "reason": "",  # Grund (BT-104)
+                "reasonCode": "",  # Code des Grundes (BT-105)
                 "type": "percentage",  # not required
                 "vatAmount": "",  # Steuerbetrag (Netto)
-                "vatCode": "S",  # Steuerkategorie (BT-95)
-                "vatRate": ""  # Steuersatz (BT-96)
+                "vatCode": "S",  # Steuerkategorie (BT-102)
+                "vatRate": ""  # Steuersatz (BT-103)
             }
         ],
         "contractReference": "",  # Vertragsnummer (BT-12)
-        "currencyCode": "EUR",  # Währung (BT-5) D_CURRENCY
+        "currencyCode": "EUR",  # Währung (BT-5) CURRENCY
         "currencySymbol": "€",  # Währung Symbol
         # Zahlungsdetails
         "delivery": {
             # Lieferadresse
             "address": {
                 "city": "",  # Ort (BT-77)
-                "countryCode": "",  # Land (BT-80) D_COUNTRY_CODE
+                "countryCode": "",  # Land (BT-80) COUNTRY_CODE
                 "line1": "",  # Straße 1 (BT-75)
                 "line2": "",  # Straße 2 (BT-76)
                 "line3": "",  # Zusatz (BT-165)
@@ -703,7 +703,7 @@ D_DEFAULT_INVOICE_DATA = \
                 ],
                 "orderPosition": "",  # Auftragsposition (BT-132)
                 "quantity": 1,  # Menge (BT-129)
-                "quantityUnit": "H87",  # Einheit (BT-130) D_UNIT
+                "quantityUnit": "H87",  # Einheit (BT-130) UNIT
                 "quantityUnitSymbol": "",  # Einheit Symbol
                 "vatAmount": None,  # Steuerbetrag
                 "vatCode": "S",  # Steuerkategorie (BT-151)
@@ -741,7 +741,7 @@ D_DEFAULT_INVOICE_DATA = \
                     "bankName": "",  # Name der Bank
                     "bic": "",  # BIC (BT-86)
                     "iban": "",  # IBAN (BT-84)
-                    "typeCode": "58"  # Zahlungsart (BT-81) D_PAYMENT_METHOD
+                    "typeCode": "58"  # Zahlungsart (BT-81) PAYMENT_METHOD
                 }
             ],
             "reference": "",  # Verwendungszweck (BT-83)
@@ -758,7 +758,7 @@ D_DEFAULT_INVOICE_DATA = \
         "seller": {
             "address": {
                 "city": "",  # Ort (BT-37)
-                "countryCode": "",  # Land (BT-40) D_COUNTRY_CODE
+                "countryCode": "",  # Land (BT-40) COUNTRY_CODE
                 "line1": "",  # Straße 1 (BT-35)
                 "line2": "",  # Straße 2 (BT-36)
                 "postCode": ""  # PLZ (BT-38)
@@ -816,5 +816,5 @@ D_DEFAULT_INVOICE_DATA = \
             "roundingAmount": 0,  # Rundungsbetrag (BT-114)
             "vatAmount": None  # Summe Umsatzsteuer (BT-110)
         },
-        "typeCode": "380"  # Rechnungstyp (BT-3) D_INVOICE_TYPE
+        "typeCode": "380"  # Rechnungstyp (BT-3) INVOICE_TYPE
     }

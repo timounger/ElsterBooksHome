@@ -1,14 +1,14 @@
 """!
 ********************************************************************************
 @file   document.py
-@brief  document
+@brief  Manage document data persistence and validation.
 ********************************************************************************
 """
 
 import os
 import logging
 import enum
-from typing import Optional, Any
+from typing import Any
 
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
@@ -28,7 +28,7 @@ DOCUMENT_SCHEMA_FILE = "document_schema.json"
 
 class EDocumentFields(str, enum.Enum):
     """!
-    @brief Document fields.
+    @brief Document data field identifiers.
     """
     JSON_TYPE = "json_type"
     JSON_VERSION = "json_version"
@@ -38,7 +38,7 @@ class EDocumentFields(str, enum.Enum):
     ATTACHMENT = "attachment"
 
 
-D_DOCUMENT_TEMPLATE = {
+DOCUMENT_TEMPLATE = {
     EDocumentFields.JSON_TYPE: "",
     EDocumentFields.JSON_VERSION: "",
     EDocumentFields.ID: "",
@@ -50,74 +50,72 @@ D_DOCUMENT_TEMPLATE = {
 
 def validate_document(data: dict[EDocumentFields, Any]) -> list[str]:
     """!
-    @brief Validate document data.
-    @param data : data to validate
-    @return found error at validation
+    @brief Validate document data against schema.
+    @param data : document data to validate.
+    @return List of validation error messages.
     """
     schemata_path = os.path.join(SCHEMATA_PATH, DOCUMENT_SCHEMA_FILE)
     schemata = read_json_file(schemata_path)
-    _is_valid, error = validate_data(data, schemata)
-    return error
+    _, errors = validate_data(data, schemata)
+    return errors
 
 
 def read_document(path: str) -> list[dict[EDocumentFields, str]]:
     """!
-    @brief Read all documents
-    @param path : read in this path
-    @return list with existing documents JSON data
+    @brief Read all document records.
+    @param path : data directory path.
+    @return List of document data dictionaries.
     """
-    l_document = read_json_files(os.path.join(path, DOCUMENT_FOLDER), D_DOCUMENT_TEMPLATE)
-    return l_document
+    return read_json_files(os.path.join(path, DOCUMENT_FOLDER), DOCUMENT_TEMPLATE)
 
 
-def add_document(path: str, add: bool, d_document_data: dict[EDocumentFields, str], document_id: Optional[str] = None,
-                 appendix_file: Optional[str] = None, rename: bool = False) -> None:
+def add_document(path: str, add: bool, document_data: dict[EDocumentFields, str], document_id: str | None = None,
+                 appendix_file: str | None = None, rename: bool = False) -> None:
     """!
-    @brief Add or actualize document (data and appendix).
-    @param path : export to this path
-    @param add : GIT add status
-    @param d_document_data : document data to export
-    @param document_id : document ID
-    @param appendix_file : document file
-    @param rename : whether the file name should be renamed based on receipt data
+    @brief Add or update document data and attachment.
+    @param path : data directory path.
+    @param add : whether to git-add the exported file.
+    @param document_data : document data to export.
+    @param document_id : unique document identifier.
+    @param appendix_file : document attachment file path.
+    @param rename : whether to rename the file based on document data.
     """
-    s_id = set_general_json_data(d_document_data, DOCUMENT_TYPE, EDocumentFields.JSON_TYPE,
-                                 EDocumentFields.JSON_VERSION, JSON_VERSION_DOCUMENT,
-                                 EDocumentFields.ID, document_id)
-    date = d_document_data[EDocumentFields.DOCUMENT_DATE]
-    title = get_file_name([get_date_title(date), d_document_data[EDocumentFields.DESCRIPTION]], s_id)
+    uid = set_general_json_data(document_data, DOCUMENT_TYPE, EDocumentFields.JSON_TYPE,
+                                EDocumentFields.JSON_VERSION, JSON_VERSION_DOCUMENT,
+                                EDocumentFields.ID, document_id)
+    date = document_data[EDocumentFields.DOCUMENT_DATE]
+    title = get_file_name([get_date_title(date), document_data[EDocumentFields.DESCRIPTION]], uid)
     if (appendix_file is not None) or rename:
         if appendix_file is None:
-            if d_document_data[EDocumentFields.ATTACHMENT]:
-                _, file_extension = os.path.splitext(d_document_data[EDocumentFields.ATTACHMENT])
-                file_extension = file_extension.lower()
+            if document_data[EDocumentFields.ATTACHMENT]:
+                _, file_extension = os.path.splitext(document_data[EDocumentFields.ATTACHMENT])
             else:
-                file_extension = PDF_TYPE  # only for compatible with old version without existing attachment
+                file_extension = PDF_TYPE  # compatibility with old version without existing attachment
         else:
             _, file_extension = os.path.splitext(appendix_file)
-            file_extension = file_extension.lower()
-        d_document_data[EDocumentFields.ATTACHMENT] = f"{title}{file_extension}"
+        file_extension = file_extension.lower()
+        document_data[EDocumentFields.ATTACHMENT] = f"{title}{file_extension}"
     id_field = EDocumentFields.ID if (document_id is not None) else None
-    instance = fill_data(D_DOCUMENT_TEMPLATE, d_document_data)
-    add_json(add, instance, title, s_id, os.path.join(path, DOCUMENT_FOLDER), id_field=id_field, rename=rename)
+    instance = fill_data(DOCUMENT_TEMPLATE, document_data)
+    add_json(add, instance, title, uid, os.path.join(path, DOCUMENT_FOLDER), id_field=id_field, rename=rename)
     if (appendix_file is not None) or rename:
-        add_appendix(title, s_id, os.path.join(path, DOCUMENT_FILE_PATH), add, appendix_file=appendix_file)
+        add_appendix(title, uid, os.path.join(path, DOCUMENT_FILE_PATH), add, appendix_file=appendix_file)
 
 
 def clean_documents(path: str) -> None:
     """!
-    @brief Clean documents.
-    @param path : data path
+    @brief Clean up orphaned document files and data.
+    @param path : data directory path.
     """
-    l_data = read_document(path)
-    clean_data(path, l_data, DOCUMENT_FOLDER, DOCUMENT_FILE_PATH, EDocumentFields.ID, EDocumentFields.ATTACHMENT)
+    documents = read_document(path)
+    clean_data(path, documents, DOCUMENT_FOLDER, DOCUMENT_FILE_PATH, EDocumentFields.ID, EDocumentFields.ATTACHMENT)
 
 
 def remove_document(path: str, document_id: str) -> None:
     """!
-    @brief Remove document (data and appendix).
-    @param path : delete in this path
-    @param document_id : document ID
+    @brief Remove document data and attachment.
+    @param path : data directory path.
+    @param document_id : unique document identifier to delete.
     """
     delete_data(os.path.join(path, DOCUMENT_FOLDER), document_id, id_field=EDocumentFields.ID)
     delete_data(os.path.join(path, DOCUMENT_FILE_PATH), document_id)
@@ -125,8 +123,8 @@ def remove_document(path: str, document_id: str) -> None:
 
 def get_document_files(path: str) -> list[str]:
     """!
-    @brief Get document files.
-    @param path : get document in this path
-    @return list with all document files
+    @brief Get all document attachment file names.
+    @param path : data directory path.
+    @return List of document attachment file names.
     """
     return get_file_names_in_folder(os.path.join(path, DOCUMENT_FILE_PATH))

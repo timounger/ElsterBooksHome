@@ -5,9 +5,9 @@
 ********************************************************************************
 """
 
-import logging
-from typing import Optional, Any, TYPE_CHECKING
 import copy
+import logging
+from typing import Any, TYPE_CHECKING
 
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import QDate
@@ -15,7 +15,7 @@ from PyQt6.QtCore import QDate
 from Source.version import __title__
 from Source.Util.app_data import thread_dialog
 from Source.Views.dialogs.dialog_document_ui import Ui_DialogDocument
-from Source.Model.document import remove_document, add_document, EDocumentFields, D_DOCUMENT_TEMPLATE
+from Source.Model.document import remove_document, add_document, EDocumentFields, DOCUMENT_TEMPLATE
 from Source.Model.data_handler import DATE_FORMAT, get_file_name_content
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
@@ -26,14 +26,14 @@ log = logging.getLogger(__title__)
 class DocumentDialog(QDialog, Ui_DialogDocument):
     """!
     @brief Dialog for creating or editing a document entry.
-    @param ui : main window
-    @param data : Existing document data (optional)
-    @param uid : UID of the related document (optional)
-    @param file_path : Path to the attached document file (optional)
+    @param ui : main window.
+    @param data : Existing document data (optional).
+    @param uid : UID of the related document (optional).
+    @param file_path : Path to the attached document file (optional).
     """
 
-    def __init__(self, ui: "MainWindow", data: Optional[dict[EDocumentFields, Any]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
-                 file_path: Optional[str] = None, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, ui: "MainWindow", data: dict[EDocumentFields, Any] | None = None, uid: str | None = None,  # pylint: disable=keyword-arg-before-vararg
+                 file_path: str | None = None, *args: Any, **kwargs: Any) -> None:
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
         self.ui = ui
@@ -49,7 +49,7 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
         """
         log.debug("Starting Document dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
         current_date = QDate.currentDate()
 
         if self.data is not None:
@@ -60,15 +60,14 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
             self.pte_description.setPlainText(self.data[EDocumentFields.DESCRIPTION])
         else:
             self.btn_delete.hide()
-            # set actual date date
-            actual_date = current_date
-            self.de_document_date.setDate(actual_date)
-            file_date, file_content = get_file_name_content(self.file_path)
-            if file_date is not None:
-                invoice_date = QDate.fromString(file_date, DATE_FORMAT)
-                self.de_document_date.setDate(invoice_date)
-            if file_content is not None:
-                self.pte_description.setPlainText(file_content)
+            self.de_document_date.setDate(current_date)
+            if self.file_path is not None:
+                file_date, file_content = get_file_name_content(self.file_path)
+                if file_date is not None:
+                    invoice_date = QDate.fromString(file_date, DATE_FORMAT)
+                    self.de_document_date.setDate(invoice_date)
+                if file_content is not None:
+                    self.pte_description.setPlainText(file_content)
         self.setWindowTitle("Dokument")
         self.btn_save.clicked.connect(self.save_clicked)
         self.btn_delete.clicked.connect(self.delete_clicked)
@@ -109,15 +108,15 @@ class DocumentDialog(QDialog, Ui_DialogDocument):
         @return True if the data is valid and can be saved, otherwise False.
         """
         description = self.pte_description.toPlainText()
-        attachment = self.data.get(EDocumentFields.ATTACHMENT) if (self.data is not None) else None
+        attachment: str = self.data.get(EDocumentFields.ATTACHMENT, "") if (self.data is not None) else ""
         if description:
-            self.data = copy.deepcopy(D_DOCUMENT_TEMPLATE)
+            self.data = copy.deepcopy(DOCUMENT_TEMPLATE)
             self.data[EDocumentFields.DESCRIPTION] = description
             self.data[EDocumentFields.DOCUMENT_DATE] = self.de_document_date.date().toString(DATE_FORMAT)
             self.data[EDocumentFields.ATTACHMENT] = attachment
             valid = True
         else:
             self.pte_description.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine Beschreibung vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine Beschreibung vorhanden.", highlight=True)
             valid = False
         return valid

@@ -6,7 +6,7 @@
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent
@@ -28,7 +28,7 @@ UNKNOWN_INSTITUTE_NAME = "Unbekannt"
 def build_institute_name(fints_institute: FinTSInstitute) -> str:
     """!
     @brief Build the display name of a FinTS institute entry.
-    @param fints_institute : FinTS institute object
+    @param fints_institute : FinTS institute object.
     @return Formatted institute name including bank code (BLZ)
     """
     return f"{fints_institute.institute} (BLZ: {fints_institute.blz})"
@@ -56,7 +56,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         """
         log.debug("Starting Banking dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
 
         # read last data
         blz = read_fints_blz()
@@ -72,15 +72,15 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.fin_ts.tan_mechanism = tan_mechanism
 
         # bank data
-        l_fints_institutes_sorted = sorted(self.fin_ts.l_fints_institutes, key=lambda x: x.institute)
-        l_used_institutes = []
-        self.cb_institutes.addItem(UNKNOWN_INSTITUTE_NAME, None)
-        for fints_institute in l_fints_institutes_sorted:
+        fints_institutes_sorted = sorted(self.fin_ts.fints_institutes, key=lambda x: x.institute)
+        used_institutes: set[str] = set()
+        self.combo_institutes.addItem(UNKNOWN_INSTITUTE_NAME, None)
+        for fints_institute in fints_institutes_sorted:
             institute_text = build_institute_name(fints_institute)
-            if institute_text not in l_used_institutes:
-                self.cb_institutes.addItem(institute_text, fints_institute)
-                l_used_institutes.append(institute_text)
-        self.cb_institutes.activated.connect(self.institute_activated)
+            if institute_text not in used_institutes:
+                self.combo_institutes.addItem(institute_text, fints_institute)
+                used_institutes.add(institute_text)
+        self.combo_institutes.activated.connect(self.institute_activated)
         self.le_blz.setText(self.fin_ts.bank_code)
         self.le_url.setText(self.fin_ts.fints_url)
         self.le_alias.setText(self.fin_ts.user_id)
@@ -105,10 +105,10 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.show()
         self.exec()
 
-    def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
+    def closeEvent(self, event: QCloseEvent | None) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle dialog close
-        @param event : arrived event
+        @brief Handle dialog close event.
+        @param event : Close event.
         """
         if event is not None:
             event.accept()
@@ -116,9 +116,9 @@ class BankingDialog(QDialog, Ui_DialogBanking):
     def institute_activated(self, _index: int) -> None:
         """!
         @brief Triggered when a bank institute is selected. Updates BLZ and FinTS URL fields accordingly.
-        @param _index : Index of the selected entry
+        @param _index : Index of the selected entry.
         """
-        institute = self.cb_institutes.currentData()
+        institute = self.combo_institutes.currentData()
         if institute is not None:
             blz = institute.blz
             url = institute.url
@@ -135,22 +135,22 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         blz = self.le_blz.text()
         url = self.le_url.text()
 
-        b_found = False
+        is_found = False
         if blz:
-            for fints_institute in self.fin_ts.l_fints_institutes:
+            for fints_institute in self.fin_ts.fints_institutes:
                 if fints_institute.blz == blz:
                     if url:
                         if fints_institute.url == url:
-                            self.cb_institutes.setCurrentText(build_institute_name(fints_institute))
-                            b_found = True
+                            self.combo_institutes.setCurrentText(build_institute_name(fints_institute))
+                            is_found = True
                             break
                     else:
                         self.le_url.setText(fints_institute.url)
-                        self.cb_institutes.setCurrentText(build_institute_name(fints_institute))
-                        b_found = True
+                        self.combo_institutes.setCurrentText(build_institute_name(fints_institute))
+                        is_found = True
                         break
-        if not b_found:
-            self.cb_institutes.setCurrentText(UNKNOWN_INSTITUTE_NAME)
+        if not is_found:
+            self.combo_institutes.setCurrentText(UNKNOWN_INSTITUTE_NAME)
 
     def clear_btn_clicked(self) -> None:
         """!
@@ -185,16 +185,16 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.le_pin.setStyleSheet("border: 1px solid palette(dark);")
         if not blz:
             self.le_blz.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine BLZ vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine BLZ vorhanden.", highlight=True)
         elif not url:
             self.le_url.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine URL vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine URL vorhanden.", highlight=True)
         elif not alias:
             self.le_alias.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Kein Alias vorhanden.", b_highlight=True)
+            self.ui.set_status("Kein Alias vorhanden.", highlight=True)
         elif not pin:
             self.le_pin.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine PIN vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine PIN vorhanden.", highlight=True)
         else:
             write_fints_blz(blz)
             write_fints_url(url)
@@ -207,27 +207,28 @@ class BankingDialog(QDialog, Ui_DialogBanking):
             self.pte_text.setPlainText(success_text)
             if success:
                 # accounts
-                d_accounts = self.fin_ts.get_accounts()
-                self.cb_accounts.clear()
-                for i, (account_name, iban) in enumerate(d_accounts.items()):
-                    self.cb_accounts.addItem(account_name, iban)
-                    self.btn_get_transactions.setEnabled(True)
+                accounts = self.fin_ts.get_accounts()
+                self.combo_accounts.clear()
+                for i, (account_name, iban) in enumerate(accounts.items()):
+                    self.combo_accounts.addItem(account_name, iban)
                     if iban == self.fin_ts.iban:
-                        self.cb_accounts.setCurrentIndex(i)
+                        self.combo_accounts.setCurrentIndex(i)
+                if accounts:
+                    self.btn_get_transactions.setEnabled(True)
                 # tan mechanism
-                d_tan_mechanism = self.fin_ts.get_tan_mechanism()
-                self.cb_tan_mechanisms.clear()
-                for i, (mechanism_key, mechanism_name) in enumerate(d_tan_mechanism.items()):
-                    self.cb_tan_mechanisms.addItem(mechanism_name, mechanism_key)
+                tan_mechanisms = self.fin_ts.get_tan_mechanism()
+                self.combo_tan_mechanisms.clear()
+                for i, (mechanism_key, mechanism_name) in enumerate(tan_mechanisms.items()):
+                    self.combo_tan_mechanisms.addItem(mechanism_name, mechanism_key)
                     if mechanism_key == self.fin_ts.tan_mechanism:
-                        self.cb_tan_mechanisms.setCurrentIndex(i)
+                        self.combo_tan_mechanisms.setCurrentIndex(i)
 
     def get_transactions_btn_clicked(self) -> None:
         """!
         @brief Retrieve transactions for the selected account and store them locally.
         """
-        iban = self.cb_accounts.currentData()
-        tan_mechanism = self.cb_tan_mechanisms.currentData()
+        iban = self.combo_accounts.currentData()
+        tan_mechanism = self.combo_tan_mechanisms.currentData()
 
         write_fints_iban(iban)
         write_fints_tan_mechanism(tan_mechanism)
@@ -242,7 +243,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         """!
         @brief Validate payments by comparing stored transactions with income and expenditure entries.
         """
-        l_transaction = self.fin_ts.get_transactions()
-        self.ui.tab_income.check_for_paid(l_transaction)
-        self.ui.tab_expenditure.check_for_paid(l_transaction)
+        transactions = self.fin_ts.get_transactions()
+        self.ui.tab_income.check_for_paid(transactions)
+        self.ui.tab_expenditure.check_for_paid(transactions)
         self.ui.set_status("Zahlungen wurden überprüft und zugeordnet")

@@ -1,14 +1,14 @@
 """!
 ********************************************************************************
 @file   company.py
-@brief  Handle company data
+@brief  Manage company data persistence and validation.
 ********************************************************************************
 """
 
 import os
 import enum
 import logging
-from typing import Optional, Any
+from typing import Any
 
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
@@ -36,7 +36,7 @@ COMPANY_DEFAULT_FIELD = "default"
 
 class ECompanyFields(str, enum.Enum):
     """!
-    @brief Company fields.
+    @brief Company data field identifiers.
     """
     JSON_TYPE = "json_type"
     JSON_VERSION = "json_version"
@@ -99,7 +99,7 @@ Mit freundlichen Grüßen
 [%phone%]
 """
 
-D_COMPANY_TEMPLATE = {
+COMPANY_TEMPLATE = {
     ECompanyFields.JSON_TYPE: "",
     ECompanyFields.JSON_VERSION: "",
     ECompanyFields.ID: "",
@@ -116,7 +116,7 @@ D_COMPANY_TEMPLATE = {
         ECompanyFields.STREET_2: "",  # Straße 2 (BT-36)
         ECompanyFields.PLZ: "",  # PLZ (BT-38)
         ECompanyFields.CITY: "",  # Ort (BT-37)
-        ECompanyFields.COUNTRY: "DE"  # Land (BT-40) D_COUNTRY_CODE
+        ECompanyFields.COUNTRY: "DE"  # Land (BT-40)
     },
     COMPANY_CONTACT_FIELD: {
         ECompanyFields.FIRST_NAME: "",  # Name (BT-41) first
@@ -154,39 +154,38 @@ D_COMPANY_TEMPLATE = {
 
 def validate_company(data: dict[str, Any]) -> list[str]:
     """!
-    @brief Validate company data.
-    @param data : data to validate
-    @return found error at validation
+    @brief Validate company data against schema.
+    @param data : company data to validate.
+    @return List of validation error messages.
     """
     schemata_path = os.path.join(SCHEMATA_PATH, COMPANY_SCHEMA_FILE)
     schemata = read_json_file(schemata_path)
-    _is_valid, error = validate_data(data, schemata)
-    return error
+    _, errors = validate_data(data, schemata)
+    return errors
 
 
 def read_company(path: str) -> dict[str, Any] | None:
     """!
-    @brief Read company.
-    @param path : read in this path
-    @return company data
+    @brief Read company data.
+    @param path : data directory path.
+    @return Company data dictionary or None if not found.
     """
-    l_company = read_json_files(os.path.join(path, COMPANY_FOLDER), D_COMPANY_TEMPLATE)
-    company = l_company[0] if (len(l_company) > 0) else None  # only one company data possible
-    return company
+    companies = read_json_files(os.path.join(path, COMPANY_FOLDER), COMPANY_TEMPLATE)
+    return companies[0] if companies else None  # only one company data possible
 
 
-def add_company(path: str, add: bool, company: dict[Any, Any], company_id: Optional[str] = None, rename: bool = False) -> None:
+def add_company(path: str, add: bool, company: dict[Any, Any], company_id: str | None = None, rename: bool = False) -> None:
     """!
-    @brief Add or actualize company data.
-    @param path : export to this path
-    @param add : GIT add status
-    @param company : contact data to export
-    @param company_id : contact ID
-    @param rename : whether the file name should be renamed based on receipt data
+    @brief Add or update company data.
+    @param path : data directory path.
+    @param add : whether to git-add the exported file.
+    @param company : company data to export.
+    @param company_id : unique company identifier.
+    @param rename : whether to rename the file based on company data.
     """
-    s_id = set_general_json_data(company, COMPANY_TYPE, ECompanyFields.JSON_TYPE,
-                                 ECompanyFields.JSON_VERSION, JSON_VERSION_COMPANY,
-                                 ECompanyFields.ID, company_id)
-    instance = fill_data(D_COMPANY_TEMPLATE, company)
+    uid = set_general_json_data(company, COMPANY_TYPE, ECompanyFields.JSON_TYPE,
+                                ECompanyFields.JSON_VERSION, JSON_VERSION_COMPANY,
+                                ECompanyFields.ID, company_id)
+    instance = fill_data(COMPANY_TEMPLATE, company)
     id_field = ECompanyFields.ID if (company_id is not None) else None
-    add_json(add, instance, COMPANY_JSON_FILE, s_id, os.path.join(path, COMPANY_FOLDER), id_field=id_field, rename=rename)
+    add_json(add, instance, COMPANY_JSON_FILE, uid, os.path.join(path, COMPANY_FOLDER), id_field=id_field, rename=rename)

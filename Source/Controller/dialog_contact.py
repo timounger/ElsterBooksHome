@@ -5,10 +5,10 @@
 ********************************************************************************
 """
 
-import logging
-from typing import Optional, TYPE_CHECKING, Any
 import copy
+import logging
 import re
+from typing import TYPE_CHECKING, Any
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent
@@ -18,8 +18,8 @@ from Source.version import __title__
 from Source.Util.app_data import thread_dialog
 from Source.Views.dialogs.dialog_contact_ui import Ui_DialogContact
 from Source.Model.contacts import EContactFields, add_contact, remove_contact, CONTACT_CONTACT_FIELD, \
-    CONTACT_ADDRESS_FIELD, D_CONTACT_TEMPLATE
-from Source.Model.ZUGFeRD.drafthorse_data import D_COUNTRY_CODE
+    CONTACT_ADDRESS_FIELD, CONTACT_TEMPLATE
+from Source.Model.ZUGFeRD.drafthorse_data import COUNTRY_CODE
 from Source.Model.ZUGFeRD.drafthorse_import import set_combo_box_items
 from Source.Worker.vat_validation import VatValidation, check_vat_format, VAT_PATTERNS
 if TYPE_CHECKING:
@@ -33,12 +33,12 @@ EMAIL_REGEX = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 class ContactDialog(QDialog, Ui_DialogContact):
     """!
     @brief Dialog for creating and editing contact records.
-    @param ui : main window
-    @param data : Optional existing contact data to edit
-    @param uid : Optional unique ID of the contact
+    @param ui : main window.
+    @param data : Optional existing contact data to edit.
+    @param uid : Optional unique ID of the contact.
     """
 
-    def __init__(self, ui: "MainWindow", data: Optional[dict[EContactFields, str]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, ui: "MainWindow", data: dict[EContactFields | str, Any] | None = None, uid: str | None = None,  # pylint: disable=keyword-arg-before-vararg
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
@@ -48,8 +48,8 @@ class ContactDialog(QDialog, Ui_DialogContact):
         self.ui = ui
         self.data = data
         self.uid = uid
-        self.b_lock_auto_city_data = False
-        self.b_city_auto_change = False
+        self.is_auto_city_locked = False
+        self.is_city_auto_change = False
 
         self.lbl_vat_status.setText("")
         self.lbl_vat_status.hide()
@@ -65,10 +65,10 @@ class ContactDialog(QDialog, Ui_DialogContact):
         """
         log.debug("Starting Contact dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
 
         if self.data is not None:
-            self.b_lock_auto_city_data = True
+            self.is_auto_city_locked = True
             self.pte_name.setPlainText(self.data[EContactFields.NAME])
             self.le_trade_name.setText(self.data[EContactFields.TRADE_NAME])
             self.le_recognition.setText(self.data[EContactFields.CUSTOMER_NUMBER])
@@ -88,7 +88,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
             self.btn_copy.hide()
             self.btn_delete.hide()
             country = "DE"
-        set_combo_box_items(self.cb_country, country, D_COUNTRY_CODE)
+        set_combo_box_items(self.combo_country, country, COUNTRY_CODE)
 
         self.setWindowTitle("Kontakt")
         self.le_plz.textChanged.connect(self.plz_changed)
@@ -101,12 +101,12 @@ class ContactDialog(QDialog, Ui_DialogContact):
         self.show()
         self.exec()
 
-    def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
+    def closeEvent(self, event: QCloseEvent | None) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle dialog close
-        @param event : arrived event
+        @brief Handle dialog close event.
+        @param event : Close event.
         """
-        self.vat_validator.terminate()
+        self.vat_validator.requestInterruption()
         if event is not None:
             event.accept()
 
@@ -114,9 +114,10 @@ class ContactDialog(QDialog, Ui_DialogContact):
         """!
         @brief Triggered when the VAT ID text changes.
                Starts format validation and background VAT verification if applicable.
-        @param vat_id : Entered VAT ID
+        @param vat_id : Entered VAT ID.
         """
-        self.vat_validator.terminate()
+        self.vat_validator.requestInterruption()
+        self.vat_validator.wait(2000)
         if vat_id:
             if check_vat_format(vat_id):
                 self.lbl_vat_status.setText("Überprüfung läuft...")
@@ -131,10 +132,10 @@ class ContactDialog(QDialog, Ui_DialogContact):
             self.lbl_vat_status.setText("")
             self.lbl_vat_status.hide()
 
-    def vat_result(self, result: dict) -> None:
+    def vat_result(self, result: dict[str, Any]) -> None:
         """!
         @brief Handle the result of the asynchronous VAT validation.
-        @param result : VAT validation result dictionary
+        @param result : VAT validation result dictionary.
         """
         valid_status = result.get("valid", None)
         if valid_status is None:
@@ -152,23 +153,23 @@ class ContactDialog(QDialog, Ui_DialogContact):
         """!
         @brief Triggered when the city field changes. Controls automatic PLZ -> city updates.
         """
-        if self.b_city_auto_change:
-            self.b_city_auto_change = False
-            self.b_lock_auto_city_data = False
+        if self.is_city_auto_change:
+            self.is_city_auto_change = False
+            self.is_auto_city_locked = False
         else:
-            self.b_lock_auto_city_data = bool(self.le_city.text().strip())
+            self.is_auto_city_locked = bool(self.le_city.text().strip())
 
     def plz_changed(self) -> None:
         """!
         @brief Triggered when the postal code (PLZ) changes.
                Automatically updates the city field if possible.
         """
-        if (not self.b_lock_auto_city_data) and (self.ui.model.d_plz_data is not None):
+        if (not self.is_auto_city_locked) and (self.ui.model.plz_map is not None):
             plz = self.le_plz.text().strip()
             if plz:
-                new_city_name = self.ui.model.d_plz_data.get(plz, "")
+                new_city_name = self.ui.model.plz_map.get(plz, "")
                 if new_city_name:
-                    self.b_city_auto_change = True
+                    self.is_city_auto_change = True
                     self.le_city.setText(new_city_name)
                 else:
                     self.le_city.clear()
@@ -217,7 +218,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
     def set_data(self) -> bool:
         """!
         @brief Validate all contact fields and, if valid, update the internal data structure.
-        @return True if the contact data is valid and stored, otherwise False
+        @return True if the contact data is valid and stored, otherwise False.
         """
         organization = self.pte_name.toPlainText()
         vat_id = self.le_vat.text()
@@ -225,7 +226,7 @@ class ContactDialog(QDialog, Ui_DialogContact):
         plz = self.le_plz.text()
         city = self.le_city.text()
         mail = self.le_mail.text()
-        country_code = self.cb_country.currentData()
+        country_code = self.combo_country.currentData()
         # check for valid data
         self.pte_name.setStyleSheet("border: 1px solid palette(dark);")
         self.le_vat.setStyleSheet("border: 1px solid palette(dark);")
@@ -236,45 +237,49 @@ class ContactDialog(QDialog, Ui_DialogContact):
         valid = False
         if not organization:
             self.pte_name.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Kein Handelspartner vorhanden.", b_highlight=True)
+            self.ui.set_status("Kein Handelspartner vorhanden.", highlight=True)
         elif (len(vat_id) > 0) and (country_code in VAT_PATTERNS) and not check_vat_format(vat_id, pattern=VAT_PATTERNS[country_code]):
             self.le_vat.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Ungültige Umsatzsteuer-ID für das gewählte Land vorhanden.", b_highlight=True)
+            self.ui.set_status("Ungültige Umsatzsteuer-ID für das gewählte Land vorhanden.", highlight=True)
         elif not street_1:
             self.le_street_1.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine Straße vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine Straße vorhanden.", highlight=True)
         elif not plz:
             self.le_plz.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine PLZ vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine PLZ vorhanden.", highlight=True)
         elif (country_code == "DE") and not plz.isdigit():  # in DE only digits allowed
             self.le_plz.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Ungültige PLZ vorhanden.", b_highlight=True)
+            self.ui.set_status("Ungültige PLZ vorhanden.", highlight=True)
         elif (country_code == "DE") and (len(plz) != 5):  # in DE PLZ only 5 digits
             self.le_plz.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Ungültige PLZ vorhanden.", b_highlight=True)
+            self.ui.set_status("Ungültige PLZ vorhanden.", highlight=True)
         elif not city:
             self.le_city.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Kein Ort vorhanden.", b_highlight=True)
+            self.ui.set_status("Kein Ort vorhanden.", highlight=True)
         elif (len(mail) > 0) and ((re.match(EMAIL_REGEX, mail) is None) or ("\n" in mail)):
             self.le_mail.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Ungültiges E-Mail Format", b_highlight=True)
+            self.ui.set_status("Ungültiges E-Mail Format", highlight=True)
         else:
             valid = True
         if valid:
-            self.data = copy.deepcopy(D_CONTACT_TEMPLATE)
+            self.data = copy.deepcopy(CONTACT_TEMPLATE)
             self.data[EContactFields.NAME] = organization
             self.data[EContactFields.TRADE_NAME] = self.le_trade_name.text()
             self.data[EContactFields.CUSTOMER_NUMBER] = self.le_recognition.text()
             self.data[EContactFields.TRADE_ID] = self.le_register_number.text()
             self.data[EContactFields.VAT_ID] = vat_id
             self.data[EContactFields.ELECTRONIC_ADDRESS] = self.le_electric_address.text()
-            self.data[CONTACT_ADDRESS_FIELD][EContactFields.STREET_1] = street_1
-            self.data[CONTACT_ADDRESS_FIELD][EContactFields.STREET_2] = self.le_street_2.text()
-            self.data[CONTACT_ADDRESS_FIELD][EContactFields.PLZ] = plz
-            self.data[CONTACT_ADDRESS_FIELD][EContactFields.CITY] = city
-            self.data[CONTACT_ADDRESS_FIELD][EContactFields.COUNTRY] = country_code
-            self.data[CONTACT_CONTACT_FIELD][EContactFields.FIRST_NAME] = self.le_first_name.text()
-            self.data[CONTACT_CONTACT_FIELD][EContactFields.LAST_NAME] = self.le_last_name.text()
-            self.data[CONTACT_CONTACT_FIELD][EContactFields.MAIL] = mail
-            self.data[CONTACT_CONTACT_FIELD][EContactFields.PHONE] = self.le_phone.text()
+            address = self.data[CONTACT_ADDRESS_FIELD]
+            assert isinstance(address, dict)
+            address[EContactFields.STREET_1] = street_1
+            address[EContactFields.STREET_2] = self.le_street_2.text()
+            address[EContactFields.PLZ] = plz
+            address[EContactFields.CITY] = city
+            address[EContactFields.COUNTRY] = country_code
+            contact = self.data[CONTACT_CONTACT_FIELD]
+            assert isinstance(contact, dict)
+            contact[EContactFields.FIRST_NAME] = self.le_first_name.text()
+            contact[EContactFields.LAST_NAME] = self.le_last_name.text()
+            contact[EContactFields.MAIL] = mail
+            contact[EContactFields.PHONE] = self.le_phone.text()
         return valid

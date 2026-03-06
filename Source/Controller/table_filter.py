@@ -7,7 +7,7 @@
 
 import os
 import logging
-from typing import NamedTuple, Callable, Optional, TYPE_CHECKING, Any
+from typing import NamedTuple, Callable, TYPE_CHECKING, Any
 from enum import Enum
 
 from PyQt6 import QtWidgets
@@ -28,13 +28,13 @@ ATTACH = "Anhang"
 DESCRIPTION = "Beschreibung"
 DATE = "Datum"
 INVOICE_NUMBER = "Re-Nr."
-L_RECEIPT_ROW_DESCRIPTION = ["Status", "Zahldatum", DATE, INVOICE_NUMBER, "Lieferdatum", "Gruppe", ATTACH, "Handelspartner", DESCRIPTION, "Kommentar", "Netto", "Brutto", "ID"]
-I_ATTACH_IDX = L_RECEIPT_ROW_DESCRIPTION.index(ATTACH)
-I_DESCRIPTION_IDX = L_RECEIPT_ROW_DESCRIPTION.index(DESCRIPTION)
-I_DATE_IDX = L_RECEIPT_ROW_DESCRIPTION.index(DATE)
-I_INVOICE_NUMBER_IDX = L_RECEIPT_ROW_DESCRIPTION.index(INVOICE_NUMBER)
+RECEIPT_ROW_DESCRIPTION = ["Status", "Zahldatum", DATE, INVOICE_NUMBER, "Lieferdatum", "Gruppe", ATTACH, "Handelspartner", DESCRIPTION, "Kommentar", "Netto", "Brutto", "ID"]
+ATTACH_IDX = RECEIPT_ROW_DESCRIPTION.index(ATTACH)
+DESCRIPTION_IDX = RECEIPT_ROW_DESCRIPTION.index(DESCRIPTION)
+DATE_IDX = RECEIPT_ROW_DESCRIPTION.index(DATE)
+INVOICE_NUMBER_IDX = RECEIPT_ROW_DESCRIPTION.index(INVOICE_NUMBER)
 
-D_DEFAULT_COLUMN_STATUS = {
+DEFAULT_COLUMN_STATUS = {
     # receipt
     "Zahldatum": False,
     INVOICE_NUMBER: True,
@@ -55,8 +55,8 @@ log = logging.getLogger(__title__)
 class DropFilter(QObject):
     """!
     @brief Drop filter for drag-and-drop imports.
-    @param label : QLabel to accept drops
-    @param callback : Callback function to handle dropped file path
+    @param label : QLabel to accept drops.
+    @param callback : Callback function to handle dropped file path.
     """
 
     def __init__(self, label: QLabel, callback: Callable[[str], None]) -> None:
@@ -67,10 +67,10 @@ class DropFilter(QObject):
 
     def eventFilter(self, obj: Any, event: Any) -> bool:
         """!
-        @brief Drop filter for import
-        @param obj : label object
-        @param event : event
-        @return drop status
+        @brief Filter drag-and-drop events for file import.
+        @param obj : Label object.
+        @param event : Event to filter.
+        @return Whether the event was handled.
         """
         if obj is self.label:
             if event.type() == QEvent.Type.DragEnter:
@@ -88,7 +88,7 @@ class DropFilter(QObject):
 
 class CellData(NamedTuple):
     """!
-    @brief Container for table cell data
+    @brief Container for table cell data.
     """
     text: str = ""
     icon: str | None = None
@@ -102,8 +102,8 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     @param ui : main window
     @param tab_widget : QTabWidget containing this tab
     @param tab_idx : Index of this tab in the tab widget
-    @param s_title : Tab display title
-    @param title_folder_link : create folder link on title lable
+    @param title : Tab display title
+    @param title_folder_link : Create folder link on title label.
     @param btn_1_name : name of button 1
     @param btn_1_icon : icon paths of button 1 (light, dark)
     @param btn_1_cb : callback function for button 1
@@ -114,7 +114,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     @param btn_3_icon : icon paths of button 3 (light, dark)
     @param btn_3_cb : callback function for button 3
     @param table_double_click_fnc : callback for double click
-    @param l_table_header : table header
+    @param table_header : table header
     @param sort_idx : row index to sort table
     @param pre_sort_idx : row index to previous sort table
     @param inverse_sort : table sort direction
@@ -122,20 +122,20 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
     @param delete_fnc : function to delete entry
     @param update_table_func : update table data function
     @param drag_fnc : drag function to import file
-    @param column_setting_key : column setting key [S_KEY_CONTACTS_COLUMN, S_KEY_DOCUMENT_COLUMN, S_KEY_INCOME_COLUMN, S_KEY_EXPENDITURE_COLUMN]
-    @param b_create_invoice : create invoice status
+    @param column_setting_key : column setting key [KEY_CONTACTS_COLUMN, KEY_DOCUMENT_COLUMN, KEY_INCOME_COLUMN, KEY_EXPENDITURE_COLUMN]
+    @param create_invoice : Whether to show the create invoice context menu option.
     """
 
-    def __init__(self, ui: "MainWindow", tab_widget: QTabWidget, tab_idx: int, s_title: str, title_folder_link: str = "",  # pylint: disable=keyword-arg-before-vararg
-                 btn_1_name: str = "", btn_1_icon: Optional[tuple[str, str]] = None, btn_1_cb: Optional[Callable[[], None]] = None,
-                 btn_2_name: str = "", btn_2_icon: Optional[tuple[str, str]] = None, btn_2_cb: Optional[Callable[[], None]] = None,
-                 btn_3_name: str = "", btn_3_icon: Optional[tuple[str, str]] = None, btn_3_cb: Optional[Callable[[], None]] = None,
-                 table_double_click_fnc: Optional[Callable[[int, int, str], None]] = None, l_table_header: Optional[list[str]] = None,
-                 sort_idx: int = 0, pre_sort_idx: Optional[int] = None, inverse_sort: bool = False, row_fill_idx: int = 0,
-                 delete_fnc: Optional[Callable[[str], None]] = None, update_table_func: Optional[Callable[[], None]] = None,
-                 drag_fnc: Optional[Callable[[str], None]] = None,
-                 column_setting_key: Optional[str] = None,
-                 b_create_invoice: bool = False,
+    def __init__(self, ui: "MainWindow", tab_widget: QTabWidget, tab_idx: int, title: str, title_folder_link: str = "",  # pylint: disable=keyword-arg-before-vararg
+                 btn_1_name: str = "", btn_1_icon: tuple[str, str] | None = None, btn_1_cb: Callable[[], None] | None = None,
+                 btn_2_name: str = "", btn_2_icon: tuple[str, str] | None = None, btn_2_cb: Callable[[], None] | None = None,
+                 btn_3_name: str = "", btn_3_icon: tuple[str, str] | None = None, btn_3_cb: Callable[[], None] | None = None,
+                 table_double_click_fnc: Callable[[int, int, str], None] | None = None, table_header: list[str] | None = None,
+                 sort_idx: int = 0, pre_sort_idx: int | None = None, inverse_sort: bool = False, row_fill_idx: int = 0,
+                 delete_fnc: Callable[[str, str], None] | None = None, update_table_func: Callable[[], None] | None = None,
+                 drag_fnc: Callable[[str], None] | None = None,
+                 column_setting_key: str | None = None,
+                 create_invoice: bool = False,
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.ui = ui
@@ -153,7 +153,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
         self.title_folder_link = title_folder_link
         self.table_double_click_fnc = table_double_click_fnc
-        self.l_table_header = l_table_header if (l_table_header is not None) else []
+        self.table_header = table_header if (table_header is not None) else []
         self.sort_idx = sort_idx
         self.pre_sort_idx = pre_sort_idx
         self.inverse_sort = inverse_sort
@@ -162,12 +162,12 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         self.update_table_func = update_table_func
         self.drag_fnc = drag_fnc
         self.column_setting_key = column_setting_key
-        self.b_create_invoice = b_create_invoice
+        self.create_invoice = create_invoice
         self.active_filter: str | None = None
-        self.l_data: list[list[CellData]] = []
+        self.table_data: list[list[CellData]] = []
 
-        self.lbl_title.setText(s_title)
-        b_light_theme = self.ui.model.c_monitor.is_light_theme()
+        self.lbl_title.setText(title)
+        is_light_theme = self.ui.model.monitor.is_light_theme()
         self.btn_1.setText(btn_1_name)
         self.btn_1.setVisible(bool(btn_1_name))
         self.btn_2.setText(btn_2_name)
@@ -175,11 +175,11 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         self.btn_3.setText(btn_3_name)
         self.btn_3.setVisible(bool(btn_3_name))
         if btn_1_icon is not None:
-            self.btn_1.setIcon(QIcon(btn_1_icon[0] if b_light_theme else btn_1_icon[1]))
+            self.btn_1.setIcon(QIcon(btn_1_icon[0] if is_light_theme else btn_1_icon[1]))
         if btn_2_icon is not None:
-            self.btn_2.setIcon(QIcon(btn_2_icon[0] if b_light_theme else btn_2_icon[1]))
+            self.btn_2.setIcon(QIcon(btn_2_icon[0] if is_light_theme else btn_2_icon[1]))
         if btn_3_icon is not None:
-            self.btn_3.setIcon(QIcon(btn_3_icon[0] if b_light_theme else btn_3_icon[1]))
+            self.btn_3.setIcon(QIcon(btn_3_icon[0] if is_light_theme else btn_3_icon[1]))
 
         if title_folder_link:
             self.btn_open_folder.setText("")
@@ -219,35 +219,35 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
             self.lbl_drag.installEventFilter(self.drop_filter)
 
         # table column_config
-        self.d_column = {}
+        self.column_visibility = {}
         if self.column_setting_key is not None:
-            d_column_setting = read_table_column(self.column_setting_key)
-            for column_name, status in D_DEFAULT_COLUMN_STATUS.items():
-                self.d_column[column_name] = d_column_setting.get(column_name, status)
+            column_setting = read_table_column(self.column_setting_key)
+            for column_name, status in DEFAULT_COLUMN_STATUS.items():
+                self.column_visibility[column_name] = column_setting.get(column_name, status)
 
         # table column config button
         self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(self.l_table_header)  # set before create menu -> is override later
+        self.model.setHorizontalHeaderLabels(self.table_header)  # set before create menu -> is override later
         if self.column_setting_key is not None:
             self.btn_column.setMenu(self.create_column_menu())
             self.btn_column.setText("")
         else:
             self.btn_column.hide()
-        self.b_column_initial_set = False
+        self.column_initial_set = False
 
     def create_column_menu(self) -> QMenu:
         """!
-        @brief Creates the column visibility menu for the config button
-        @return config menu
+        @brief Creates the column visibility menu for the config button.
+        @return Column visibility menu.
         """
         menu = QMenu(self.ui)
         self.column_actions = []
         for col in range(self.model.columnCount()):
             header = self.model.headerData(col, Qt.Orientation.Horizontal)
-            if header in self.d_column:
+            if header in self.column_visibility:
                 action = QAction(str(header), self)
                 action.setCheckable(True)
-                action.setChecked(self.d_column[header])
+                action.setChecked(self.column_visibility[header])
                 action.toggled.connect(lambda checked, c=col: self.column_menu_callback(c, checked))
                 menu.addAction(action)
                 self.column_actions.append(action)
@@ -255,22 +255,23 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def column_menu_callback(self, col: int, checked: bool) -> None:
         """!
-        @brief Handles column show/hide changes and saves them persistently
-        @param col : column number
-        @param checked : last check status
+        @brief Handles column show/hide changes and saves them persistently.
+        @param col : Column number.
+        @param checked : New visibility state.
         """
         self.table.setColumnHidden(col, not checked)  # invert state
-        self.d_column[self.l_table_header[col]] = checked
-        write_table_column(self.column_setting_key, self.d_column)  # store setting persistent after change
+        self.column_visibility[self.table_header[col]] = checked
+        if self.column_setting_key is not None:
+            write_table_column(self.column_setting_key, self.column_visibility)  # store setting persistent after change
 
     def show_context_menu(self, point: QPoint) -> None:
         """!
-        @brief Displays context menu on right-click of a table row
+        @brief Displays context menu on right-click of a table row.
         @param point : The position of the context menu event that the widget receives.
         """
         class ContextActions(str, Enum):
             """!
-            @brief Possible context menu actions
+            @brief Possible context menu actions.
             """
             ACTION_CREATE_INVOICE = "Rechnung erstellen"
             ACTION_DELETE_ENTRY = "Eintrag löschen"
@@ -278,18 +279,21 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
         index = self.table.indexAt(point)
         if index.isValid():
-            b_light_theme = self.ui.model.c_monitor.is_light_theme()
+            is_light_theme = self.ui.model.monitor.is_light_theme()
             menu = QMenu(self.ui)
-            if self.b_create_invoice:
-                icon = QIcon(ICON_INVOICE_LIGHT if b_light_theme else ICON_INVOICE_DARK)
+            if self.create_invoice:
+                icon = QIcon(ICON_INVOICE_LIGHT if is_light_theme else ICON_INVOICE_DARK)
                 menu.addAction(icon, ContextActions.ACTION_CREATE_INVOICE.value)
-            icon = QIcon(ICON_DELETE_LIGHT if b_light_theme else ICON_DELETE_DARK)
+            icon = QIcon(ICON_DELETE_LIGHT if is_light_theme else ICON_DELETE_DARK)
             menu.addAction(icon, ContextActions.ACTION_DELETE_ENTRY.value)
-            selected_action = menu.exec(self.table.viewport().mapToGlobal(point))
+            viewport = self.table.viewport()
+            assert viewport is not None
+            selected_action = menu.exec(viewport.mapToGlobal(point))
             if selected_action:
                 row = index.row()
                 model = self.table.model()
-                uid_index = model.index(row, len(self.l_table_header) - 1)
+                assert model is not None
+                uid_index = model.index(row, len(self.table_header) - 1)
                 uid = model.data(uid_index, Qt.ItemDataRole.DisplayRole)
                 match selected_action.text():
                     case ContextActions.ACTION_CREATE_INVOICE:
@@ -306,48 +310,37 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def get_attach_icon(self, attachment_file: str) -> str:
         """!
-        @brief Returns icon path depending on attachment type (PDF, XML, other)
-        @param attachment_file : attachment name
-        @return attachment icon
+        @brief Returns icon path depending on attachment type (PDF, XML, other).
+        @param attachment_file : Attachment file name.
+        @return Attachment icon path.
         """
         file_name = attachment_file.lower()
-        if file_name.lower().endswith(PDF_TYPE.lower()):
-            attach_icon = ICON_PDF_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_PDF_DARK
-        elif file_name.lower().endswith(XML_TYPE.lower()):
-            attach_icon = ICON_XML_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_XML_DARK
+        if file_name.endswith(PDF_TYPE):
+            attach_icon = ICON_PDF_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_PDF_DARK
+        elif file_name.endswith(XML_TYPE):
+            attach_icon = ICON_XML_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_XML_DARK
         else:
-            attach_icon = ICON_ATTACH_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_ATTACH_DARK
+            attach_icon = ICON_ATTACH_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_ATTACH_DARK
         return attach_icon
 
     def check_entry_relevant(self, data: list[CellData]) -> bool:
         """!
-        @brief Returns True if the row matches the active filter
-        @param data : data to check for relevant at search
-        @return status if entry is relevant for search
+        @brief Returns True if the row matches the active filter.
+        @param data : Row data to check against the active filter.
+        @return Whether the entry matches the filter.
         """
         if self.active_filter:
             filter_text = self.active_filter.lower()
-            l_filter_data = []
-            for item in data[:-1]:  # do not use lase element it is UID
-                l_filter_data.append(item.text)
-            relevant = False
-            for text in l_filter_data:
-                if filter_text in str(text).lower():
-                    relevant = True
-                    break
-            else:
-                relevant = False
-        else:
-            relevant = True
-        return relevant
+            return any(filter_text in str(item.text).lower() for item in data[:-1])  # exclude UID
+        return True
 
-    def update_table(self, l_data: Optional[list[list[CellData]]] = None) -> None:
+    def update_table(self, table_data: list[list[CellData]] | None = None) -> None:
         """!
-        @brief Updates the table model, applies filters, resizing, sorting, and column visibility
-        @param l_data : optional to update with new table data
+        @brief Updates the table model, applies filters, resizing, sorting, and column visibility.
+        @param table_data : Optional new table data to display.
         """
-        if l_data is not None:  # optional update data
-            self.l_data = l_data
+        if table_data is not None:  # optional update data
+            self.table_data = table_data
 
         # config header
         table = self.table
@@ -356,14 +349,14 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         # set model
         model = QStandardItemModel()  # set again to delete old entries before set new
         self.model = model
-        model.setColumnCount(len(self.l_table_header))
+        model.setColumnCount(len(self.table_header))
         table.setModel(model)
 
         table.setAlternatingRowColors(True)
 
         # insert items
         idx = 0
-        for data in self.l_data:
+        for data in self.table_data:
             if self.check_entry_relevant(data):
                 items = []
                 for i, cell_data in enumerate(data):
@@ -385,28 +378,29 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         if self.active_filter:
             if idx == 0:
                 color = "red"
-            elif len(self.l_data) == idx:
+            elif len(self.table_data) == idx:
                 color = "green"
             else:
                 color = "orange"
         else:
             color = None
-        self.set_search_boarder(color)
+        self.set_search_border(color)
 
-        # set auto width
-        table.resizeColumnsToContents()  # auto column width
-        header = table.horizontalHeader()
-        if header is not None:
-            header.setSectionResizeMode(self.row_fill_idx, QHeaderView.ResizeMode.Stretch)
-            header.setVisible(True)
-
-        # set header after auto size
-        attach_icon = ICON_ATTACH_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_ATTACH_DARK
-        for i, value in enumerate(self.l_table_header):
+        # set header before auto size so resizeColumnsToContents includes header text width
+        attach_icon = ICON_ATTACH_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_ATTACH_DARK
+        for i, value in enumerate(self.table_header):
             if value == ATTACH:
                 model.setHeaderData(i, Qt.Orientation.Horizontal, QIcon(attach_icon), Qt.ItemDataRole.DecorationRole)
             else:
                 model.setHeaderData(i, Qt.Orientation.Horizontal, value)
+
+        # set auto width (disable sorting so sort indicator arrow does not affect column width)
+        table.setSortingEnabled(False)
+        table.resizeColumnsToContents()
+        header = table.horizontalHeader()
+        if header is not None:
+            header.setSectionResizeMode(self.row_fill_idx, QHeaderView.ResizeMode.Stretch)
+            header.setVisible(True)
 
         # sort table
         sort_dir = Qt.SortOrder.AscendingOrder if self.inverse_sort else Qt.SortOrder.DescendingOrder
@@ -416,24 +410,24 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         table.setSortingEnabled(True)
 
         # update icon here for light/dark mode
-        self.btn_column.setIcon(QIcon(ICON_CONFIG_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_CONFIG_DARK))
-        self.btn_open_folder.setIcon(QIcon(ICON_OPEN_FOLDER_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_OPEN_FOLDER_DARK))
+        self.btn_column.setIcon(QIcon(ICON_CONFIG_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_CONFIG_DARK))
+        self.btn_open_folder.setIcon(QIcon(ICON_OPEN_FOLDER_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_OPEN_FOLDER_DARK))
 
         # set column status initial after update data
-        if not self.b_column_initial_set:  # TODO warum erst nach Aufruf von update_table
-            self.b_column_initial_set = True
+        if not self.column_initial_set:  # TODO warum erst nach Aufruf von update_table
+            self.column_initial_set = True
             for col in range(self.model.columnCount()):
-                header = self.model.headerData(col, Qt.Orientation.Horizontal)
-                if header is None:
-                    header = ATTACH  # map None to ATTACH
-                if header in self.d_column:
-                    visible = self.d_column[header]
+                col_header = self.model.headerData(col, Qt.Orientation.Horizontal)
+                if col_header is None:
+                    col_header = ATTACH  # map None to ATTACH
+                if col_header in self.column_visibility:
+                    visible = self.column_visibility[col_header]
                     self.table.setColumnHidden(col, not visible)
 
     def on_item_double_clicked(self, index: QModelIndex) -> None:
         """!
-        @brief Calls the double-click callback with row, column, and value
-        @param index : QModelIndex of the clicked cell
+        @brief Calls the double-click callback with row, column, and value.
+        @param index : QModelIndex of the clicked cell.
         """
         row = index.row()
         col = index.column()
@@ -444,32 +438,32 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
 
     def enter_pressed(self) -> None:
         """!
-        @brief Filters table on Enter pressed in search box
+        @brief Filters table on Enter pressed in search box.
         """
         text = self.input_filter.text()
         self.set_filter(text)
 
     def reset_filter_clicked(self, _event: QMouseEvent) -> None:
         """!
-        @brief Clears the filter
-        @param _event : call event
+        @brief Reset the search filter and show all table rows.
+        @param _event : Mouse click event.
         """
         self.set_filter(None)
 
-    def set_search_boarder(self, color: Optional[str]) -> None:
+    def set_search_border(self, color: str | None) -> None:
         """!
-        @brief Sets the border color of the search input (green/orange/red)
-        @param color : color to set
+        @brief Sets the border color of the search input (green/orange/red).
+        @param color : Border color to set.
         """
         if color is None:
             self.input_filter.setStyleSheet("border: 1px solid palette(dark);")  # "" or None do not work since new pyqt6 version
         else:
             self.input_filter.setStyleSheet(f"border: 2px solid {color};")
 
-    def set_filter(self, filter_text: Optional[str]) -> None:
+    def set_filter(self, filter_text: str | None) -> None:
         """!
-        @brief Activates or clears the text filter and refreshes the table
-        @param filter_text : filter text
+        @brief Activates or clears the text filter and refreshes the table.
+        @param filter_text : Filter text to apply.
         """
         if filter_text:
             self.active_filter = filter_text

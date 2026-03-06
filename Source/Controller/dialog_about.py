@@ -7,7 +7,7 @@
 
 import sys
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 import markdown
 
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QTransform, QCloseEvent
@@ -16,7 +16,6 @@ from PyQt6.QtCore import Qt, QTimer, QRectF
 from PyQt6.QtSvg import QSvgRenderer
 
 from Source.version import __title__, __description__, __version__, __website__, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
-from Source.version import BUILD_NAME
 from Source.Util.app_data import ICON_APP, ICON_UPDATE_LIGHT, ICON_UPDATE_DARK, ICON_TICK_GREEN, ICON_CROSS_RED, thread_dialog, \
     ICON_LICENSE_LIGHT, ICON_LICENSE_DARK, LICENSE_FILE
 from Source.Views.dialogs.dialog_about_ui import Ui_AboutDialog
@@ -39,12 +38,12 @@ class LicenseDialog(QDialog):
         self.resize(600, 400)
         self.setWindowTitle("Lizenz")
         layout = QVBoxLayout(self)
-        te_text = QTextEdit(self)
-        te_text.setReadOnly(True)
+        text_edit = QTextEdit(self)
+        text_edit.setReadOnly(True)
         with open(LICENSE_FILE, mode="r", encoding="utf-8") as f:
             text = f.read()
-            te_text.setHtml(markdown.markdown(text))
-        layout.addWidget(te_text)
+            text_edit.setHtml(markdown.markdown(text))
+        layout.addWidget(text_edit)
         thread_dialog(self)
 
     def show_dialog(self) -> None:
@@ -74,7 +73,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.angle = 0
         self.timer = QTimer(self.lbl_update_icon)
         self.timer.timeout.connect(self.rotate)
-        self.rotation_pixmap = None
+        self.rotation_pixmap: QPixmap | None = None
 
         self.update_downloader = UpdateDownloader()
         self.update_downloader.status_signal.connect(self.download_update_status)
@@ -88,7 +87,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         """
         log.debug("Starting About dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
 
         self.lbl_productName.setText(__title__)
         self.lbl_productDescription.setText(__description__)
@@ -142,7 +141,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.lbl_version.setText(version_info)
         self.lbl_copyright.setText(__copyright__)
         self.lbl_license.setText(license_text)
-        self.btn_license.setIcon(QIcon(ICON_LICENSE_LIGHT if self.ui.model.c_monitor.is_light_theme() else ICON_LICENSE_DARK))
+        self.btn_license.setIcon(QIcon(ICON_LICENSE_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_LICENSE_DARK))
         self.btn_license.clicked.connect(lambda: LicenseDialog(self.ui))
         self.lbl_home.setText(home_link)
         self.lbl_home.setOpenExternalLinks(True)
@@ -155,7 +154,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
     def update_btn_clicked(self) -> None:
         """!
-        @brief Update button clicked
+        @brief Start the update download or trigger the updater script if download is complete.
         """
         if not self.download_finished:
             if self.timer.isActive():
@@ -165,8 +164,8 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             # icon
             container_size = 48  # slightly larger than your icon, space for rotation
             icon_size = 32  # Original size of the SVG
-            b_light_theme = self.ui.model.c_monitor.is_light_theme()
-            renderer = QSvgRenderer(ICON_UPDATE_LIGHT if b_light_theme else ICON_UPDATE_DARK)
+            is_light_theme = self.ui.model.monitor.is_light_theme()
+            renderer = QSvgRenderer(ICON_UPDATE_LIGHT if is_light_theme else ICON_UPDATE_DARK)
             pixmap = QPixmap(container_size, container_size)
             pixmap.fill(Qt.GlobalColor.transparent)
             painter = QPainter(pixmap)
@@ -193,6 +192,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         """!
         @brief Rotate the update icon while the download is running.
         """
+        assert self.rotation_pixmap is not None
         size = self.rotation_pixmap.width()
         rotated_pixmap = QPixmap(size, size)
         rotated_pixmap.fill(Qt.GlobalColor.transparent)
@@ -229,14 +229,14 @@ class AboutDialog(QDialog, Ui_AboutDialog):
     def download_update_status(self, text: str) -> None:
         """!
         @brief Update the status text during the download process.
-        @param text : Status message of the update process
+        @param text : Status message of the update process.
         """
         self.lbl_update_status.setText(f"Update wird heruntergeladen - {text}")
 
     def download_update_finish(self, success_status: bool) -> None:
         """!
         @brief Handle completion of the update download.
-        @param success_status : True if the download was successful
+        @param success_status : True if the download was successful.
         """
         if self.timer.isActive():
             self.timer.stop()
@@ -260,11 +260,11 @@ class AboutDialog(QDialog, Ui_AboutDialog):
             self.lbl_update_status.show()
             self.lbl_update_status.setText("Update fehlgeschlagen")
 
-    def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
+    def closeEvent(self, event: QCloseEvent | None) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle dialog close
-        @param event : arrived event
+        @brief Handle dialog close event.
+        @param event : Close event.
         """
-        self.update_downloader.terminate()
+        self.update_downloader.requestInterruption()
         if event is not None:
             event.accept()

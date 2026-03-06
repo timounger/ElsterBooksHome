@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   tab_dashboard.py
-@brief  Tab for displaying dashboard information.
+@brief Tab for displaying dashboard information.
 ********************************************************************************
 """
 
@@ -18,8 +18,8 @@ from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
 from PyQt6.QtWidgets import QGraphicsSimpleTextItem
 
 from Source.version import __title__
-from Source.Model.company import LOGO_BRIEF_PATH, validate_company, COMPANY_BOOKING_FIELD, ECompanyFields
-from Source.Model.data_handler import EReceiptFields, DATE_FORMAT_JSON, L_MONTH_NAMES_SHORT, I_MONTH_IN_YEAR
+from Source.Model.company import LOGO_BRIEF_PATH, validate_company
+from Source.Model.data_handler import EReceiptFields, DATE_FORMAT_JSON, MONTH_NAMES_SHORT, MONTHS_IN_YEAR
 from Source.Model.income import get_income_files, validate_income
 from Source.Model.expenditure import get_expenditure_files, validate_expenditure
 from Source.Model.contacts import EContactFields, validate_contact
@@ -34,10 +34,10 @@ log = logging.getLogger(__title__)
 
 def round_to_nearest_integer(number: float, round_len: int = 2) -> int:
     """!
-    @brief Rounds a number up to the next decimal step.
-    @param number : number to round
-    @param round_len : number of chars to round
-    @return rounded number
+    @brief Round a number up to the next decimal step.
+    @param number : Number to round.
+    @param round_len : Number of leading digits to keep.
+    @return Rounded number.
     """
     number = int(math.ceil(number))
     str_number = str(number)
@@ -51,17 +51,17 @@ def round_to_nearest_integer(number: float, round_len: int = 2) -> int:
     return rounded_number
 
 
-def calc_chart_data(l_invoice_date: list[str], l_value: list[float]) -> list[float]:
+def calc_chart_data(invoice_dates: list[str], values: list[float]) -> list[float]:
     """!
-    @brief Calculates the monthly chart data for the last 12 months.
-    @param l_invoice_date : list with data
-    @param l_value : list with values
-    @return list with data of last 12 months
+    @brief Calculate monthly chart data for the last 12 months.
+    @param invoice_dates : List of invoice date strings.
+    @param values : List of corresponding amounts.
+    @return Aggregated monthly values for the last 12 months.
     """
     today = datetime.today()
     monthly_sums: defaultdict[tuple[int, int], float] = defaultdict(int)
 
-    for date, amount in zip(l_invoice_date, l_value):
+    for date, amount in zip(invoice_dates, values):
         try:
             date_obj = datetime.strptime(date, DATE_FORMAT_JSON)
         except ValueError:
@@ -72,29 +72,16 @@ def calc_chart_data(l_invoice_date: list[str], l_value: list[float]) -> list[flo
                 monthly_sums[key] += amount
 
     last_12_months = []
-    for i in range(I_MONTH_IN_YEAR):
+    for i in range(MONTHS_IN_YEAR):
         month = today.month - i
         year = today.year
         if month <= 0:
-            month += I_MONTH_IN_YEAR
+            month += MONTHS_IN_YEAR
             year -= 1
         last_12_months.append(monthly_sums.get((year, month), 0))
 
     last_12_months = last_12_months[::-1]
     return last_12_months
-
-
-def check_valid_tax(gross: float, net: float, l_vat_rates: list[int | float]) -> bool:
-    """!
-    @brief Checks whether the calculated tax is valid based on the configured VAT rates.
-           TODO abschaltbar oder konfigurierbar machen da bei mischrechnungen auftauchen kann.
-    @param gross : gross
-    @param net : net
-    @param l_vat_rates : possible vat rates
-    @return valid status
-    """
-    valid = True
-    return valid
 
 
 class TabDashboard:
@@ -106,17 +93,17 @@ class TabDashboard:
 
     def __init__(self, ui: "MainWindow", tab_idx: int) -> None:
         self.ui = ui
-        s_title = "Übersicht"
+        title = "Übersicht"
         tab = ui.tabWidget.widget(tab_idx)
         self.tab = tab
         self.ui_dashboard = Ui_Dashboard()
         self.ui_dashboard.setupUi(tab)
-        self.ui_dashboard.lbl_title.setText(s_title)
+        self.ui_dashboard.lbl_title.setText(title)
         self.ui_dashboard.dashboard_text.setFont(QFont("Consolas", 14))
-        ui.tabWidget.setTabText(tab_idx, s_title)
+        ui.tabWidget.setTabText(tab_idx, title)
 
         self.ui_dashboard.dashboard_text.setReadOnly(True)
-        self.l_warnings: list[str] = []
+        self.warnings: list[str] = []
 
     def update_dashboard_data(self) -> None:
         """!
@@ -135,12 +122,12 @@ class TabDashboard:
         set_spin_box_read_only(self.ui_dashboard.dsb_income_net, income_net)
         set_spin_box_read_only(self.ui_dashboard.dsb_expenditure_net, expenditure_net)
         set_spin_box_read_only(self.ui_dashboard.dsb_profit_net, diff_net)
-        data = "\n".join(str(warning) for warning in self.l_warnings)
-        if len(self.l_warnings) > 0:
+        data = "\n".join(str(warning) for warning in self.warnings)
+        if self.warnings:
             self.ui_dashboard.dashboard_text.setTextColor(QColor("orange"))
-            self.ui.set_status("Falsche Daten vorhanden.", b_warning=True)
+            self.ui.set_status("Falsche Daten vorhanden.", warning=True)
         else:
-            color = "black" if self.ui.model.c_monitor.is_light_theme() else "white"
+            color = "black" if self.ui.model.monitor.is_light_theme() else "white"
             self.ui_dashboard.dashboard_text.setTextColor(QColor(color))
         if not data:
             data = "✅ Alles in Ordnung!"
@@ -152,29 +139,29 @@ class TabDashboard:
         @brief Updates the bar chart with income and expenditure data.
         """
         # data
-        l_income = calc_chart_data(self.ui.tab_income.l_invoice_date, self.ui.tab_income.l_value)
-        l_expenditure = calc_chart_data(self.ui.tab_expenditure.l_invoice_date, self.ui.tab_expenditure.l_value)
-        l_expenditure = [-x for x in l_expenditure]  # expenditure are negative
-        d_data = {
-            "Einnahmen": l_income,
-            "Ausgaben": l_expenditure
+        income_values = calc_chart_data(self.ui.tab_income.invoice_dates, self.ui.tab_income.values)
+        expenditure_values = calc_chart_data(self.ui.tab_expenditure.invoice_dates, self.ui.tab_expenditure.values)
+        expenditure_values = [-x for x in expenditure_values]  # expenditure are negative
+        chart_data = {
+            "Einnahmen": income_values,
+            "Ausgaben": expenditure_values
         }
 
         today = datetime.today()
         month_names = []
-        for i in range(0, I_MONTH_IN_YEAR):
+        for i in range(0, MONTHS_IN_YEAR):
             month = today.month - i
             year = today.year
             if month <= 0:
-                month += I_MONTH_IN_YEAR
+                month += MONTHS_IN_YEAR
                 year -= 1
-            month_names.append(L_MONTH_NAMES_SHORT[month - 1])
+            month_names.append(MONTH_NAMES_SHORT[month - 1])
         month_names.reverse()
 
-        l_numbers = [value for values_list in d_data.values() for value in values_list]
+        all_values = [value for values_list in chart_data.values() for value in values_list]
 
-        min_value = min(l_numbers)
-        max_value = max(l_numbers)
+        min_value = min(all_values)
+        max_value = max(all_values)
         max_range = max(abs(min_value), abs(max_value))
         max_range = round_to_nearest_integer(max_range)
         steps = 5
@@ -183,9 +170,9 @@ class TabDashboard:
         series.setBarWidth(0.8)
         series.setLabelsVisible(True)
         series.setLabelsPosition(QBarSeries.LabelsPosition.LabelsOutsideEnd)
-        income_color = QColor(0x40, 0xC0, 0x57) if self.ui.model.c_monitor.is_light_theme() else QColor("green")
-        expenditure_color = QColor(0xFA, 0x52, 0x52) if self.ui.model.c_monitor.is_light_theme() else QColor("red")
-        for key, value in d_data.items():
+        income_color = QColor(0x40, 0xC0, 0x57) if self.ui.model.monitor.is_light_theme() else QColor("green")
+        expenditure_color = QColor(0xFA, 0x52, 0x52) if self.ui.model.monitor.is_light_theme() else QColor("red")
+        for key, value in chart_data.items():
             bar_set = QBarSet(key)
             q_color = income_color if key == "Einnahmen" else expenditure_color
             bar_set.setBrush(q_color)
@@ -218,7 +205,7 @@ class TabDashboard:
         series.attachAxis(axis_y)
 
         # Create chart view
-        color = QColor(0xF8, 0xF9, 0xFA) if self.ui.model.c_monitor.is_light_theme() else QColor(0xBE, 0xBE, 0xBE)  # default dark QColor(33, 33, 33)
+        color = QColor(0xF8, 0xF9, 0xFA) if self.ui.model.monitor.is_light_theme() else QColor(0xBE, 0xBE, 0xBE)  # default dark QColor(33, 33, 33)
         chart.setBackgroundBrush(QColor(color))
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.RenderHint.Antialiasing)  # Antialiasing TextAntialiasing SmoothPixmapTransform
@@ -226,12 +213,16 @@ class TabDashboard:
         # note text
         note = QGraphicsSimpleTextItem("Alle Bruttobeträge nach Rechnungsdatum")
         note.setFont(QFont("Segoe UI", 10, weight=QFont.Weight.Bold))
-        chart.scene().addItem(note)
+        scene = chart.scene()
+        assert scene is not None
+        scene.addItem(note)
         note.setPos(40, 40)
 
         # delete all old QChartView(s) before set new to prevent lagging
         for i in reversed(range(self.ui_dashboard.gridLayout_2.count())):
             item = self.ui_dashboard.gridLayout_2.itemAt(i)
+            if item is None:
+                continue
             widget = item.widget()
             if isinstance(widget, QChartView):
                 self.ui_dashboard.gridLayout_2.takeAt(i)
@@ -244,62 +235,57 @@ class TabDashboard:
         """!
         @brief Validates all stored data and collects warnings.
         """
-        tax_rates = self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.TAX_RATES]
-        self.l_warnings = []
-        l_ids = []
+        self.warnings = []
+        ids = []
         # company
-        self.l_warnings += validate_company(self.ui.tab_settings.company_data)
+        self.warnings += validate_company(self.ui.tab_settings.company_data)
         # income
-        for income in self.ui.tab_income.l_data:
-            self.l_warnings += validate_income(income)
-            s_id = income[EReceiptFields.ID][:8]
-            if s_id not in l_ids:
-                l_ids.append(s_id)
+        for income in self.ui.tab_income.receipts:
+            self.warnings += validate_income(income)
+            short_id = income[EReceiptFields.ID][:8]
+            if short_id not in ids:
+                ids.append(short_id)
             else:
-                self.l_warnings.append(f"Einnahme ID vergeben: {s_id}")
-            if not check_valid_tax(income[EReceiptFields.AMOUNT_GROSS], income[EReceiptFields.AMOUNT_NET], tax_rates):
-                self.l_warnings.append(f"Einnahme USt. falsch: {s_id}")
+                self.warnings.append(f"Einnahme ID vergeben: {short_id}")
         files = get_income_files(self.ui.model.data_path)
-        if len(files) != len(self.ui.tab_income.l_data):
-            self.l_warnings.append("Einnahme ungültige Anhang Anzahl")
+        if len(files) != len(self.ui.tab_income.receipts):
+            self.warnings.append("Einnahme ungültige Anhang Anzahl")
         for file_name in files:
-            if file_name[-8:] not in l_ids:
-                self.l_warnings.append(f"Einnahme Datei ohne Meta Daten: {file_name}")
+            if file_name[-8:] not in ids:
+                self.warnings.append(f"Einnahme Datei ohne Meta Daten: {file_name}")
         # expenditure
-        for expenditure in self.ui.tab_expenditure.l_data:
-            self.l_warnings += validate_expenditure(expenditure)
-            s_id = expenditure[EReceiptFields.ID][:8]
-            if s_id not in l_ids:
-                l_ids.append(s_id)
+        for expenditure in self.ui.tab_expenditure.receipts:
+            self.warnings += validate_expenditure(expenditure)
+            short_id = expenditure[EReceiptFields.ID][:8]
+            if short_id not in ids:
+                ids.append(short_id)
             else:
-                self.l_warnings.append(f"Ausgaben ID vergeben: {s_id}")
-            if not check_valid_tax(expenditure[EReceiptFields.AMOUNT_GROSS], expenditure[EReceiptFields.AMOUNT_NET], tax_rates):
-                self.l_warnings.append(f"Ausgabe USt. falsch: {s_id}")
+                self.warnings.append(f"Ausgaben ID vergeben: {short_id}")
         files = get_expenditure_files(self.ui.model.data_path)
-        if len(files) != len(self.ui.tab_expenditure.l_data):
-            self.l_warnings.append("Ausgabe ungültige Anhang Anzahl")
+        if len(files) != len(self.ui.tab_expenditure.receipts):
+            self.warnings.append("Ausgabe ungültige Anhang Anzahl")
         for file_name in files:
-            if file_name[-8:] not in l_ids:
-                self.l_warnings.append(f"Ausgabe Datei ohne Meta Daten: {file_name}")
+            if file_name[-8:] not in ids:
+                self.warnings.append(f"Ausgabe Datei ohne Meta Daten: {file_name}")
         # contacts
-        for contact in self.ui.tab_contacts.l_data:
-            self.l_warnings += validate_contact(contact)
-            s_id = contact[EContactFields.ID][:8]
-            if s_id not in l_ids:
-                l_ids.append(s_id)
+        for contact in self.ui.tab_contacts.contacts:
+            self.warnings += validate_contact(contact)
+            short_id = contact[EContactFields.ID][:8]
+            if short_id not in ids:
+                ids.append(short_id)
             else:
-                self.l_warnings.append(f"Kontakt ID vergeben: {s_id}")
+                self.warnings.append(f"Kontakt ID vergeben: {short_id}")
         # documents
-        for document in self.ui.tab_document.l_data:
-            self.l_warnings += validate_document(document)
-            s_id = document[EDocumentFields.ID][:8]
-            if s_id not in l_ids:
-                l_ids.append(s_id)
+        for document in self.ui.tab_document.documents:
+            self.warnings += validate_document(document)
+            short_id = document[EDocumentFields.ID][:8]
+            if short_id not in ids:
+                ids.append(short_id)
             else:
-                self.l_warnings.append(f"Dokumenten ID vergeben: {s_id}")
+                self.warnings.append(f"Dokumenten ID vergeben: {short_id}")
         files = get_document_files(self.ui.model.data_path)
-        if len(files) != len(self.ui.tab_document.l_data):
-            self.l_warnings.append("Dokumente ungültige Anhang Anzahl")
+        if len(files) != len(self.ui.tab_document.documents):
+            self.warnings.append("Dokumente ungültige Anhang Anzahl")
         for file_name in files:
-            if file_name[-8:] not in l_ids:
-                self.l_warnings.append(f"Dokumente Datei ohne Meta Daten: {file_name}")
+            if file_name[-8:] not in ids:
+                self.warnings.append(f"Dokumente Datei ohne Meta Daten: {file_name}")

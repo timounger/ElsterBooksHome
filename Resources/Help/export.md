@@ -1,4 +1,4 @@
-# Tab Export
+# Export
 
 Über die Registerkarte „Export“ können steuerrelevante Dokumente erzeugt sowie Daten aus dem System exportiert werden.
 

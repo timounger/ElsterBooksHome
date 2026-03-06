@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   ocr_recognition.py
-@brief  OCR recognition
+@brief  OCR text extraction from images and PDFs via Tesseract.
 ********************************************************************************
 """
 
@@ -9,8 +9,8 @@ import logging
 from PIL import Image
 from PIL.Image import Image as PILImage
 import fitz  # PyMuPDF
-from pytesseract import image_to_string
 import pytesseract
+from pytesseract import image_to_string
 
 from Source.version import __title__
 from Source.Util.app_data import TOOLS_FOLDER
@@ -23,15 +23,15 @@ TESSERACT_EXE = f"{TOOLS_FOLDER}/Tesseract-OCR/tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_EXE
 
 
-def convert_pdf_to_images(file: str) -> list[PILImage]:
+def convert_pdf_to_images(file_path: str) -> list[PILImage]:
     """!
-    @brief Convert PDF to images
-    @param file : file to convert
-    @return images for OCR recognition
+    @brief Convert PDF pages to images.
+    @param file_path : PDF file path to convert.
+    @return List of page images.
     """
     images = []
 
-    with fitz.open(file) as pdf_document:
+    with fitz.open(file_path) as pdf_document:
         for page in pdf_document:
             pix = page.get_pixmap(dpi=300)
             image = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
@@ -42,15 +42,10 @@ def convert_pdf_to_images(file: str) -> list[PILImage]:
 
 def extract_text_with_ocr(pdf_path: str) -> str:
     """!
-    @brief Extract text from file
-    @param pdf_path : file to extract text
-    @return text from ocr recognition
+    @brief Extract text from PDF using OCR.
+    @param pdf_path : PDF file path to extract text from.
+    @return Extracted text from OCR recognition.
     """
     images = convert_pdf_to_images(pdf_path)
-    full_text = ""
-
-    for image in images:
-        page_text = image_to_string(image, lang="deu+eng")
-        full_text += page_text.strip() + "\n"
-
-    return full_text.strip()
+    page_texts = [image_to_string(image, lang="deu+eng").strip() for image in images]
+    return "\n".join(page_texts)

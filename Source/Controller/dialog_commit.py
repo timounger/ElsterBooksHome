@@ -25,8 +25,8 @@ log = logging.getLogger(__title__)
 class CommitDialog(QDialog, Ui_CommitDialog):
     """!
     @brief Dialog for reviewing changes and creating a Git commit.
-    @param ui : main window
-    @param changes : Git change summary text
+    @param ui : main window.
+    @param changes : Git change summary text.
     """
 
     def __init__(self, ui: "MainWindow", changes: str, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
@@ -35,7 +35,7 @@ class CommitDialog(QDialog, Ui_CommitDialog):
         self.setWindowFlags(Qt.WindowType.Window)  # set all window buttons (e.g max window size)
         self.ui = ui
         self.changes = changes
-        self.b_commit = False
+        self.is_commit = False
         self.commit_message = ""
         thread_dialog(self)
 
@@ -45,7 +45,7 @@ class CommitDialog(QDialog, Ui_CommitDialog):
         """
         log.debug("Starting Commit dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
         self.setWindowTitle("GIT Commit")
 
         self.pte_changes.setPlainText(self.changes)
@@ -66,19 +66,19 @@ class CommitDialog(QDialog, Ui_CommitDialog):
 
     def yes_clicked(self) -> None:
         """!
-        @brief Yes (commit) button clicked.
+        @brief Validate commit message and confirm the commit.
         """
         commit_message = self.pte_commit_text.toPlainText()
         if commit_message.strip():
             self.commit_message = commit_message
-            self.b_commit = True
+            self.is_commit = True
             self.close()
         else:
             self.pte_commit_text.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine Commit Message vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine Commit Message vorhanden.", highlight=True)
 
     def diff_clicked(self) -> None:
         """!
-        @brief Diff button clicked.
+        @brief Open TortoiseGit diff viewer for the pending changes.
         """
         tortoise_git_check_for_mod()

@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   fin_ts.py
-@brief  FinTS: banking protocol
+@brief  FinTS banking protocol integration.
         doc: https://python-fints.readthedocs.io/en/latest/
 ********************************************************************************
 """
@@ -13,7 +13,8 @@ import csv
 from datetime import datetime
 from typing import TYPE_CHECKING, NamedTuple
 from fints.utils import minimal_interactive_cli_bootstrap
-from fints.client import FinTS3PinTanClient, NeedTANResponse
+from fints.client import FinTS3PinTanClient, NeedTANResponse, Transaction
+from fints.camt_parser import camt053_to_dict
 from fints.exceptions import FinTSClientError, FinTSClientPINError, FinTSClientTemporaryAuthError, FinTSSCARequiredError, \
     FinTSDialogError, FinTSDialogStateError, FinTSDialogOfflineError, FinTSDialogInitError, FinTSConnectionError, \
     FinTSUnsupportedOperation, FinTSNoResponseError
@@ -30,9 +31,9 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__title__)
 
-B_GUI_INPUT = True
-B_WRITE_SESSION_DATA = False
-if B_WRITE_SESSION_DATA:
+GUI_INPUT = True
+WRITE_SESSION_DATA = False
+if WRITE_SESSION_DATA:
     DATAFILE = "fints_client.dat"
 
 PRODUCT_ID = "ECA9BC32B4506B9F36923DCE7"  # registered ID for ElsterBooks
@@ -40,13 +41,13 @@ PRODUCT_VERSION = "3.0"
 
 TRANSACTIONS_CSV_FILE_PATH = os.path.join(EXPORT_PATH, "transactions.csv")
 TRANSACTIONS_XLS_FILE_PATH = os.path.join(EXPORT_PATH, "Transaktionen.xlsx")
-S_DATE_TRANSITION_FORMAT = "%Y-%m-%d"
-COLOR_RED_DARK = "008000"
+DATE_TRANSITION_FORMAT = "%Y-%m-%d"
+COLOR_GREEN_DARK = "008000"
 
 
 class FinTSInstitute(NamedTuple):
     """!
-    @brief FinTS Institute data
+    @brief FinTS institute data.
     """
     blz: str
     bic: str
@@ -54,9 +55,9 @@ class FinTSInstitute(NamedTuple):
     url: str
 
 
-class Transaction(NamedTuple):
+class TransactionItem(NamedTuple):
     """!
-    @brief Transaction data
+    @brief Single bank transaction entry from FinTS with date and amount.
     """
     date: datetime
     amount: float
@@ -68,7 +69,7 @@ class Transaction(NamedTuple):
 
 class TanMechanisms(str, enum.Enum):
     """!
-    @brief tan mechanisms code
+    @brief TAN mechanism codes.
     """
     SMART_TAN_PLUS_MANUELL = "962"  # Smart-TAN plus manuell
     SMART_TAN_PLUS_OPTICAL = "972"  # Smart-TAN plus optisch / USB
@@ -76,61 +77,61 @@ class TanMechanisms(str, enum.Enum):
     SECURE_GO_PLUS = "946"  # SecureGo plus (Direktfreigabe)
 
 
-L_ALLOWED_TAN_MECHANISMS = [TanMechanisms.SMART_TAN_PLUS_MANUELL, TanMechanisms.SECURE_GO_PLUS]
+ALLOWED_TAN_MECHANISMS = [TanMechanisms.SMART_TAN_PLUS_MANUELL, TanMechanisms.SECURE_GO_PLUS]
 
 
 def get_fints_institutes() -> list[FinTSInstitute]:
     """!
-    @brief Get FinTS institute
-    @return FinTS institutes
+    @brief Read FinTS institute data from CSV file.
+    @return list of FinTS institute entries.
     """
-    l_institutes = []
+    institutes = []
     with open(FINTS_INSTITUTE_FILE, mode="r", encoding="latin1", newline="") as csv_file:
         reader = csv.reader(csv_file, delimiter=";", quotechar='"')
-        for i, row in enumerate(reader):
-            if i != 0:
-                blz = row[1]
-                bic = row[2]
-                instutute = row[3]
-                url = row[24]
-                if blz and instutute and url:
-                    l_institutes.append(FinTSInstitute(blz, bic, instutute, url))
-    return l_institutes
+        next(reader)  # skip header
+        for row in reader:
+            blz = row[1]
+            bic = row[2]
+            institute = row[3]
+            url = row[24]
+            if blz and institute and url:
+                institutes.append(FinTSInstitute(blz, bic, institute, url))
+    return institutes
 
 
 def read_data_from_transaction_file(transaction_file: str = TRANSACTIONS_CSV_FILE_PATH) -> list[list[str]]:
     """!
-    @brief Read data from transaction file
-    @param transaction_file : file to read
-    @return transaction data
+    @brief Read data from transaction CSV file.
+    @param transaction_file : path to transaction CSV file.
+    @return list of transaction row data.
     """
-    l_transactions = []
+    transactions = []
     if os.path.exists(transaction_file):
         with open(transaction_file, mode="r", encoding="utf-8", newline="") as csv_file:
             reader = csv.reader(csv_file, delimiter=";", quotechar='"')
             for row in reader:
-                l_transactions.append(row)
-    return l_transactions
+                transactions.append(row)
+    return transactions
 
 
-def create_transaction_file(l_transactions: list[list[str]]) -> None:
+def create_transaction_file(transactions: list[list[str]]) -> None:
     """!
-    @brief Create transaction file
-    @param l_transactions : transactions
+    @brief Create transaction CSV file.
+    @param transactions : list of transaction row data.
     """
     if not os.path.exists(EXPORT_PATH):
         os.makedirs(EXPORT_PATH)
     with open(TRANSACTIONS_CSV_FILE_PATH, mode="w", newline="", encoding="utf-8") as file:
         writer = csv.writer(file, delimiter=";")
         writer.writerow(["Datum", "Betrag", "Verwendungszweck", "Buchungstext", "Auftraggeber", "Referenz"])
-        for transaction in l_transactions:
+        for transaction in transactions:
             writer.writerow(transaction)
 
 
-def create_transaction_xls_file(l_transactions: list[Transaction]) -> None:
+def create_transaction_xls_file(transactions: list[TransactionItem]) -> None:
     """!
-    @brief Create transaction XLS Report
-    @param l_transactions : transactions
+    @brief Create transaction XLS report file.
+    @param transactions : list of transaction items.
     """
     header = ["Datum", "Betrag", "Auftraggeber", "Verwendungszweck", "Buchungstext", "Referenz"]
     if not os.path.exists(EXPORT_PATH):
@@ -146,23 +147,22 @@ def create_transaction_xls_file(l_transactions: list[Transaction]) -> None:
     worksheet.column_dimensions["F"].width = 20  # Referenz
     for i, title in enumerate(header):
         xls_creator.set_cell(worksheet, 1, i + 1, title, bold=True)
-    i_transaction = 0
-    for transaction in reversed(l_transactions):
-        color = COLOR_RED_DARK if transaction.amount >= 0 else COLOR_RED
-        xls_creator.set_cell(worksheet, i_transaction + 2, 1, transaction.date.strftime(DATE_FORMAT_JSON), number_format=NUMBER_FORMAT_DATETIME)
-        xls_creator.set_cell(worksheet, i_transaction + 2, 2, transaction.amount, color=color, number_format=NUMBER_FORMAT_EUR)
-        xls_creator.set_cell(worksheet, i_transaction + 2, 3, str(transaction.applicant_name))
-        xls_creator.set_cell(worksheet, i_transaction + 2, 4, str(transaction.purpose))
-        xls_creator.set_cell(worksheet, i_transaction + 2, 5, str(transaction.text))
-        xls_creator.set_cell(worksheet, i_transaction + 2, 6, str(transaction.customer_reference))
-        i_transaction += 1
-    xls_creator.set_table(worksheet, max_col=len(header), max_row=i_transaction + 1, min_col=1, min_row=1)
+    for idx, transaction in enumerate(reversed(transactions)):
+        row = idx + 2
+        color = COLOR_GREEN_DARK if transaction.amount >= 0 else COLOR_RED
+        xls_creator.set_cell(worksheet, row, 1, transaction.date.strftime(DATE_FORMAT_JSON), number_format=NUMBER_FORMAT_DATETIME)
+        xls_creator.set_cell(worksheet, row, 2, transaction.amount, color=color, number_format=NUMBER_FORMAT_EUR)
+        xls_creator.set_cell(worksheet, row, 3, str(transaction.applicant_name))
+        xls_creator.set_cell(worksheet, row, 4, str(transaction.purpose))
+        xls_creator.set_cell(worksheet, row, 5, str(transaction.text))
+        xls_creator.set_cell(worksheet, row, 6, str(transaction.customer_reference))
+    xls_creator.set_table(worksheet, max_col=len(header), max_row=len(transactions) + 1, min_col=1, min_row=1)
     xls_creator.save(TRANSACTIONS_XLS_FILE_PATH)
 
 
 def delete_transaction_files() -> None:
     """!
-    @brief Delete transactions files
+    @brief Delete transaction CSV and XLS files.
     """
     delete_file(TRANSACTIONS_CSV_FILE_PATH)
     delete_file(TRANSACTIONS_XLS_FILE_PATH)
@@ -170,52 +170,51 @@ def delete_transaction_files() -> None:
 
 class FinTs:
     """!
-    @brief Class to get transaction data via FinTS
-    @param ui : main window
-    @param pte_output : text widget for result response
+    @brief FinTS client for retrieving bank transaction data.
+    @param ui : main window instance.
+    @param pte_output : text widget for result output.
     """
 
     def __init__(self, ui: "MainWindow", pte_output: QPlainTextEdit) -> None:
         self.ui = ui
         self.pte_output = pte_output
-        self.l_fints_institutes = get_fints_institutes()
+        self.fints_institutes = get_fints_institutes()
         self.bank_code = ""
         self.fints_url = ""
         self.user_id = ""
         self.pin = ""
         self.iban = ""
         self.tan_mechanism = ""
-        self.client = None
+        self.client: FinTS3PinTanClient | None = None
 
-    def get_transactions(self) -> list[Transaction]:
+    def get_transactions(self) -> list[TransactionItem]:
         """!
-        @brief Get transaction from CSV file
-        @return transactions
+        @brief Parse transactions from CSV file and create XLS export.
+        @return list of parsed transaction items.
         """
-        l_transaction = []
-        l_raw_data = read_data_from_transaction_file()
-        for i, row in enumerate(l_raw_data):
-            if i != 0:
-                amount = float(row[1].replace("EUR", "").strip())
-                transaction = Transaction(datetime.strptime(row[0], S_DATE_TRANSITION_FORMAT), amount,
+        transactions = []
+        raw_data = read_data_from_transaction_file()
+        for row in raw_data[1:]:  # skip header
+            amount = float(row[1].replace("EUR", "").strip())
+            transaction = TransactionItem(datetime.strptime(row[0], DATE_TRANSITION_FORMAT), amount,
                                           row[2], row[3], row[4], row[5])
-                l_transaction.append(transaction)
+            transactions.append(transaction)
         try:
-            create_transaction_xls_file(l_transaction)
+            create_transaction_xls_file(transactions)
         except PermissionError:
-            self.ui.set_status("Transaktionen Datei konnte nicht erstellt werden", b_highlight=True)
-        return l_transaction
+            self.ui.set_status("Transaktionen Datei konnte nicht erstellt werden", highlight=True)
+        return transactions
 
-    def ask_for_tan(self, client: FinTS3PinTanClient, response):
+    def ask_for_tan(self, client: FinTS3PinTanClient, response: NeedTANResponse) -> tuple[list[object], list[object]]:
         """!
-        @brief Ask for TAN
-        @param client : client
-        @param response : response
-        @return answer
+        @brief Prompt user for TAN input and send it to the bank.
+        @param client : FinTS client instance.
+        @param response : TAN response from the bank.
+        @return result of sending the TAN.
         """
         self.pte_output.setPlainText(response.challenge)
         if getattr(response, 'challenge_hhduc', None):
-            if B_GUI_INPUT:
+            if GUI_INPUT:
                 pass  # self.pte_output.setPlainText(response.challenge_hhduc)  # TODO in GUI not work
             else:
                 try:
@@ -223,29 +222,30 @@ class FinTs:
                 except KeyboardInterrupt:
                     pass
         if response.decoupled:
-            if B_GUI_INPUT:
+            if GUI_INPUT:
                 QMessageBox.information(self.ui, "Fortfahren", "Bitte klicke OK, nachdem Sie die Transaktion bestätigt haben.")
                 tan = None
             else:
                 tan = input('Please press enter after confirming the transaction in your app:')
         else:
-            if B_GUI_INPUT:
+            if GUI_INPUT:
                 text, _ok = QInputDialog.getText(self.ui, "TAN Verfahren", "Bitte geben Sie die TAN ein.")
                 tan = text
             else:
                 tan = input('Please enter TAN:')
-        return client.send_tan(response, tan)
+        result: tuple[list[object], list[object]] = client.send_tan(response, tan)
+        return result
 
     def connect_client(self) -> tuple[bool, str]:
         """!
-        @brief Connect Client
-        @return success status and status text
+        @brief Connect to FinTS bank server.
+        @return success status and status text.
         """
         success = False
         success_text = "Fehler"
         # load existing client states
         client_data = None
-        if B_WRITE_SESSION_DATA:
+        if WRITE_SESSION_DATA:
             if os.path.exists(DATAFILE):
                 with open(DATAFILE, "rb") as f:
                     client_data = f.read()
@@ -260,10 +260,10 @@ class FinTs:
                 product_version=PRODUCT_VERSION,
             )
 
-            if not B_GUI_INPUT:
+            if not GUI_INPUT:
                 minimal_interactive_cli_bootstrap(self.client)
 
-            _accounts = self.client.get_sepa_accounts()  # call account data to check connection
+            self.client.get_sepa_accounts()  # call account data to check connection
 
         except (FinTSClientError, FinTSClientPINError, FinTSClientTemporaryAuthError,
                 FinTSSCARequiredError, FinTSDialogError, FinTSDialogStateError,
@@ -292,39 +292,42 @@ class FinTs:
 
     def get_accounts(self) -> dict[str, str]:
         """!
-        @brief Get accounts
-        @return accounts
+        @brief Get available bank accounts.
+        @return mapping of display label to IBAN.
         """
-        d_accounts = {}
+        account_map = {}
+        assert self.client is not None
         with self.client:
             info = self.client.get_information()
             info_accounts = info.get("accounts")
             for account in info_accounts:
                 iban = account.get("iban")
                 product_name = account.get("product_name")
-                d_accounts[f"{iban} {product_name}"] = iban
-        return d_accounts
+                account_map[f"{iban} {product_name}"] = iban
+        return account_map
 
     def get_tan_mechanism(self) -> dict[str, str]:
         """!
-        @brief Get TAN mechanism
-        @return TAN mechanisms
+        @brief Get available TAN mechanisms.
+        @return mapping of security function code to display name.
         """
-        d_tan_mechanism = {}
+        mechanism_map = {}
+        assert self.client is not None
         with self.client:
             tan_mechanisms = self.client.get_tan_mechanisms()
             for _tan_code, tan_mechanism in tan_mechanisms.items():
-                if tan_mechanism.security_function in L_ALLOWED_TAN_MECHANISMS:
-                    d_tan_mechanism[tan_mechanism.security_function] = f"{tan_mechanism.security_function} {tan_mechanism.name}"
-        return d_tan_mechanism
+                if tan_mechanism.security_function in ALLOWED_TAN_MECHANISMS:
+                    mechanism_map[tan_mechanism.security_function] = f"{tan_mechanism.security_function} {tan_mechanism.name}"
+        return mechanism_map
 
     def get_and_create_transaction(self) -> tuple[bool, str]:
         """!
-        @brief Get and create transactions
-        @return success status and status text
+        @brief Retrieve transactions from bank and save to CSV file.
+        @return success status and status text.
         """
         success = False
         success_text = "Unbekannt"
+        assert self.client is not None
         if self.tan_mechanism:
             self.client.set_tan_mechanism(self.tan_mechanism)
 
@@ -340,26 +343,28 @@ class FinTs:
             if select_account is not None:
                 response = self.client.get_transactions(select_account)
                 if isinstance(response, NeedTANResponse):
-                    transactions = self.ask_for_tan(self.client, response)
+                    booked_streams, _pending_streams = self.ask_for_tan(self.client, response)
                 else:
-                    transactions = response
+                    booked_streams = response
                     log.warning("Keine TAN Eingabe erforderlich")
 
-                l_transactions = []
-                for transaction in transactions:
-                    data = transaction.data
-                    l_transactions.append([
-                        data.get("date"),
-                        data.get("amount"),
-                        data.get("purpose"),
-                        data.get("text"),
-                        data.get("applicant_name"),
-                        data.get("customer_reference")
-                    ])
+                transactions = []
+                for s in booked_streams:
+                    for t in camt053_to_dict(s):
+                        data = Transaction(t).data
+                        amount_entry = data.get("amount")
+                        transactions.append([
+                            data.get("date"),
+                            amount_entry.amount if amount_entry else None,
+                            data.get("purpose"),
+                            data.get("text"),
+                            data.get("applicant_name"),
+                            data.get("customer_reference")
+                        ])
 
-                create_transaction_file(l_transactions)
+                create_transaction_file(transactions)
 
-                if B_WRITE_SESSION_DATA:
+                if WRITE_SESSION_DATA:
                     client_blob = self.client.deconstruct(including_private=True)
                     with open(DATAFILE, "wb") as f:
                         f.write(client_blob)

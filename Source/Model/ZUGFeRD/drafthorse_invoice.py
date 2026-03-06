@@ -1,14 +1,14 @@
 """!
 ********************************************************************************
 @file   drafthorse_invoice.py
-@brief  Create drafthorse invoices
+@brief  Create drafthorse invoices.
 ********************************************************************************
 """
 
 # pylint: disable=protected-access
 import os
 import logging
-from typing import Optional, Any
+from typing import Any
 from datetime import datetime
 from decimal import Decimal
 import copy
@@ -33,7 +33,7 @@ from Source.Model.ZUGFeRD.drafthorse_data import EN_16931
 from Source.Model.ZUGFeRD.drafthorse_convert import normalize_decimal
 from Source.Model.contacts import EContactFields, CONTACT_ADDRESS_FIELD, CONTACT_CONTACT_FIELD
 from Source.Model.company import ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, \
-    COMPANY_PAYMENT_FIELD
+    COMPANY_PAYMENT_FIELD, COMPANY_DEFAULT_FIELD
 
 log = logging.getLogger(__title__)
 
@@ -51,7 +51,7 @@ UST_CODE = "VA"
 
 def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data: dict[str, str | dict[str, str]]) -> None:
     """!
-    @brief Convert JSON to trade party in drafthorse document
+    @brief Map invoice JSON party data to drafthorse trade party with address and tax info.
     @param trade_party : trade party of drafthorse document
     @param trade_party_data : trade party invoice data
     """
@@ -65,13 +65,15 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
     electronic_address = trade_party_data["electronicAddress"]  # Elektronische Adresse (BT-34)
     # Anschrift
     address_data = trade_party_data["address"]
+    assert isinstance(address_data, dict)
     street1 = address_data["line1"]  # Straße 1 (BT-35)
     street2 = address_data["line2"]  # Straße 2 (BT-36)
     postcode = address_data["postCode"]  # PLZ (BT-38)
     city = address_data["city"]  # Ort (BT-37)
-    country = address_data["countryCode"]  # Land (BT-40) D_COUNTRY_CODE
+    country = address_data["countryCode"]  # Land (BT-40) COUNTRY_CODE
     # Kontakt
     contact_data = trade_party_data["contact"]
+    assert isinstance(contact_data, dict)
     person = contact_data["name"]  # Name (BT-41)
     email = contact_data["email"]  # E-Mail (BT-43)
     phone = contact_data["phone"]  # Telefon (BT-42)
@@ -83,8 +85,8 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
         trade_party.id = ident_id
     if trade_id:
         trade_party.legal_organization.id = trade_id
-    d_tax_data = {TAX_CODE: tax_id, UST_CODE: ust_id}
-    for key, value in d_tax_data.items():
+    tax_ids = {TAX_CODE: tax_id, UST_CODE: ust_id}
+    for key, value in tax_ids.items():
         if value:
             tr = TaxRegistration()
             tr.id._text = value
@@ -94,6 +96,7 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
         trade_party.description = legal_notes
     if electronic_address:
         trade_party.electronic_address.uri_ID = electronic_address
+        trade_party.electronic_address.uri_ID._scheme_id = trade_party_data.get("electronicAddressTypeCode", "EM")  # (BT-34-1)
     if street1:
         trade_party.address.line_one = street1
     if street2:
@@ -113,7 +116,7 @@ def convert_json_to_trade_party(trade_party: SellerTradeParty, trade_party_data:
 
 def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
     """!
-    @brief Convert JSON to drafthorse document
+    @brief Transform invoice JSON data into complete drafthorse ZUGFeRD document.
     @param invoice_data : invoice data
     @return filled drafthorse doc
     """
@@ -123,8 +126,8 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
     # Rechnungsdaten
     doc.header.id = invoice_data["number"]  # Rechnungsnummer (BT-1)
     doc.header.issue_date_time = datetime.strptime(invoice_data["issueDate"], DATE_FORMAT_XML)  # Rechnungsdatum (BT-2)  Format: YYYY-MM-DD
-    doc.header.type_code = invoice_data["typeCode"]  # Rechnungstyp (BT-3) D_INVOICE_TYPE
-    doc.trade.settlement.currency_code = invoice_data["currencyCode"]  # Währung (BT-5) D_CURRENCY
+    doc.header.type_code = invoice_data["typeCode"]  # Rechnungstyp (BT-3) INVOICE_TYPE
+    doc.trade.settlement.currency_code = invoice_data["currencyCode"]  # Währung (BT-5) CURRENCY
     # Leistungs-/Lieferdatum (BT-72)
     delivery_date = invoice_data.get("deliveryDate", "")
     if delivery_date:
@@ -269,7 +272,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
             li.product.description = description
         quantity = item_data["quantity"]  # Menge (BT-129)
         normalized_quantity = normalize_decimal(quantity)  # use only required floating data (up to 4)
-        quantity_unit = item_data["quantityUnit"]  # Einheit (BT-130) D_UNIT
+        quantity_unit = item_data["quantityUnit"]  # Einheit (BT-130) UNIT
         li.delivery.billed_quantity = (normalized_quantity, quantity_unit)
         price = item_data["netUnitPrice"]  # Einzelpreis (Netto) (BT-146)
         li.agreement.net.amount = Decimal(f"{price:.2f}")
@@ -284,7 +287,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
         for allowance_data in item_data.get("allowances", []):
             trade_allowance = TradeAllowanceCharge()
             trade_allowance.indicator = False
-            basis_amount = sum_price  # TODO Wert stimmt nicht mehr wenn oben Zu/Abschläge einberechnet werden "basisAmount" verwenden
+            basis_amount = allowance_data.get("basisAmount", sum_price)  # Grundbetrag
             trade_allowance.basis_amount = Decimal(f"{basis_amount:.2f}")
             net_amount = allowance_data["netAmount"]  # Betrag (Netto) (BT-136)
             trade_allowance.actual_amount = Decimal(f"{net_amount:.2f}")
@@ -297,7 +300,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
         for charge_data in item_data.get("charges", []):
             trade_charge = TradeAllowanceCharge()
             trade_charge.indicator = True
-            basis_amount = sum_price  # TODO Wert stimmt nicht mehr wenn oben Zu/Abschläge einberechnet werden "basisAmount" verwenden
+            basis_amount = charge_data.get("basisAmount", sum_price)  # Grundbetrag
             trade_charge.basis_amount = Decimal(f"{basis_amount:.2f}")
             net_amount = charge_data["netAmount"]  # Betrag (Netto) (BT-141)
             trade_charge.actual_amount = Decimal(f"{net_amount:.2f}")
@@ -387,7 +390,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
     if rounding_amount != 0:  # optional field write only if required
         settlement.monetary_summation.rounding_amount = Decimal(f"{rounding_amount:.2f}")
     tax_total = data_totals["vatAmount"]  # Summe Umsatzsteuer (BT-110)
-    currency_code = invoice_data["currencyCode"]  # Währung (BT-5) D_CURRENCY
+    currency_code = invoice_data["currencyCode"]  # Währung (BT-5) CURRENCY
     settlement.monetary_summation.tax_total = (Decimal(f"{tax_total:.2f}"), currency_code)  # currency required at this field
     grand_total = data_totals["grossAmount"]  # Gesamt (Brutto) (BT-112)
     settlement.monetary_summation.grand_total = Decimal(f"{grand_total:.2f}")
@@ -399,7 +402,7 @@ def convert_json_to_drafthorse_doc(invoice_data: dict[Any, Any]) -> Document:
 
 def eval_factur_xml(xml_file_path: str | bytes, extended: bool = False) -> tuple[bool, str]:
     """!
-    @brief Evaluate facture xml
+    @brief Validate Factur-X XML against XSD schema.
     @param xml_file_path : xml file path or content
     @param extended : True: check for extended; False: check for EN16931
     @return valid state
@@ -432,17 +435,18 @@ def eval_factur_xml(xml_file_path: str | bytes, extended: bool = False) -> tuple
             log.info(warning_text)
     else:
         is_valid = False
-        warning_text = f"Invalid XML File: {xml_file_path}"
+        path_info = xml_file_path.decode() if isinstance(xml_file_path, bytes) else xml_file_path
+        warning_text = f"Invalid XML File: {path_info}"
         log.warning(warning_text)
     return is_valid, warning_text
 
 
 def create_factur_xml(doc: Document, file_name_xml: str) -> bool:
     """!
-    @brief Create facture xml
-    @param doc : document
-    @param file_name_xml : xml file name to create
-    @return valid status of xml
+    @brief Create Factur-X XML file from drafthorse document.
+    @param doc : drafthorse Document with invoice data.
+    @param file_name_xml : output XML file path.
+    @return True if XML is valid.
     """
     # Possible schema: FACTUR-X_MINIMUM, FACTUR-X_BASIC, FACTUR-X_BASICWL, FACTUR-X_EN16931, FACTUR-X_EXTENDED
     xml = doc.serialize(schema="FACTUR-X_EN16931")
@@ -450,14 +454,14 @@ def create_factur_xml(doc: Document, file_name_xml: str) -> bool:
         file.write(xml.decode("utf-8"))
     is_valid, _warning_text = eval_factur_xml(file_name_xml)
     if not is_valid:
-        log.error("Remove Invalid XMl file: %s", file_name_xml)
+        log.error("Remove Invalid XML file: %s", file_name_xml)
         delete_file(file_name_xml)  # delete if not valid
     return is_valid
 
 
-def write_customer_to_json(invoice_data: dict, contact: dict[str, str | dict[str, str]]) -> None:
+def write_customer_to_json(invoice_data: dict[str, Any], contact: dict[Any, Any] | None) -> None:
     """!
-    @brief Write customer to buyer in JSON
+    @brief Write customer contact data to buyer section in invoice JSON.
     @param invoice_data : invoice data
     @param contact : contact data
     """
@@ -483,9 +487,9 @@ def write_customer_to_json(invoice_data: dict, contact: dict[str, str | dict[str
         data_buyer_contact["phone"] = contact_data[EContactFields.PHONE]  # Telefonnummer der Kontaktstelle des Käufers (BT-57)
 
 
-def write_company_to_json(invoice_data: dict, company: dict[Any, Any], logo_path: Optional[str] = None) -> None:
+def write_company_to_json(invoice_data: dict[str, Any], company: dict[Any, Any], logo_path: str | None = None) -> None:
     """!
-    @brief Write customer to buyer in JSON
+    @brief Write company data to seller section in invoice JSON.
     @param invoice_data : invoice data
     @param company : company data
     @param logo_path : logo path
@@ -508,7 +512,7 @@ def write_company_to_json(invoice_data: dict, company: dict[Any, Any], logo_path
     data_seller_address["line2"] = address_data[ECompanyFields.STREET_2]  # Straße 2 (BT-36)
     data_seller_address["postCode"] = address_data[ECompanyFields.PLZ]  # PLZ (BT-38)
     data_seller_address["city"] = address_data[ECompanyFields.CITY]  # Ort (BT-37)
-    data_seller_address["countryCode"] = address_data[ECompanyFields.COUNTRY]  # Land (BT-40) D_COUNTRY_CODE
+    data_seller_address["countryCode"] = address_data[ECompanyFields.COUNTRY]  # Land (BT-40) COUNTRY_CODE
     contact_data = company[COMPANY_CONTACT_FIELD]
     data_seller_contact = data_seller.setdefault("contact", {})
     data_seller_contact["name"] = f"{contact_data[ECompanyFields.FIRST_NAME]} {contact_data[ECompanyFields.LAST_NAME]}".strip()  # Name (BT-41)
@@ -524,13 +528,15 @@ def write_company_to_json(invoice_data: dict, company: dict[Any, Any], logo_path
     method["bic"] = payment_data[ECompanyFields.BANK_BIC]  # BIC (BT-86)
     method["iban"] = payment_data[ECompanyFields.BANK_IBAN]  # IBAN (BT-84)
     method["accountName"] = payment_data[ECompanyFields.BANK_OWNER]  # Kontoinhaber (BT-85)
-    method["typeCode"] = "58"  # Zahlungsart (BT-81) D_PAYMENT_METHOD
+    method["typeCode"] = "58"  # Zahlungsart (BT-81) PAYMENT_METHOD
     data_methods.append(method)
+    company_default = company[COMPANY_DEFAULT_FIELD]
+    data_payment["reference"] = company_default[ECompanyFields.PAYMENT_PURPOSE]
 
 
-def fill_invoice_data(invoice_data: dict) -> None:
+def fill_invoice_data(invoice_data: dict[str, Any]) -> None:
     """!
-    @brief Fill invoice data
+    @brief Calculate totals, taxes and derived fields for invoice data.
     @param invoice_data : invoice data
     """
     if not invoice_data["seller"]["taxId"]:
@@ -541,12 +547,12 @@ def fill_invoice_data(invoice_data: dict) -> None:
         invoice_data["buyer"]["taxId"] = ""  # set empty for common trade party
 
     INVOICE_NUMBER_PATTERN = "{number}"
-    invoice_data["payment"]["reference"] = invoice_data["payment"]["reference"].replace(INVOICE_NUMBER_PATTERN, invoice_data["number"])
+    data_payment = invoice_data.setdefault("payment", {})
+    if "reference" in data_payment:
+        data_payment["reference"] = data_payment["reference"].replace(INVOICE_NUMBER_PATTERN, invoice_data["number"])
 
-    tax_data = {}
+    tax_data: dict[str, Any] = {}
     items_net_amount = 0
-    total_gross = 0
-    total_vat = 0
     tax_data_copy = copy.deepcopy(invoice_data.get("taxes", {}))
 
     for data_item in invoice_data["items"]:
@@ -556,15 +562,28 @@ def fill_invoice_data(invoice_data: dict) -> None:
         vat_rate = data_item["vatRate"]  # Steuersatz (BT-152)
         vat_code = data_item["vatCode"]  # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
 
+        base_net_amount = round((item_quantity * net_unit_price) / item_basis_quantity, 2)
+        net_amount = base_net_amount
+        # Positions-Nachlässe (BT-136)
+        for allowance in data_item.get("allowances", []):
+            allowance_amount = allowance.get("netAmount")
+            if allowance_amount:
+                allowance["basisAmount"] = base_net_amount  # Grundbetrag
+                net_amount -= round(float(allowance_amount), 2)
+        # Positions-Zuschläge (BT-141)
+        for charge in data_item.get("charges", []):
+            charge_amount = charge.get("netAmount")
+            if charge_amount:
+                charge["basisAmount"] = base_net_amount  # Grundbetrag
+                net_amount += round(float(charge_amount), 2)
+        net_amount = round(net_amount, 2)  # BT-131 (gerundet)
+        vat_amount = net_amount * (vat_rate / 100)  # Steuerbetrag (nur Anzeige)
         gross_unit_price = round(net_unit_price * (1 + (vat_rate / 100)), 2)
-        net_amount = (item_quantity * net_unit_price) / item_basis_quantity
-        gross_amount = (item_quantity * gross_unit_price) / item_basis_quantity
-        vat_amount = gross_amount - net_amount
+        gross_amount = net_amount + vat_amount
         vat_rate_normalized = normalize_decimal(vat_rate)
         vat_key = f"{vat_code}-{vat_rate_normalized}"
         if vat_key in tax_data:
             tax_data[vat_key]["netAmount"] += net_amount
-            tax_data[vat_key]["vatAmount"] += vat_amount
         else:
             if vat_key in tax_data_copy:
                 exemption_reason = tax_data_copy[vat_key].get("exemptionReason", "")  # Befreiungsgrund (BT-120)
@@ -578,43 +597,89 @@ def fill_invoice_data(invoice_data: dict) -> None:
                 "exemptionReasonCode": exemption_reason_code,
                 "netAmount": net_amount,
                 "rate": vat_rate,
-                "vatAmount": vat_amount
+                "vatAmount": 0  # berechnet nach Schleife per EN 16931 BR-CO-14
             }
             tax_data[vat_key] = vat_value
-        items_net_amount += net_amount
-        total_gross += gross_amount
-        total_vat += vat_amount
+        items_net_amount += net_amount  # EN 16931 BR-CO-10: Summe gerundeter BT-131
 
         data_item["netAmount"] = net_amount  # Gesamtpreis (Netto) (BT-131)
         data_item["vatAmount"] = vat_amount  # Steuerbetrag
         data_item["grossAmount"] = gross_amount  # Gesamtpreis (Brutto)
         data_item["grossUnitPrice"] = gross_unit_price  # Einzelpreis (Brutto)
 
-    # TODO Zuschläge und Nachlässe berücksichtigen
+    # Dokument-Nachlässe auf Steuerkategorien verteilen (BT-92, BT-95, BT-96 → BT-107, BT-116)
+    allowances_net_amount = 0.0
+    for allowance_data in invoice_data.get("allowances", []):
+        raw_amount = allowance_data.get("netAmount")
+        if not raw_amount:
+            continue
+        amount = round(float(raw_amount), 2)
+        allowances_net_amount += amount
+        vat_code_ac = allowance_data.get("vatCode", "S")
+        raw_vat_rate = allowance_data.get("vatRate")
+        if raw_vat_rate:
+            vat_rate_ac = float(raw_vat_rate)
+            vat_rate_normalized = normalize_decimal(vat_rate_ac)
+            vat_key = f"{vat_code_ac}-{vat_rate_normalized}"
+            if vat_key not in tax_data:
+                exemption_reason = tax_data_copy.get(vat_key, {}).get("exemptionReason", "")
+                exemption_reason_code = tax_data_copy.get(vat_key, {}).get("exemptionReasonCode", "")
+                tax_data[vat_key] = {"code": vat_code_ac, "exemptionReason": exemption_reason,
+                                     "exemptionReasonCode": exemption_reason_code,
+                                     "netAmount": 0, "rate": vat_rate_ac, "vatAmount": 0}
+            tax_data[vat_key]["netAmount"] -= amount
+
+    # Dokument-Zuschläge auf Steuerkategorien verteilen (BT-99, BT-102, BT-103 → BT-108, BT-116)
+    charges_net_amount = 0.0
+    for charge_data in invoice_data.get("charges", []):
+        raw_amount = charge_data.get("netAmount")
+        if not raw_amount:
+            continue
+        amount = round(float(raw_amount), 2)
+        charges_net_amount += amount
+        vat_code_ac = charge_data.get("vatCode", "S")
+        raw_vat_rate = charge_data.get("vatRate")
+        if raw_vat_rate:
+            vat_rate_ac = float(raw_vat_rate)
+            vat_rate_normalized = normalize_decimal(vat_rate_ac)
+            vat_key = f"{vat_code_ac}-{vat_rate_normalized}"
+            if vat_key not in tax_data:
+                exemption_reason = tax_data_copy.get(vat_key, {}).get("exemptionReason", "")
+                exemption_reason_code = tax_data_copy.get(vat_key, {}).get("exemptionReasonCode", "")
+                tax_data[vat_key] = {"code": vat_code_ac, "exemptionReason": exemption_reason,
+                                     "exemptionReasonCode": exemption_reason_code,
+                                     "netAmount": 0, "rate": vat_rate_ac, "vatAmount": 0}
+            tax_data[vat_key]["netAmount"] += amount
+
+    # EN 16931 BR-CO-14: Steuer pro Kategorie berechnen (BT-117 = BT-116 × BT-119 / 100)
+    total_vat = 0
+    for tax in tax_data.values():
+        tax["netAmount"] = round(tax["netAmount"], 2)  # BT-116
+        tax["vatAmount"] = round(tax["netAmount"] * tax["rate"] / 100, 2)  # BT-117
+        total_vat += tax["vatAmount"]
 
     invoice_data["taxes"] = tax_data
 
     data_totals = invoice_data["totals"]
-    data_totals["itemsNetAmount"] = items_net_amount  # Summe Positionen (Netto) (BT-106)
-    data_totals["chargesNetAmount"] = 0  # TODO
-    data_totals["allowancesNetAmount"] = 0  # TODO
-    charges_net_amount = data_totals["chargesNetAmount"]  # Summe Zuschläge (Netto) (BT-108)
-    allowances_net_amount = data_totals["allowancesNetAmount"]  # Summe Nachlässe (Netto) (BT-107)
+    data_totals["itemsNetAmount"] = items_net_amount  # Summe Positionen (Netto) (BT-106) EN 16931 BR-CO-10
+    data_totals["chargesNetAmount"] = charges_net_amount  # Summe Zuschläge (Netto) (BT-108) EN 16931 BR-CO-13
+    data_totals["allowancesNetAmount"] = allowances_net_amount  # Summe Nachlässe (Netto) (BT-107) EN 16931 BR-CO-12
     paid_amount = data_totals["paidAmount"]  # Gezahlter Betrag (BT-113)
     rounding_amount = data_totals["roundingAmount"]  # Rundungsbetrag (BT-114)
     data_totals["netAmount"] = round(items_net_amount + charges_net_amount - allowances_net_amount, 2)  # Gesamt (Netto) (BT-109)
-    data_totals["vatAmount"] = round(total_vat, 2)  # Summe Umsatzsteuer (BT-110)
-    data_totals["grossAmount"] = round(total_gross, 2)  # Gesamt (Brutto) (BT-112)
-    data_totals["dueAmount"] = round((total_gross + rounding_amount) - paid_amount, 2)  # Fälliger Betrag (BT-115)
+    data_totals["vatAmount"] = round(total_vat, 2)  # Summe Umsatzsteuer (BT-110) = Σ BT-117 (EN 16931 BR-CO-11)
+    data_totals["grossAmount"] = round(data_totals["netAmount"] + data_totals["vatAmount"], 2)  # Gesamt (Brutto) (BT-112) EN 16931 BR-CO-15
+    data_totals["dueAmount"] = round(data_totals["grossAmount"] + rounding_amount - paid_amount, 2)  # Fälliger Betrag (BT-115) EN 16931 BR-CO-16
 
 
-def add_xml_to_pdf(pdf_file: str, xml_file: str) -> None:
+def add_xml_to_pdf(pdf_file: str, xml_file: str) -> bool:
     """!
     @brief Attach XML to an existing PDF.
            Note that the existing PDF should be compliant to PDF/A-3!
            You can validate this here: https://www.pdf-online.com/osa/validate.aspx
     @param pdf_file : PDF file
     @param xml_file : XML file
+    @return success status
     """
     with open(xml_file, 'rb') as file:
         xml_data = file.read()
@@ -622,8 +687,12 @@ def add_xml_to_pdf(pdf_file: str, xml_file: str) -> None:
     with open(pdf_file, "rb") as file:
         new_pdf_bytes = attach_xml(file.read(), xml_data)
 
-    with open(pdf_file, "wb") as f:
-        f.write(new_pdf_bytes)
+    try:
+        with open(pdf_file, "wb") as f:
+            f.write(new_pdf_bytes)
+    except PermissionError:
+        return False
+    return True
 
 
 def set_valid_pdf_profile(pdf_file: str) -> None:
@@ -650,7 +719,7 @@ def set_valid_pdf_profile(pdf_file: str) -> None:
         "-dEmbedAllFonts=true",
         "-dSubsetFonts=false",
         f"-sOutputFile={pdf_file}",
-        temp_file,
+        str(temp_file),
     ]
     _result = run_subprocess(gs_command)
-    delete_file(temp_file)
+    delete_file(str(temp_file))

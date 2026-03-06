@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   splash_screen.py
-@brief  Splash screen dialog shown during application startup
+@brief  Splash screen dialog shown during application startup.
 ********************************************************************************
 """
 
@@ -16,14 +16,14 @@ from Source.version import BUILD_NAME
 from Source.Util.app_data import IMG_SPLASH
 from Source.Views.dialogs.dialog_splash_ui import Ui_SplashScreen
 
-F_MIN_SPLASH_SCREEN_TIME = 2.0  # minimum splash screen time in "s"
+MIN_SPLASH_SCREEN_TIME = 2.0  # minimum splash screen time in s
 
 log = logging.getLogger(__title__)
 
 
 def create_splash_screen() -> QDialog:
     """!
-    @brief Creates and configures the application splash screen dialog.
+    @brief Create and display the application splash screen.
     @return The initialized splash screen dialog.
     """
     splash = QDialog()

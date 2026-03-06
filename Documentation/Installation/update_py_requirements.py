@@ -34,7 +34,7 @@ class PackageInfo(NamedTuple):
     @brief Package Information.
     """
     package: str
-    version: int
+    version: str
     author: str
     author_mail: str
     license_info: str
@@ -46,7 +46,7 @@ class PackageInfo(NamedTuple):
 
 def create_package_summary_xls(l_package_info: list[PackageInfo]) -> None:
     """!
-    @brief Update xls field with package summary
+    @brief Update xls file with package summary
     @param l_package_info : list with package infos
     """
     xls_creator = XLSCreator(font_name=FONT_NAME)
@@ -80,8 +80,8 @@ def create_package_summary_xls(l_package_info: list[PackageInfo]) -> None:
 
 def get_package_info(package: str) -> PackageInfo | None:
     """!
-    @brief Upgrade package from text file to latest version
-    @param package : check latest version of this package
+    @brief Get package info from PyPI
+    @param package : package name to query
     @return package info
     """
     try:

@@ -10,71 +10,76 @@ from typing import Any
 import fitz  # PyMuPDF
 
 from Source.version import __title__
-from Source.Model.data_handler import EReceiptFields, EReceiptGroup, fill_data, D_RECEIPT_TEMPLATE, convert_amount
+from Source.Model.data_handler import EReceiptFields, EReceiptGroup, fill_data, RECEIPT_TEMPLATE, convert_amount
 
 log = logging.getLogger(__title__)
 
 
 def check_ust(pdf_path: str) -> bool:
     """!
-    @brief Check if document is pre tax
+    @brief Check if document is UST (Umsatzsteuererklärung).
     @param pdf_path : PDF file path
-    @return status if document is pre tax
+    @return status if document is UST
     """
-    b_is_pre_tax = False
     with fitz.open(pdf_path) as pdf_document:
         for page_num in range(pdf_document.page_count):
             page = pdf_document[page_num]
             text = page.get_text()
             if EReceiptGroup.UST.value in text:
-                b_is_pre_tax = True
-                break
-    return b_is_pre_tax
+                return True
+    return False
 
 
 def import_ust(pdf_path: str, is_income: bool) -> dict[EReceiptFields, Any]:
     """!
-    @brief Read items from PDF file
+    @brief Extract UST (Umsatzsteuererklärung) data from PDF.
     @param pdf_path : PDF file path
     @param is_income : True: is income; False: is expenditure
-    @return data
+    @return receipt data
     """
-    b_neg_amount = False
+    neg_amount = False
     event = EReceiptGroup.UST.value
     invoice_date = ""
     amount: float | int = 0
-    b_pre_amount = False
-    b_pre_year = False
+    pre_amount = False
+    pre_year = False
     tax_office = "Unbekannt"
     with fitz.open(pdf_path) as pdf_document:
         for page_num in range(pdf_document.page_count):
             page = pdf_document[page_num]
             text = page.get_text()
             lines = text.split('\n')
-            for _i, line in enumerate(lines):
+            for line in lines:
                 # print(line)
                 if "Erstellungsdatum" in line:
-                    invoice_date = line.split()[1]
+                    parts = line.split()
+                    if len(parts) > 1:
+                        invoice_date = parts[1]
                 elif "Finanzamt:" in line:
-                    tax_office = line.split()[1]
-                elif b_pre_amount:
-                    s_amount = line.split()[0]
-                    amount = convert_amount(s_amount)
+                    parts = line.split()
+                    if len(parts) > 1:
+                        tax_office = parts[1]
+                elif pre_amount:
+                    parts = line.split()
+                    if not parts:
+                        continue
+                    amount_text = parts[0]
+                    amount = convert_amount(amount_text)
                     if amount < 0:
-                        b_neg_amount = True
+                        neg_amount = True
                     amount = abs(amount)
-                    b_pre_amount = False
-                elif b_pre_year:
+                    pre_amount = False
+                elif pre_year:
                     event += f" {line}"
-                    b_pre_year = False
+                    pre_year = False
                 elif line == "Minuszeichen voranstellen -":
-                    b_pre_amount = True
+                    pre_amount = True
                 elif line == "Kalenderjahr":
-                    b_pre_year = True
+                    pre_year = True
 
     receipt: dict[EReceiptFields, Any] = {}
-    b_success = bool(is_income == b_neg_amount)
-    if b_success:
+    success = is_income == neg_amount
+    if success:
         receipt[EReceiptFields.TRADE_PARTNER] = f"FK {tax_office}"
         receipt[EReceiptFields.DESCRIPTION] = event
         receipt[EReceiptFields.INVOICE_DATE] = invoice_date
@@ -82,5 +87,5 @@ def import_ust(pdf_path: str, is_income: bool) -> dict[EReceiptFields, Any]:
         receipt[EReceiptFields.AMOUNT_NET] = amount
         receipt[EReceiptFields.BAR] = False
         receipt[EReceiptFields.GROUP] = EReceiptGroup.UST
-        receipt = fill_data(D_RECEIPT_TEMPLATE, receipt)
+        receipt = fill_data(RECEIPT_TEMPLATE, receipt)
     return receipt

@@ -7,7 +7,7 @@
 
 import os
 import logging
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 import shutil
 
 from PyQt6.QtCore import Qt
@@ -16,15 +16,17 @@ from PyQt6.QtWidgets import QDialog, QLineEdit, QFileDialog
 
 from Source.version import __title__
 from Source.Util.app_data import EAiType, write_ai_type, thread_dialog
-from Source.Util.app_data import ICON_OLLAMA_LIGHT, ICON_OLLAMA_DARK, ICON_OPEN_AI_LIGHT, ICON_OPEN_AI_DARK, ICON_MISTRAL  # pylint: disable=wrong-import-position
+from Source.Util.app_data import ICON_OLLAMA_LIGHT, ICON_OLLAMA_DARK, ICON_OPEN_AI_LIGHT, ICON_OPEN_AI_DARK, \
+    ICON_GEMINI, ICON_MISTRAL  # pylint: disable=wrong-import-position
 from Source.Model.data_handler import COMPANY_LOGO_TYPES  # pylint: disable=wrong-import-position
-from Source.Model.ZUGFeRD.drafthorse_data import D_COUNTRY_CODE  # pylint: disable=wrong-import-position
+from Source.Model.ZUGFeRD.drafthorse_data import COUNTRY_CODE  # pylint: disable=wrong-import-position
 from Source.Views.dialogs.dialog_company_ui import Ui_DialogCompany  # pylint: disable=wrong-import-position
-from Source.Model.company import ECompanyFields, add_company, LOGO_BRIEF_PATH, D_COMPANY_TEMPLATE, DEFAULT_TAX_RATES, \
+from Source.Model.company import ECompanyFields, add_company, LOGO_BRIEF_PATH, COMPANY_TEMPLATE, DEFAULT_TAX_RATES, \
     COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, COMPANY_PAYMENT_FIELD, COMPANY_BOOKING_FIELD, COMPANY_DEFAULT_FIELD  # pylint: disable=wrong-import-position
 from Source.Model.ZUGFeRD.drafthorse_import import set_combo_box_items  # pylint: disable=wrong-import-position
 from Source.Worker.vat_validation import VatValidation, check_vat_format  # pylint: disable=wrong-import-position
 from Source.Worker.open_ai import DEFAULT_GPT_MODEL  # pylint: disable=wrong-import-position
+from Source.Worker.gemini_ai import DEFAULT_GEMINI_MODEL  # pylint: disable=wrong-import-position
 from Source.Worker.mistral_ai import DEFAULT_MISTRAL_MODEL  # pylint: disable=wrong-import-position
 from Source.Worker.ollama_ai import DEFAULT_OLLAMA_MODEL  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
@@ -33,14 +35,14 @@ if TYPE_CHECKING:
 log = logging.getLogger(__title__)
 
 
-def parse_number(s_string: str) -> float | int | None:
+def parse_number(text: str) -> float | int | None:
     """!
     @brief Convert a string to int or float if possible.
-    @param s_string : Input string
-    @return Parsed number or None if conversion fails
+    @param text : Input string.
+    @return Parsed number or None if conversion fails.
     """
     try:
-        number = float(s_string)
+        number = float(text)
         if number.is_integer():
             number = int(number)
         return number
@@ -51,12 +53,12 @@ def parse_number(s_string: str) -> float | int | None:
 class CompanyDialog(QDialog, Ui_DialogCompany):
     """!
     @brief Dialog for viewing and editing company data.
-    @param ui : main window
-    @param company_data : Existing company data (optional)
-    @param uid : Company UID (optional)
+    @param ui : main window.
+    @param company_data : Existing company data (optional).
+    @param uid : Company UID (optional).
     """
 
-    def __init__(self, ui: "MainWindow", company_data: Optional[dict[Any, Any]] = None, uid: Optional[str] = None,  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, ui: "MainWindow", company_data: dict[str, Any] | None = None, uid: str | None = None,  # pylint: disable=keyword-arg-before-vararg
                  *args: Any, **kwargs: Any) -> None:
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
@@ -66,9 +68,9 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         self.ui = ui
         self.company_data = company_data
         self.uid = uid
-        self.b_lock_auto_city_data = False
-        self.b_city_auto_change = False
-        self.logo_path = None  # path to import
+        self.is_auto_city_locked = False
+        self.is_city_auto_change = False
+        self.logo_path: str | None = None  # path to import
 
         self.lbl_vat_status.setText("")
         self.lbl_vat_status.hide()
@@ -84,14 +86,14 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         """
         log.debug("Starting Company dialog")
 
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
 
         if self.company_data is None:
-            self.company_data = D_COMPANY_TEMPLATE
+            self.company_data = COMPANY_TEMPLATE
         else:
-            self.b_lock_auto_city_data = True
+            self.is_auto_city_locked = True
 
-        company = self.company_data
+        company: dict[str, Any] = self.company_data
         company_address = company[COMPANY_ADDRESS_FIELD]
         company_contact = company[COMPANY_CONTACT_FIELD]
         company_payment = company[COMPANY_PAYMENT_FIELD]
@@ -111,7 +113,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         self.le_street_2.setText(company_address[ECompanyFields.STREET_2])
         self.le_plz.setText(company_address[ECompanyFields.PLZ])
         self.le_city.setText(company_address[ECompanyFields.CITY])
-        set_combo_box_items(self.cb_country, company_address[ECompanyFields.COUNTRY], D_COUNTRY_CODE)
+        set_combo_box_items(self.combo_country, company_address[ECompanyFields.COUNTRY], COUNTRY_CODE)
         # contact
         self.le_first_name.setText(company_contact[ECompanyFields.FIRST_NAME])
         self.le_last_name.setText(company_contact[ECompanyFields.LAST_NAME])
@@ -157,6 +159,8 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
                 self.rb_ai_deactivated.setChecked(True)
             case EAiType.OPEN_AI:
                 self.rb_ai_chatgpt.setChecked(True)
+            case EAiType.GEMINI:
+                self.rb_ai_gemini.setChecked(True)
             case EAiType.MISTRAL:
                 self.rb_ai_mistral.setChecked(True)
             case EAiType.OLLAMA:
@@ -164,13 +168,15 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             case _:
                 log.warning("Invalid AI type: %s", self.ui.model.ai_type)
         # logo
-        b_light_theme = self.ui.model.c_monitor.is_light_theme()
-        self.rb_ai_chatgpt.setIcon(QIcon(ICON_OPEN_AI_LIGHT if b_light_theme else ICON_OPEN_AI_DARK))
+        is_light_theme = self.ui.model.monitor.is_light_theme()
+        self.rb_ai_chatgpt.setIcon(QIcon(ICON_OPEN_AI_LIGHT if is_light_theme else ICON_OPEN_AI_DARK))
+        self.rb_ai_gemini.setIcon(QIcon(ICON_GEMINI))
         self.rb_ai_mistral.setIcon(QIcon(ICON_MISTRAL))
-        self.rb_ai_ollama.setIcon(QIcon(ICON_OLLAMA_LIGHT if b_light_theme else ICON_OLLAMA_DARK))
+        self.rb_ai_ollama.setIcon(QIcon(ICON_OLLAMA_LIGHT if is_light_theme else ICON_OLLAMA_DARK))
         # callback
         self.rb_ai_deactivated.toggled.connect(self.ai_changed)
         self.rb_ai_chatgpt.toggled.connect(self.ai_changed)
+        self.rb_ai_gemini.toggled.connect(self.ai_changed)
         self.rb_ai_mistral.toggled.connect(self.ai_changed)
         self.rb_ai_ollama.toggled.connect(self.ai_changed)
         # API key
@@ -196,21 +202,22 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         self.show()
         self.exec()
 
-    def closeEvent(self, event: Optional[QCloseEvent]) -> None:  # pylint: disable=invalid-name
+    def closeEvent(self, event: QCloseEvent | None) -> None:  # pylint: disable=invalid-name
         """!
-        @brief Default close Event Method to handle dialog close
-        @param event : arrived event
+        @brief Handle dialog close event.
+        @param event : Close event.
         """
-        self.vat_validator.terminate()
+        self.vat_validator.requestInterruption()
         if event is not None:
             event.accept()
 
     def vat_id_changed(self, vat_id: str) -> None:
         """!
         @brief Triggered when the VAT ID text changes.
-        @param vat_id : Entered VAT number
+        @param vat_id : Entered VAT number.
         """
-        self.vat_validator.terminate()
+        self.vat_validator.requestInterruption()
+        self.vat_validator.wait(2000)
         if vat_id:
             if check_vat_format(vat_id):
                 self.lbl_vat_status.setText("Überprüfung läuft...")
@@ -225,10 +232,10 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             self.lbl_vat_status.setText("")
             self.lbl_vat_status.hide()
 
-    def vat_result(self, result: dict) -> None:
+    def vat_result(self, result: dict[str, Any]) -> None:
         """!
         @brief Handle result of VAT validation service.
-        @param result : Dictionary containing validation data
+        @param result : Dictionary containing validation data.
         """
         valid_status = result.get("valid", None)
         if valid_status is None:
@@ -242,10 +249,10 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             self.lbl_vat_status.setStyleSheet("color: red")
         self.lbl_vat_status.show()
 
-    def select_logo(self, fix_logo: Optional[str] = None) -> None:
+    def select_logo(self, fix_logo: str | None = None) -> None:
         """!
         @brief Select a company logo file and update preview.
-        @param fix_logo : Optional path to logo file (no dialog opened if set)
+        @param fix_logo : Optional path to logo file (no dialog opened if set).
         """
         if fix_logo:
             logo_path = fix_logo
@@ -264,22 +271,22 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         """!
         @brief Triggered when the city text field changes. Used to control automatic PLZ -> city updates.
         """
-        if self.b_city_auto_change:
-            self.b_city_auto_change = False
-            self.b_lock_auto_city_data = False
+        if self.is_city_auto_change:
+            self.is_city_auto_change = False
+            self.is_auto_city_locked = False
         else:
-            self.b_lock_auto_city_data = bool(self.le_city.text().strip())
+            self.is_auto_city_locked = bool(self.le_city.text().strip())
 
     def plz_changed(self) -> None:
         """!
         @brief Triggered when the postal code changes. Automatically fills the city field if data is available.
         """
-        if (not self.b_lock_auto_city_data) and (self.ui.model.d_plz_data is not None):
+        if (not self.is_auto_city_locked) and (self.ui.model.plz_map is not None):
             plz = self.le_plz.text().strip()
             if plz:
-                new_city_name = self.ui.model.d_plz_data.get(plz, "")
+                new_city_name = self.ui.model.plz_map.get(plz, "")
                 if new_city_name:
-                    self.b_city_auto_change = True
+                    self.is_city_auto_change = True
                     self.le_city.setText(new_city_name)
                 else:
                     self.le_city.clear()
@@ -294,19 +301,25 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             self.le_ai_model.setPlaceholderText("")
         elif self.rb_ai_chatgpt.isChecked():
             self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_GPT_MODEL}")
-            self.le_ai_model.setText(self.ui.model.c_open_ai.model)
-            self.le_ai_api_key.setText(self.ui.model.c_open_ai.api_key)
+            self.le_ai_model.setText(self.ui.model.open_ai.model)
+            self.le_ai_api_key.setText(self.ui.model.open_ai.api_key)
+            show_model = True
+            show_api_key = True
+        elif self.rb_ai_gemini.isChecked():
+            self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_GEMINI_MODEL}")
+            self.le_ai_model.setText(self.ui.model.gemini_ai.model)
+            self.le_ai_api_key.setText(self.ui.model.gemini_ai.api_key)
             show_model = True
             show_api_key = True
         elif self.rb_ai_mistral.isChecked():
             self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_MISTRAL_MODEL}")
-            self.le_ai_model.setText(self.ui.model.c_mistral_ai.model)
-            self.le_ai_api_key.setText(self.ui.model.c_mistral_ai.api_key)
+            self.le_ai_model.setText(self.ui.model.mistral_ai.model)
+            self.le_ai_api_key.setText(self.ui.model.mistral_ai.api_key)
             show_model = True
             show_api_key = True
         elif self.rb_ai_ollama.isChecked():
             self.le_ai_model.setPlaceholderText(f"Default: {DEFAULT_OLLAMA_MODEL}")
-            self.le_ai_model.setText(self.ui.model.c_ollama_ai.model)
+            self.le_ai_model.setText(self.ui.model.ollama_ai.model)
             show_model = True
         else:
             log.warning("Invalid AI checkbox selected")
@@ -331,6 +344,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         """!
         @brief Collect values from the dialog and store them in the company data structure.
         """
+        assert self.company_data is not None
         company = self.company_data
         company_address = company[COMPANY_ADDRESS_FIELD]
         company_contact = company[COMPANY_CONTACT_FIELD]
@@ -351,7 +365,7 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         company_address[ECompanyFields.STREET_2] = self.le_street_2.text()
         company_address[ECompanyFields.PLZ] = self.le_plz.text()
         company_address[ECompanyFields.CITY] = self.le_city.text()
-        company_address[ECompanyFields.COUNTRY] = self.cb_country.currentData()
+        company_address[ECompanyFields.COUNTRY] = self.combo_country.currentData()
         # contact
         company_contact[ECompanyFields.FIRST_NAME] = self.le_first_name.text()
         company_contact[ECompanyFields.LAST_NAME] = self.le_last_name.text()
@@ -367,10 +381,10 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
         company_booking[ECompanyFields.PROFIT_CALCULATION_CAPITAL] = self.rb_marge_guv.isChecked()
         company_booking[ECompanyFields.AGREED_COST] = self.rb_tax_soll.isChecked()
         text = self.le_tax_rates.text()
-        l_tax_rates = [num for part in text.split() if (num := parse_number(part)) is not None]
-        if not l_tax_rates:
-            l_tax_rates = DEFAULT_TAX_RATES
-        company_booking[ECompanyFields.TAX_RATES] = l_tax_rates
+        tax_rates = [num for part in text.split() if (num := parse_number(part)) is not None]
+        if not tax_rates:
+            tax_rates = list(DEFAULT_TAX_RATES)
+        company_booking[ECompanyFields.TAX_RATES] = tax_rates
         # default
         company_default[ECompanyFields.QUARTERLY_SALES_TAX] = self.rb_ustva_quaterly.isChecked()
         company_default[ECompanyFields.PAID] = self.cb_paid.isChecked()
@@ -389,18 +403,23 @@ class CompanyDialog(QDialog, Ui_DialogCompany):
             ai_type = EAiType.DEACTIVATED
         elif self.rb_ai_chatgpt.isChecked():
             ai_type = EAiType.OPEN_AI
-            self.ui.model.c_open_ai.set_model(custom_model)
-            self.ui.model.c_open_ai.set_api_key(self.le_ai_api_key.text())
-            self.ui.model.c_open_ai.initialize_openai_client()
+            self.ui.model.open_ai.set_model(custom_model)
+            self.ui.model.open_ai.set_api_key(self.le_ai_api_key.text())
+            self.ui.model.open_ai.initialize_client()
+        elif self.rb_ai_gemini.isChecked():
+            ai_type = EAiType.GEMINI
+            self.ui.model.gemini_ai.set_model(custom_model)
+            self.ui.model.gemini_ai.set_api_key(self.le_ai_api_key.text())
+            self.ui.model.gemini_ai.initialize_client()
         elif self.rb_ai_mistral.isChecked():
             ai_type = EAiType.MISTRAL
-            self.ui.model.c_mistral_ai.set_model(custom_model)
-            self.ui.model.c_mistral_ai.set_api_key(self.le_ai_api_key.text())
-            self.ui.model.c_mistral_ai.initialize_mistral_client()
+            self.ui.model.mistral_ai.set_model(custom_model)
+            self.ui.model.mistral_ai.set_api_key(self.le_ai_api_key.text())
+            self.ui.model.mistral_ai.initialize_client()
         elif self.rb_ai_ollama.isChecked():
             ai_type = EAiType.OLLAMA
-            self.ui.model.c_ollama_ai.set_model(custom_model)
-            self.ui.model.c_ollama_ai.initialize_ollama()
+            self.ui.model.ollama_ai.set_model(custom_model)
+            self.ui.model.ollama_ai.initialize_client()
         else:
             ai_type = EAiType.DEACTIVATED
             log.warning("Invalid AI type: %s", self.ui.model.ai_type)

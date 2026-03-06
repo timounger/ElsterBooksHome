@@ -1,8 +1,8 @@
 # General
 *.log
 *.pyc
-*.settings
 *.venv
+CLAUDE.md
 
 # Source
 /Source/Util/git_version.py

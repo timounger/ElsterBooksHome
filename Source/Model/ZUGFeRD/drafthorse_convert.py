@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   drafthorse_convert.py
-@brief  ZUGFeRD convert
+@brief  Convert and normalize values for ZUGFeRD invoice processing.
 ********************************************************************************
 """
 
@@ -14,9 +14,9 @@ from drafthorse.models.document import Document
 def normalize_decimal(value: Any, max_decimals: int = 4) -> Decimal:
     """!
     @brief Normalize a number to a Decimal with a maximum number of decimal places.
-    @param value : value to normalize
-    @param max_decimals : maximum number of decimal places
-    @return normalized Decimal
+    @param value : numeric value to normalize.
+    @param max_decimals : maximum number of decimal places.
+    @return normalized Decimal with trailing zeros removed.
     """
     d = Decimal(str(value)).quantize(Decimal("1." + "0" * max_decimals), rounding=ROUND_HALF_UP)
     s = format(d.normalize(), 'f')  # Convert to f-format to avoid exponents
@@ -29,34 +29,32 @@ def normalize_decimal(value: Any, max_decimals: int = 4) -> Decimal:
 
 def convert_to_amount(entry: Any) -> float | None:
     """!
-    @brief Convert to amount
-    @param entry : entry to convert
-    @return float value
+    @brief Convert an XML entry to a float amount.
+    @param entry : XML value to convert.
+    @return float amount or None if empty.
     """
-    if entry and (str(entry).strip() != ""):
-        float_value = float(entry)
-    else:
-        float_value = None
-    return float_value
+    if entry and str(entry).strip():
+        return float(entry)
+    return None
 
 
 def convert_to_date_string(entry: Any) -> str:
     """!
-    @brief Convert to date string
-    @param entry : entry to convert
-    @return date string value
+    @brief Convert an XML entry to a date string.
+    @param entry : XML value to convert.
+    @return date string or empty string if not set.
     """
-    string_value = str(entry)
-    if string_value in ["None", " ", ""]:
-        string_value = ""
-    return string_value
+    value = str(entry)
+    if value in ["None", " ", ""]:
+        return ""
+    return value
 
 
 def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     """!
-    @brief Convert facturx to json. See template D_DEFAULT_INVOICE_DATA is based on on PDF24 e-invoice format
-    @param xml_content : XML content
-    @return JSON content
+    @brief Convert Factur-X XML to JSON dictionary based on PDF24 e-invoice format.
+    @param xml_content : Factur-X XML content as bytes.
+    @return invoice data as JSON dictionary.
     """
     doc = Document.parse(xml_content)
     data: dict[str, Any] = {}
@@ -65,9 +63,9 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     header = doc.header
     data["number"] = str(header.id)  # Rechnungsnummer (BT-1)
     data["issueDate"] = str(header.issue_date_time._value)  # Rechnungsdatum (BT-2)
-    data["typeCode"] = str(header.type_code)  # Rechnungstyp (BT-3) D_INVOICE_TYPE
-    data["currencyCode"] = str(doc.trade.settlement.currency_code)  # Währung (BT-5) D_CURRENCY
-    if len(doc.trade.settlement.terms.children) > 0:
+    data["typeCode"] = str(header.type_code)  # Rechnungstyp (BT-3) INVOICE_TYPE
+    data["currencyCode"] = str(doc.trade.settlement.currency_code)  # Währung (BT-5) CURRENCY
+    if doc.trade.settlement.terms.children:
         data["dueDate"] = convert_to_date_string(doc.trade.settlement.terms.children[0].due._value)  # Fälligkeitsdatum (BT-9)
     else:
         data["dueDate"] = ""
@@ -91,11 +89,11 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         type_code = str(child.type_code)
         reference = {}
         if type_code == "50":  # Ausschreibung/Los (BT-17)
-            reference["id"] = str(child.name)
+            reference["id"] = str(child.issuer_assigned_id._text)
             reference["typeCode"] = type_code
             data_tender_references.append(reference)
         elif type_code == "130":  # Objektreferenz (BT-18)
-            reference["id"] = str(child.name)
+            reference["id"] = str(child.issuer_assigned_id._text)
             reference["typeCode"] = type_code
             data_object_references.append(reference)
     data_buyer_accounting_accounts = data.setdefault("buyerAccountingAccounts", [])
@@ -107,10 +105,8 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     data_invoice["id"] = str(doc.trade.settlement.invoice_referenced_document.issuer_assigned_id._text)  # Rechnungsreferenz ID (BT-25)
     data_invoice["issueDate"] = convert_to_date_string(doc.trade.settlement.invoice_referenced_document.issue_date_time._value)  # Rechnungsreferenz Datum (BT-26)
     data_invoice_references.append(data_invoice)
-    l_notes = []
-    for child in header.notes.children:
-        l_notes.append(str(child.content))
-    data["note"] = "\n".join(l_notes)  # Freitext zur Rechnung (BT-22)
+    notes = [str(child.content) for child in header.notes.children]
+    data["note"] = "\n".join(notes)  # Freitext zur Rechnung (BT-22)
     # === Rechnungssteller ===
     seller = doc.trade.agreement.seller
     data_seller = data.setdefault("seller", {})
@@ -178,8 +174,8 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         data_methods.append(data_method)  # multiple in PDF24 but only one in facturx
     # ---
     data_payment["reference"] = str(doc.trade.settlement.payment_reference)  # Verwendungszweck (BT-83)
-    if len(doc.trade.settlement.terms.children) > 0:
-        data_payment["terms"] = str(doc.trade.settlement.terms.children[0].description)  # Zahlungsbedienungen (BT-20)
+    if doc.trade.settlement.terms.children:
+        data_payment["terms"] = str(doc.trade.settlement.terms.children[0].description)  # Zahlungsbedingungen (BT-20)
     else:
         data_payment["terms"] = ""
     # === Lieferdetails ===
@@ -202,7 +198,7 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         data_item: dict[str, Any] = {}
         # str(child.document.line_id) Position (BT-126) is index in array
         data_item["name"] = str(child.product.name)  # Name (BT-153)
-        data_item["vatRate"] = int(child.settlement.trade_tax.rate_applicable_percent._value)  # Steuersatz (BT-152)
+        data_item["vatRate"] = float(child.settlement.trade_tax.rate_applicable_percent._value)  # Steuersatz (BT-152)
         data_item["vatCode"] = str(child.settlement.trade_tax.category_code)  # Steuerkategorie (BT-151)
         data_item["id"] = str(child.product.seller_assigned_id._text)  # Artikel-Nr. (BT-155)
         data_item["billingPeriodStart"] = convert_to_date_string(child.settlement.period.start)  # Startdatum (BT-134)
@@ -210,14 +206,14 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         data_item["orderPosition"] = str(child.agreement.buyer_order.line_id)  # Auftragsposition (BT-132)
         data_object_references = data_item.setdefault("objectReferences", [])
         data_object = {}
-        data_object["id"] = str(child.settlement.additional_referenced_document.uri_id)  # Objektreferenz (BT-128)
+        data_object["id"] = str(child.settlement.additional_referenced_document.issuer_assigned_id._text)  # Objektreferenz (BT-128)
         data_object["typeCode"] = str(child.settlement.additional_referenced_document.type_code)  # Objektreferenz (BT-128)
         data_object_references.append(data_object)
         data_item["description"] = str(child.product.description)  # Beschreibung (BT-154)
         data_item["quantity"] = float(child.delivery.billed_quantity._amount)  # Menge (BT-129)
-        data_item["quantityUnit"] = str(child.delivery.billed_quantity._unit_code)  # Einheit (BT-130) D_UNIT
+        data_item["quantityUnit"] = str(child.delivery.billed_quantity._unit_code)  # Einheit (BT-130) UNIT
         data_item["netUnitPrice"] = float(child.agreement.net.amount._value)  # Einzelpreis (Netto) (BT-146)
-        data_item["basisQuantity"] = float(child.agreement.net.basis_quantity._amount or 0)  # Basismenge (BT-149) note: or with 0 if value is empty use 0
+        data_item["basisQuantity"] = float(child.agreement.net.basis_quantity._amount or 1)  # Basismenge (BT-149) note: or with 1 if value is empty use 1
         data_item["netAmount"] = float(child.settlement.monetary_summation.total_amount._value)  # Gesamtpreis (Netto) (BT-131)
         # Nachlässe/Zuschläge
         data_item_charges = data_item.setdefault("charges", [])
@@ -225,12 +221,12 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         for ac_child in child.settlement.allowance_charge.children:
             data_item_charge: dict[str, Any] = {}
             data_item_charge["basisAmount"] = float(ac_child.basis_amount._value or 0)  # Grundbetrag (nicht in PDF24 aber in xml)
-            data_item_charge["percent"] = int(ac_child.calculation_percent._value or 0)  # Prozent BT-138) (BT-143)
+            data_item_charge["percent"] = float(ac_child.calculation_percent._value or 0)  # Prozent (BT-138) (BT-143)
             data_item_charge["netAmount"] = float(ac_child.actual_amount._value)  # Betrag (Netto) (BT-136) (BT-141)
             data_item_charge["reason"] = str(ac_child.reason)  # Grund (BT-139) (BT-144)
             data_item_charge["reasonCode"] = str(ac_child.reason_code)  # Code des Grundes (BT-140) (BT-145)
-            b_charge = ac_child.indicator._value  # False: allowance; True: charge
-            if b_charge:
+            is_charge = ac_child.indicator._value  # False: allowance; True: charge
+            if is_charge:
                 data_item_charges.append(data_item_charge)
             else:
                 data_item_allowances.append(data_item_charge)
@@ -241,16 +237,16 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
     for child in doc.trade.settlement.allowance_charge.children:
         data_charge: dict[str, Any] = {}
         data_charge["basisAmount"] = float(child.basis_amount._value or 0)  # Grundbetrag (BT-93) (BT-100)
-        data_charge["percent"] = int(child.calculation_percent._value or 0)  # Prozent (BT-94) (BT-101)
+        data_charge["percent"] = float(child.calculation_percent._value or 0)  # Prozent (BT-94) (BT-101)
         data_charge["netAmount"] = float(child.actual_amount._value)  # Betrag (Netto) (BT-92) (BT-99)
         data_charge["reason"] = str(child.reason)  # Grund (BT-97) (BT-104)
         data_charge["reasonCode"] = str(child.reason_code)  # Code des Grundes (BT-98) (BT-105)
         for trade_tax in child.trade_tax.children:
-            data_charge["vatRate"] = int(trade_tax.rate_applicable_percent._value)  # Steuersatz (BT-96) (BT-103)
+            data_charge["vatRate"] = float(trade_tax.rate_applicable_percent._value)  # Steuersatz (BT-96) (BT-103)
             data_charge["vatCode"] = str(trade_tax.category_code)  # Steuerkategorie (BT-95) (BT-102)
             break
-        b_charge = child.indicator._value  # False: allowance; True: charge
-        if b_charge:
+        is_charge = child.indicator._value  # False: allowance; True: charge
+        if is_charge:
             data_charges.append(data_charge)
         else:
             data_allowances.append(data_charge)
@@ -266,7 +262,7 @@ def convert_facturx_to_json(xml_content: bytes) -> dict[str, Any]:
         vat_rate = float(child.rate_applicable_percent._value)
         tax_data["rate"] = vat_rate  # Steuersatz (BT-119)
         tax_data["vatAmount"] = float(child.calculated_amount._value)  # Steuerbetrag (BT-117)
-        vat_key = f"{vat_code}-{vat_rate}"
+        vat_key = f"{vat_code}-{normalize_decimal(vat_rate)}"
         data_taxes[vat_key] = tax_data
     # Gesamtsummen
     monetary_summation = doc.trade.settlement.monetary_summation

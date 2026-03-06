@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   app_err_handler.py
-@brief  Error handler to catch all unexpected exceptions to prevent application crashes
+@brief  Error handler to catch all unexpected exceptions to prevent application crashes.
 ********************************************************************************
 """
 
@@ -10,7 +10,7 @@
 import sys
 import traceback
 import logging
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from types import TracebackType
 
 from PyQt6.QtWidgets import QMessageBox, QApplication
@@ -39,7 +39,6 @@ class UncaughtHook(QObject):
         super().__init__(*args, **kwargs)
 
         self.main_window_controller: "MainWindow | None" = None
-        self.crash_arrived = False
 
         # this registers the exception_hook() function as hook with the Python interpreter
         sys.excepthook = self.exception_hook
@@ -47,14 +46,13 @@ class UncaughtHook(QObject):
         # connect signal to execute the message box function always on main thread
         self.exception_caught.connect(self.show_exception_box)
 
-    def show_exception_box(self, s_log_msg: str) -> None:
+    def show_exception_box(self, log_msg: str) -> None:
         """!
-        @brief Displays the error message box
-        @param s_log_msg : the error message to be displayed in details section
+        @brief Displays the error message box.
+        @param log_msg : the error message to be displayed in details section
         """
         # check if QApplication instance is available
-        self.crash_arrived = True
-        if (QApplication is not None) and (QApplication.instance() is not None):
+        if QApplication.instance() is not None:
             dialog = QMessageBox(self.main_window_controller)
             dialog.setWindowTitle("Error")
             dialog.setText("Ein unerwarteter Fehler ist aufgetreten\t\t\t\t")
@@ -64,8 +62,7 @@ class UncaughtHook(QObject):
                 close_btn.setText("Schließen")
             if B_CLOSE_WITH_REPAIR_DIALOG:
                 dialog.addButton("Reparieren", QMessageBox.ButtonRole.ResetRole)
-            dialog.setDetailedText(s_log_msg)
-            dialog.close()
+            dialog.setDetailedText(log_msg)
             choice = dialog.exec()
 
             if B_CLOSE_WITH_REPAIR_DIALOG:
@@ -79,12 +76,12 @@ class UncaughtHook(QObject):
         else:
             log.error("Can't show Exception Display - No QApplication instance available.")
 
-    def exception_hook(self, exc_type: type[BaseException], exc_value: BaseException, exc_traceback: Optional[TracebackType] = None) -> None:
+    def exception_hook(self, exc_type: type[BaseException], exc_value: BaseException, exc_traceback: TracebackType | None = None) -> None:
         """!
         @brief Custom exception hook. It is triggered each time an uncaught exception occurs.
-        @param exc_type : exception type
-        @param exc_value : exception value
-        @param exc_traceback : exception traceback
+        @param exc_type : class of the uncaught exception
+        @param exc_value : exception instance with error details
+        @param exc_traceback : traceback object for the call stack at the exception point
         """
         if issubclass(exc_type, KeyboardInterrupt):
             # ignore keyboard interrupt to support console application
@@ -99,7 +96,7 @@ class UncaughtHook(QObject):
 
     def set_main_window_controller(self, main_window_controller: "MainWindow") -> None:
         """!
-        @brief Sets the main window controller in order to unblock the UI after a critical exception is caught.
-        @param main_window_controller : main window controller
+        @brief Sets the main window controller as parent for the error dialog.
+        @param main_window_controller : MainWindow instance used as parent for error dialogs
         """
         self.main_window_controller = main_window_controller

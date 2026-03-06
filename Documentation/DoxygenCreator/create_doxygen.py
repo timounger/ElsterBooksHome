@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   create_doxygen.py
-@brief  create doxygen documentation for project
+@brief  Create doxygen documentation for project.
 ********************************************************************************
 """
 
@@ -15,7 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 from Source.version import __title__, __version__, __description__, __author__, __home__  # pylint: disable=wrong-import-position
 from Source.Util.app_data import ICON_APP_PATH, ICON_APP_FAVICON_PATH  # pylint: disable=wrong-import-position
 from Source.Util.colored_log import init_console_logging  # pylint: disable=wrong-import-position
-from Documentation.DoxygenCreator.doxygen_creator import DoxygenCreator, get_cmd_args, S_MAIN_FOLDER_FOLDER, S_PYTHON_PATTERN  # pylint: disable=wrong-import-position
+from Documentation.DoxygenCreator.doxygen_creator import DoxygenCreator, get_cmd_args, MAIN_FOLDER, PYTHON_PATTERN  # pylint: disable=wrong-import-position
 # autopep8: on
 
 init_console_logging(logging.INFO)
@@ -26,13 +26,13 @@ if __name__ == "__main__":
     doxygen_creator.set_configuration("PROJECT_NAME", __title__)
     doxygen_creator.set_configuration("PROJECT_NUMBER", __version__)
     doxygen_creator.set_configuration("PROJECT_BRIEF", __description__)
-    doxygen_creator.set_configuration("PROJECT_LOGO", f"{S_MAIN_FOLDER_FOLDER}{ICON_APP_PATH}")
-    doxygen_creator.set_configuration("PROJECT_ICON", f"{S_MAIN_FOLDER_FOLDER}{ICON_APP_FAVICON_PATH}")
+    doxygen_creator.set_configuration("PROJECT_LOGO", f"{MAIN_FOLDER}{ICON_APP_PATH}")
+    doxygen_creator.set_configuration("PROJECT_ICON", f"{MAIN_FOLDER}{ICON_APP_FAVICON_PATH}")
     doxygen_creator.set_configuration("DOCSET_PUBLISHER_NAME", __author__)
-    doxygen_creator.set_configuration("INPUT", S_MAIN_FOLDER_FOLDER)
+    doxygen_creator.set_configuration("INPUT", MAIN_FOLDER)
     l_exclude_pattern = [".venv", "Documentation", "Executable", "Tools", "Export", "docs", "Test", "Views"]
     doxygen_creator.set_configuration("EXCLUDE_PATTERNS", l_exclude_pattern)
-    l_file_pattern = [S_PYTHON_PATTERN, "*.md"]
+    l_file_pattern = [PYTHON_PATTERN, "*.md"]
     doxygen_creator.set_configuration("FILE_PATTERNS", l_file_pattern)
     doxygen_creator.set_configuration("OUTPUT_LANGUAGE", "GERMAN")
-    sys.exit(doxygen_creator.run_doxygen(b_open_doxygen_output=args.open))
+    sys.exit(doxygen_creator.run_doxygen(open_doxygen_output=args.open))

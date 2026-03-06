@@ -1,27 +1,29 @@
 """!
 ********************************************************************************
 @file   invoice_number.py
-@brief  Create invoice number
+@brief  Generate sequential invoice numbers with configurable formatting.
 ********************************************************************************
 """
 
 import logging
 import enum
 import re
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QDate
 
-from Source.Model.data_handler import DATE_FORMAT
 from Source.version import __title__
-from Source.Model.data_handler import EReceiptFields
+from Source.Model.data_handler import EReceiptFields, DATE_FORMAT
 from Source.Model.company import COMPANY_DEFAULT_FIELD, ECompanyFields
+if TYPE_CHECKING:
+    from Source.Controller.main_window import MainWindow
 
 log = logging.getLogger(__title__)
 
 
 class SeqReset(str, enum.Enum):
     """!
-    @brief Available Sequence reset options
+    @brief Available sequence reset options.
     """
     NONE = "none"
     DAILY = "daily"
@@ -45,26 +47,24 @@ TOTAL_PATTERN = r".*(" + SEQ_PATTERN + r").*"
 class InvoiceNumber:
     """!
     @brief Class to get next invoice number.
-    @param ui : main window object
+    @param ui : main window object.
     """
 
     def __init__(self, ui: "MainWindow") -> None:
         self.ui = ui
         self.last_invoice_numbers = []
-        for income in self.ui.tab_income.l_data:
-            self.last_invoice_numbers.append(income[EReceiptFields.INVOICE_NUMBER])
         self.last_invoice_dates = []
-        for income in self.ui.tab_income.l_data:
+        for income in self.ui.tab_income.receipts:
+            self.last_invoice_numbers.append(income[EReceiptFields.INVOICE_NUMBER])
             self.last_invoice_dates.append(income[EReceiptFields.INVOICE_DATE])
         self.pattern = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.INVOICE_NUMBER]
-        # self.pattern = "{YYYY}-{SEQ:daily:4}"
 
     def set_date_in_pattern(self, date: QDate, pattern: str) -> str:
         """!
-        @brief Set date in pattern
-        @param date : date
-        @param pattern : pattern
-        @return pattern with date placeholders replaced
+        @brief Replace date placeholders in pattern.
+        @param date : date to insert.
+        @param pattern : pattern with date placeholders.
+        @return Pattern with date placeholders replaced.
         """
         date_replacements = {
             "{YYYY}": str(date.year()),
@@ -79,27 +79,26 @@ class InvoiceNumber:
 
     def needs_reset(self, reset_mode: str, last_date: QDate, current_date: QDate) -> bool:
         """!
-        @brief Get reset status for sequence in invoice number.
-        @param reset_mode : reset mode
-        @param last_date : last date
-        @param current_date : current date
-        @return reset status of sequence
+        @brief Check if sequence counter needs reset based on date change.
+        @param reset_mode : reset mode.
+        @param last_date : last invoice date.
+        @param current_date : current invoice date.
+        @return True if sequence needs reset, False otherwise.
         """
-        b_needs_reset = False
         match reset_mode:
             case SeqReset.NONE:
-                b_needs_reset = False
+                return False
             case SeqReset.DAILY:
-                b_needs_reset = bool(last_date != current_date)
+                return bool(last_date != current_date)
             case SeqReset.MONTHLY:
-                b_needs_reset = bool((last_date.year() != current_date.year()) or (last_date.month() != current_date.month()))
+                return last_date.year() != current_date.year() or last_date.month() != current_date.month()
             case SeqReset.YEARLY:
-                b_needs_reset = bool(last_date.year() != current_date.year())
-        return b_needs_reset
+                return last_date.year() != current_date.year()
+        return False
 
     def create_invoice_number(self, date: QDate) -> str:
         """!
-        @brief Get invoice number depend on invoice pattern definition.
+        @brief Get invoice number depending on invoice pattern definition.
             Supported Pattern:
             - {YYYY} 4-digit year
             - {YY} 2-digit year
@@ -107,8 +106,8 @@ class InvoiceNumber:
             - {MM} month (01-12)
             - {DD} day (01-31)
             - {SEQ:reset:length:start:increment} - parameters after SEQ are optional
-        @param date : date to create invoice number
-        @return invoice number
+        @param date : date to create invoice number.
+        @return Generated invoice number string.
         """
         invoice_number = ""
         template = self.set_date_in_pattern(date, self.pattern)

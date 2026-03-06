@@ -1,19 +1,19 @@
 """!
 ********************************************************************************
 @file   version.py
-@brief  Version and general information
+@brief  Version, build configuration, and feature flags.
 ********************************************************************************
 """
 
 import sys
-from typing import Optional
 
 # Version
-VERSION_MAJOR = 0  # major changes/breaks at API (e.g incompatibility)
-VERSION_MINOR = 4  # minor changes/does not break the API (e.g new feature)
+VERSION_MAJOR = 0  # Major changes, breaks API compatibility (e.g. incompatible changes)
+VERSION_MINOR = 5  # Minor changes, API compatible (e.g. new feature)
 VERSION_PATCH = 0  # Bug fixes
-VERSION_BUILD = 0  # build number (if available)
+VERSION_BUILD = 0  # Build number (0 = release, >0 = pre-release)
 
+# Project information
 __title__ = "ElsterBooks"
 __description__ = "Buchhaltungssoftware"
 __author__ = "Timo Unger"
@@ -25,27 +25,28 @@ __website__ = f"https://{__owner__}.github.io/{__repo__}"
 __home__ = f"https://github.com/{__owner__}/{__repo__}"
 __issue__ = f"{__home__}/issues"
 
+# Build configuration
 if VERSION_BUILD == 0:
-    PRERELEASE_BUILD = False
+    BUILD_PRERELEASE = False
     __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 else:
-    PRERELEASE_BUILD = True
+    BUILD_PRERELEASE = True
     __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}.{VERSION_BUILD}"
-
 
 BUILD_NAME: str | None = None  # Name of current build depending on feature flags
 
 
 def running_as_exe() -> bool:
     """!
-    @brief Check if we are currently running as an executable or directly in Python
+    @brief Check if we are currently running as an executable or directly in Python.
     @return [True|False] running as an EXE
     """
     # PyInstaller creates a temp folder and stores path in _MEIPASS
-    return bool(hasattr(sys, "_MEIPASS"))
+    return hasattr(sys, "_MEIPASS")
 
 
-GIT_SHORT_SHA: Optional[str] = None  # Git commit SHA (available only in EXE build)
+# Git version
+GIT_SHORT_SHA: str | None = None  # Git commit SHA (available only in EXE build)
 
 if running_as_exe():
     try:

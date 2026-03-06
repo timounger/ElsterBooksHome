@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   data_handler.py
-@brief  data handler
+@brief  Core data handling, JSON file operations, and data validation utilities.
 ********************************************************************************
 """
 
@@ -13,30 +13,22 @@ import enum
 import uuid
 import shutil
 import copy
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime
 import subprocess
 from subprocess import CompletedProcess
 import re
 import fitz  # PyMuPDF
-os.environ["GIT_PYTHON_REFRESH"] = "quiet"
-import git  # pylint: disable=wrong-import-position
-import jsonschema.validators  # pylint: disable=wrong-import-position
-import jsonschema.exceptions  # pylint: disable=wrong-import-position
 
-from Source.version import __title__  # pylint: disable=wrong-import-position
+from Source.version import __title__
 from Source.Util.app_data import ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE, ICON_CIRCLE_WHITE, \
-    REL_PATH, TOOLS_FOLDER, run_subprocess, open_subprocess, CREATE_GIT_PATH  # pylint: disable=wrong-import-position
+    REL_PATH, TOOLS_FOLDER, run_subprocess, open_subprocess, CREATE_GIT_PATH
 if TYPE_CHECKING:
-    from Source.Controller.tab_income import TabIncome
-    from Source.Controller.tab_expenditure import TabExpenditure
-    from Source.Controller.tab_document import TabDocument
+    from Source.Controller.tab_receipt_base import TabReceiptBase
 # autopep8: on
 
 log = logging.getLogger(__title__)
-
-B_USE_GIT_CMD = True  # TODO
 
 ###########################
 ##      Tools Paths      ##
@@ -44,9 +36,6 @@ B_USE_GIT_CMD = True  # TODO
 
 # GIT
 PORTABLE_GIT_EXE = os.path.abspath(f"{TOOLS_FOLDER}/PortableGit/bin/git.exe")
-if not B_USE_GIT_CMD:
-    if os.path.isfile(PORTABLE_GIT_EXE):
-        os.environ["GIT_PYTHON_GIT_EXECUTABLE"] = PORTABLE_GIT_EXE
 
 # Tortoise GIT
 TORTOISE_GIT_EXE = os.path.abspath(f"{TOOLS_FOLDER}/TortoiseGit/bin/TortoiseGitProc.exe")
@@ -57,8 +46,8 @@ LIBRE_OFFICE_EXE = f"{TOOLS_FOLDER}/LibreOfficePortable/App/libreoffice/program/
 
 def get_libre_office_path() -> str:
     """!
-    @brief Get libre office path.
-    @return libre office path exe
+    @brief Get LibreOffice executable path.
+    @return LibreOffice executable path or empty string if not found.
     """
     exe_path = LIBRE_OFFICE_EXE
     if not os.path.isfile(exe_path):
@@ -80,10 +69,9 @@ PDF_FILE_TYPES = "PDF file (*.pdf)"
 XML_FILE_TYPES = "XML file (*.xml)"
 INVOICE_FILE_TYPES = "PDF und XML Files (*.pdf *.xml)"
 INVOICE_TEMPLATE_FILE_TYPES = "PDF, XML, JSON Files (*.pdf *.xml *.json)"
-JSON_FILE_TYPES = "JSON file (*.json)"
 IMAGE_FILE_TYPES = "Bilder (*.png *.jpg *.jpeg *.bmp *.gif)"
 COMPANY_LOGO_TYPES = "Bilder (*.png)"
-L_INVOICE_FILE_TYPES = [PDF_TYPE, XML_TYPE, PDF_TYPE.upper(), XML_TYPE.upper()]
+INVOICE_FILE_EXTENSIONS = [PDF_TYPE, XML_TYPE, PDF_TYPE.upper(), XML_TYPE.upper()]
 DATE_FORMAT = "dd.MM.yyyy"
 DATE_FORMAT_JSON = "%d.%m.%Y"
 DATE_FORMAT_XML = "%Y-%m-%d"
@@ -91,20 +79,20 @@ DATE_FORMAT_XINVOICE = "yyyy-MM-dd"
 DATE_TIME_FORMAT = "%Y/%m/%d %H:%M:%S"
 NO_TAX_RATE = 0  # in percent
 
-L_MONTH_NAMES_SHORT = ["Jan", "Feb", "März", "April", "Mai", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dez"]
-L_MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
-I_MONTH_IN_YEAR = len(L_MONTH_NAMES)
+MONTH_NAMES_SHORT = ["Jan", "Feb", "März", "April", "Mai", "Juni", "Juli", "Aug", "Sep", "Okt", "Nov", "Dez"]
+MONTH_NAMES = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"]
+MONTHS_IN_YEAR = len(MONTH_NAMES)
 
 
 class EReceiptGroup(str, enum.Enum):
     """!
-    @brief Receipt group.
+    @brief Receipt group identifiers.
     """
     UST_VA = "Umsatzsteuer-Voranmeldung"
     UST = "Umsatzsteuererklärung"
 
 
-D_RECEIPT_GROUP = {
+RECEIPT_GROUP = {
     EReceiptGroup.UST_VA: "",
     EReceiptGroup.UST: ""
 }
@@ -112,7 +100,7 @@ D_RECEIPT_GROUP = {
 
 class EReceiptFields(str, enum.Enum):
     """!
-    @brief Receipt fields.
+    @brief Receipt data field identifiers.
     """
     JSON_TYPE = "json_type"
     JSON_VERSION = "json_version"
@@ -131,7 +119,7 @@ class EReceiptFields(str, enum.Enum):
     ATTACHMENT = "attachment"
 
 
-D_RECEIPT_TEMPLATE = {
+RECEIPT_TEMPLATE = {
     EReceiptFields.JSON_TYPE: "",
     EReceiptFields.JSON_VERSION: "",
     EReceiptFields.ID: "",
@@ -152,7 +140,7 @@ D_RECEIPT_TEMPLATE = {
 
 class EStatus(str, enum.Enum):
     """!
-    @brief Mode of configuration change.
+    @brief Invoice payment status values.
     """
     DESIGN = "Entwurf"
     NO_PRICE = "Null-Betrag"
@@ -164,52 +152,49 @@ class EStatus(str, enum.Enum):
 
 def convert_xlsx_to_pdf(xls_file: str) -> None:
     """!
-    @brief Convert Excel to PDF
-    @param xls_file : Excel file
+    @brief Convert Excel file to PDF using LibreOffice.
+    @param xls_file : Excel file path to convert.
     """
     libre_office_path = get_libre_office_path()
     if libre_office_path:
-        out_dir, _file_name = os.path.split(xls_file)
-        _result = run_subprocess([libre_office_path, "--headless", "--convert-to", "pdf:writer_pdf_Export:SelectPdfVersion=3", xls_file, "--outdir", out_dir])
-    else:
-        _result = None
+        out_dir, _ = os.path.split(xls_file)
+        run_subprocess([libre_office_path, "--headless", "--convert-to", "pdf:writer_pdf_Export:SelectPdfVersion=3", xls_file, "--outdir", out_dir])
 
 
 def is_date_format(string: str) -> bool:
     """!
-    @brief Check if string is JSON date format
-    @param string : string to check
-    @return status if string can convert to float
+    @brief Check if string matches JSON date format.
+    @param string : string to check.
+    @return True if string is a valid JSON date format.
     """
     try:
         datetime.strptime(string, DATE_FORMAT_JSON)
-        b_date = True
+        return True
     except ValueError:
-        b_date = False
-    return b_date
+        return False
 
 
-def is_float(s_string: str) -> bool:
+def is_float(string: str) -> bool:
     """!
-    @brief Check if string can convert to float.
-    @param s_string : string to check
-    @return status if string can convert to float
+    @brief Check if string can be converted to float.
+    @param string : string to check.
+    @return True if string is a valid float representation.
     """
     try:
-        float(s_string)
-        b_float = True
+        float(string)
+        return True
     except (TypeError, ValueError):
-        b_float = False
-    return b_float
+        return False
 
 
 def calc_vat_rate(gross: float, net: float) -> int | float:
     """!
-    @brief Calculate vat rate to string and try to convert to integer string
-    @param gross : gross value
-    @param net : net value
-    @return vat rate
+    @brief Calculate VAT rate and return as integer if possible.
+    @param gross : gross amount.
+    @param net : net amount.
+    @return VAT rate as integer or float.
     """
+    select_vat_rate: int | float = 0
     if net != 0:
         vat_rate = round(((gross / net) - 1) * 100, 4)
         vat_rate_int = int(round(vat_rate, 0))
@@ -219,16 +204,14 @@ def calc_vat_rate(gross: float, net: float) -> int | float:
             select_vat_rate = vat_rate_int
         else:
             select_vat_rate = vat_rate
-    else:
-        select_vat_rate = 0
     return select_vat_rate
 
 
 def convert_amount(string: str) -> int | float:
     """!
-    @brief Convert amount
-    @param string : string to convert
-    @return converted string
+    @brief Convert amount string to numeric value.
+    @param string : amount string to convert.
+    @return Converted amount as integer or float.
     """
     string_value = string.replace(" €", "").replace(",", ".")
     last_point_index = string_value.rfind('.')
@@ -243,9 +226,9 @@ def convert_amount(string: str) -> int | float:
 
 def convert_to_de_amount(amount: int | float) -> str:
     """!
-    @brief Convert to german amount
-    @param amount : amount to convert
-    @return converted amount string
+    @brief Convert amount to German formatted string.
+    @param amount : amount to convert.
+    @return German formatted amount string.
     """
     formatted = f"{amount:,.2f}"  # equals: 1,234,567.89
     amount_string = formatted.replace(",", "X").replace(".", ",").replace("X", ".")
@@ -254,20 +237,20 @@ def convert_to_de_amount(amount: int | float) -> str:
 
 def convert_to_rate(rate: int | float) -> str:
     """!
-    @brief Convert to rate
-    @param rate : rate
-    @return converted rate string
+    @brief Convert rate to display string with percent sign.
+    @param rate : rate value.
+    @return Formatted rate string.
     """
-    if rate.is_integer():
+    if isinstance(rate, float) and rate.is_integer():
         rate = int(rate)
     return f"{rate} %"
 
 
 def convert_to_de_date(date_string: str) -> str:
     """!
-    @brief Convert to german date
-    @param date_string : date in format YYYY-MM-DD
-    @return converted date in format DD.MM.YYYY
+    @brief Convert XML date to German date format.
+    @param date_string : date in format YYYY-MM-DD.
+    @return Converted date in format DD.MM.YYYY.
     """
     date_datetime = datetime.strptime(str(date_string), DATE_FORMAT_XML)
     converted_date = date_datetime.strftime(DATE_FORMAT_JSON)
@@ -276,10 +259,10 @@ def convert_to_de_date(date_string: str) -> str:
 
 def fill_data(template: dict[Any, Any], data: dict[Any, Any]) -> dict[Any, Any]:
     """!
-    @brief Fill data to template dictionary.
-    @param template : default template dictionary
-    @param data : actual data dictionary to fill in template dictionary
-    @return filled data
+    @brief Fill data into template dictionary.
+    @param template : default template dictionary.
+    @param data : data dictionary to merge into template.
+    @return Filled data dictionary.
     """
     filled_data = {}
     for key, default_value in template.items():
@@ -293,34 +276,29 @@ def fill_data(template: dict[Any, Any], data: dict[Any, Any]) -> dict[Any, Any]:
     return filled_data
 
 
-def get_file_name(title_data: str | list[str], uid: Optional[str] = None) -> str:
+def get_file_name(title_data: str | list[str], uid: str | None = None) -> str:
     """!
-    @brief Get file name from title.
-           connect single title data, delete invalid file name characters and add short UID
-    @param title_data : title
-    @param uid : UID
-    @return valid file name
+    @brief Build a valid file name from title data with optional UID suffix.
+    @param title_data : title string or list of title parts.
+    @param uid : UUID to append as short suffix.
+    @return Sanitized file name string.
     """
-    s_title = ""
     if not isinstance(title_data, list):
         title_data = [title_data]
-    for i, data in enumerate(title_data):
-        if data != "":
-            if i != 0:
-                s_title += "_"
-            s_title += data.replace("\n", " ").strip()  # write in single row
-    s_title = re.sub(r'[^\w\s.-]', '', s_title)
-    s_title = s_title[:200]  # max file title length
+    parts = [data.replace("\n", " ").strip() for data in title_data if data != ""]
+    title = "_".join(parts)
+    title = re.sub(r'[^\w\s.-]', '', title)
+    title = title[:200]  # max file title length
     if uid is not None:
-        s_title += f"_{uid[:8]}"
-    return s_title
+        title = f"{title}_{uid[:8]}"
+    return title
 
 
 def get_file_name_content(file_path: str) -> tuple[str | None, str | None]:
     """!
-    @brief Get file name content
-    @param file_path : file path
-    @return file date and content
+    @brief Extract date and description from file name.
+    @param file_path : file path.
+    @return Tuple of file date and file name without date prefix.
     """
     file_date = None
     file_content = None
@@ -337,9 +315,9 @@ def get_file_name_content(file_path: str) -> tuple[str | None, str | None]:
 
 def get_pdf_text(pdf_path: str) -> str:
     """!
-    @brief Get pdf text
-    @param pdf_path : pdf path
-    @return text from pdf
+    @brief Extract text content from PDF file.
+    @param pdf_path : PDF file path.
+    @return Extracted text from all pages.
     """
     text = ""
     with fitz.open(pdf_path) as pdf_document:
@@ -353,12 +331,12 @@ def get_pdf_text(pdf_path: str) -> str:
 ##     Data functions    ##
 ###########################
 
-def validate_data(data: dict[Any, Any], schema: dict[Any, Any]) -> tuple[bool, list[str]]:
+def validate_data(_data: dict[Any, Any], _schema: dict[Any, Any]) -> tuple[bool, list[str]]:
     """!
-    @brief Validate data.
-    @param data : data to validate
-    @param schema : schema as reference
-    @return validation_result: [True|False] validate result; validation_errors list with error
+    @brief Validate data against JSON schema.
+    @param _data : data to validate.
+    @param _schema : JSON schema as reference.
+    @return Tuple of validation result and list of validation errors.
     """
     validation_result = True
     validation_errors = []
@@ -367,58 +345,60 @@ def validate_data(data: dict[Any, Any], schema: dict[Any, Any]) -> tuple[bool, l
 
 def get_file_names_in_folder(folder: str) -> list[str]:
     """!
-    @brief Get files in folder.
-    @param folder : folder
-    @return list with all file names in folder
+    @brief Get file names without extension in folder.
+    @param folder : folder path.
+    @return List of file names without extension.
     """
-    l_files = []
+    files = []
     if os.path.exists(folder):
         for file_name in os.listdir(folder):
-            name, _file_type = os.path.splitext(file_name)
-            l_files.append(name)
-    return l_files
+            name, _ = os.path.splitext(file_name)
+            files.append(name)
+    return files
 
 
 def read_json_file(file_path: str) -> Any:
     """!
     @brief Read JSON file content.
-    @param file_path : file path
-    @return JSON data from file content
+    @param file_path : JSON file path.
+    @return Parsed JSON data or None on error.
     """
     try:
         with open(file_path, mode="r", encoding="utf-8") as file:
-            d_data = json.load(file)
+            data = json.load(file)
     except IOError as e:
         log.error("File not possible to read: %s", e)
-        d_data = None
-    return d_data
+        data = None
+    return data
 
 
-def read_json_files(path: str, d_template: Optional[dict[Any, Any]] = None) -> list[dict[Any, Any]]:
+def read_json_files(path: str, template: dict[Any, Any] | None = None) -> list[dict[Any, Any]]:
     """!
-    @brief Read data.
-    @param path : read in this path
-    @param d_template : JSON template to fill data at read
-    @return list with all files
+    @brief Read all JSON files from directory.
+    @param path : directory path to read from.
+    @param template : JSON template to fill data at read.
+    @return List of JSON data dictionaries.
     """
     if not os.path.exists(path):
         os.makedirs(path)
         log.debug("Data folder created: %s", path)
-    l_data = []
+    records = []
     for filename in os.listdir(path):
         file_path = os.path.join(path, filename)
         if filename.endswith(JSON_TYPE):
             data = read_json_file(file_path)
+            if data is None:
+                log.warning("Could not read JSON file: %s", file_path)
+                continue
             # Compatible Mode for breaking changes
             match data["json_type"]:
                 case "contact":
                     if data["json_version"] == "01.00.00":  # until 22.06.2025 (changing break)
                         old_data = copy.deepcopy(data)
-                        data = copy.deepcopy(old_data)
                         data["json_version"] = "02.00.00"
                         data["name"] = old_data["organization"]
                         data["address"] = {
-                            "line1": old_data["street"] + " " + old_data["house_number"],
+                            "line1": f"{old_data['street']} {old_data['house_number']}",
                             "postCode": old_data["plz"],
                             "city": old_data["city"],
                         }
@@ -430,13 +410,12 @@ def read_json_files(path: str, d_template: Optional[dict[Any, Any]] = None) -> l
                 case "company":
                     if data["json_version"] == "01.00.00":  # until 28.06.2025 (changing break)
                         old_data = copy.deepcopy(data)
-                        data = copy.deepcopy(old_data)
                         data["json_version"] = "02.00.00"
-                        data["name"] = old_data["first_name"] + " " + old_data["last_name"] + " " + old_data["description"]
+                        data["name"] = f"{old_data['first_name']} {old_data['last_name']} {old_data['description']}"
                         data["taxId"] = old_data["tax_number"]
                         data["websiteText"] = old_data.get("website", "")
                         data["address"] = {
-                            "line1": old_data["street"] + " " + old_data["house_number"],
+                            "line1": f"{old_data['street']} {old_data['house_number']}",
                             "postCode": old_data["plz"],
                             "city": old_data["city"],
                         }
@@ -466,17 +445,17 @@ def read_json_files(path: str, d_template: Optional[dict[Any, Any]] = None) -> l
                             "groups": old_data["settings"].get("groups", []),
                         }
             if data is not None:
-                if d_template is not None:
-                    data = fill_data(d_template, data)
-                l_data.append(data)
-    return l_data
+                if template is not None:
+                    data = fill_data(template, data)
+                records.append(data)
+    return records
 
 
 def write_json_file(file_path: str, data: dict[str, Any] | list[dict[str, Any]]) -> None:
     """!
     @brief Write JSON data to file.
-    @param file_path : write to this file
-    @param data : data to write
+    @param file_path : JSON file path to write to.
+    @param data : data to serialize as JSON.
     """
     if not file_path.endswith(JSON_TYPE):
         raise TypeError("File is no JSON type")
@@ -492,32 +471,28 @@ def write_json_file(file_path: str, data: dict[str, Any] | list[dict[str, Any]])
 
 def delete_file(file_path: str) -> bool:
     """!
-    @brief Delete file.
-    @param file_path : file to delete
-    @return success status
+    @brief Delete file from filesystem.
+    @param file_path : file path to delete.
+    @return True if file was deleted or does not exist.
     """
-    b_success = False
-    if os.path.exists(file_path):
-        try:
-            os.remove(file_path)
-        except OSError as e:
-            log.error("Delete failed %s", e)
-            b_success = False
-        else:
-            b_success = True
-    else:
-        b_success = True
-    return b_success
+    if not os.path.exists(file_path):
+        return True
+    try:
+        os.remove(file_path)
+    except OSError as e:
+        log.error("Delete failed %s", e)
+        return False
+    return True
 
 
-def find_file(path: str, uid: str, file_name: Optional[str] = None, file_type: Optional[str] = None) -> str | None:
+def find_file(path: str, uid: str, file_name: str | None = None, file_type: str | None = None) -> str | None:
     """!
-    @brief Find file from title or UID.
-    @param path : find file in this path
-    @param uid : UID
-    @param file_name : possible attachment file name
-    @param file_type : file type [None] find every file type
-    @return founded file
+    @brief Find file by UID suffix in file name.
+    @param path : directory to search in.
+    @param uid : unique identifier to match.
+    @param file_name : expected attachment file name.
+    @param file_type : file type filter, None for any type.
+    @return Found file path or None.
     """
     found_file = None
     if os.path.exists(path):
@@ -539,51 +514,51 @@ def find_file(path: str, uid: str, file_name: Optional[str] = None, file_type: O
 
 def find_json(folder_path: str, uid: str, id_field: str) -> str | None:
     """!
-    @brief Find JSON file depend on UID in id field
-    @param folder_path : find file in this folder
-    @param uid : ID to find
-    @param id_field : ID field in JSON data
-    @return founded JSON file
+    @brief Find JSON file by UID in ID field.
+    @param folder_path : directory to search in.
+    @param uid : unique identifier to match.
+    @param id_field : ID field name in JSON data.
+    @return Found JSON file path or None.
     """
     file_path = None
     for filename in os.listdir(folder_path):
         if filename.endswith(JSON_TYPE):
             actual_file_path = os.path.join(folder_path, filename)
             json_data = read_json_file(actual_file_path)
-            if json_data[id_field] == uid:
+            if json_data is not None and json_data[id_field] == uid:
                 file_path = actual_file_path
                 break
     return file_path
 
 
-def delete_data(folder: str, s_id: str, file_type: Optional[str] = None, id_field: Optional[str] = None) -> None:
+def delete_data(folder: str, uid: str, file_type: str | None = None, id_field: str | None = None) -> None:
     """!
-    @brief Delete data.
-    @param folder : delete a file in this folder
-    @param s_id : ID to delete
-    @param file_type : file type
-    @param id_field : ID field name
+    @brief Delete data file by identifier.
+    @param folder : folder to delete file from.
+    @param uid : unique identifier of the file to delete.
+    @param file_type : file type filter.
+    @param id_field : ID field name in JSON data.
     """
     if id_field is not None:
-        file = find_json(folder, s_id, id_field=id_field)
+        file = find_json(folder, uid, id_field=id_field)
     else:
-        file = find_file(folder, s_id, file_type=file_type)
+        file = find_file(folder, uid, file_type=file_type)
     if file is not None:
         git_delete(file)
     else:
-        log.error("File with id %s not found in %s to delete", s_id, folder)
+        log.error("File with id %s not found in %s to delete", uid, folder)
 
 
-def add_json(add: bool, data: dict[str, Any], title: str, uid: str, json_export_path: str, id_field: Optional[str] = None, rename: bool = False) -> None:
+def add_json(add: bool, data: dict[str, Any], title: str, uid: str, json_export_path: str, id_field: str | None = None, rename: bool = False) -> None:
     """!
-    @brief Add or actualize JSON file
-    @param add : GIT add status
-    @param data : data to add or actualize
-    @param title : title name
-    @param uid : UUID to create short id for suffix name or find file
-    @param json_export_path: add JSON to this file path
-    @param id_field : field of ID [None] JSON is new
-    @param rename : status if existing file should renamed (JSON and appendix)
+    @brief Add or update JSON file.
+    @param add : whether to git-add the file.
+    @param data : data to write.
+    @param title : file title name.
+    @param uid : UUID for short ID suffix or file lookup.
+    @param json_export_path : JSON export directory path.
+    @param id_field : ID field name, None if JSON is new.
+    @param rename : whether to rename existing file.
     """
     file_path = os.path.join(json_export_path, f"{title}{JSON_TYPE}")
     if (id_field is None) and not rename:
@@ -597,7 +572,7 @@ def add_json(add: bool, data: dict[str, Any], title: str, uid: str, json_export_
         found_file_path = find_json(json_export_path, uid, id_field)
         if found_file_path is not None:
             old_data = read_json_file(found_file_path)
-            if old_data[id_field] != uid:
+            if old_data is None or old_data[id_field] != uid:
                 raise ValueError("Invalid UID to update")
             write_json_file(found_file_path, data)
             if rename:
@@ -605,14 +580,14 @@ def add_json(add: bool, data: dict[str, Any], title: str, uid: str, json_export_
                     git_rename(found_file_path, file_path)
 
 
-def add_appendix(title: str, uid: str, appendix_export_path: str, add: bool, appendix_file: Optional[str] = None) -> None:
+def add_appendix(title: str, uid: str, appendix_export_path: str, add: bool, appendix_file: str | None = None) -> None:
     """!
-    @brief Add or rename appendix file to accounting.
-    @param title : title of file to add for new naming
-    @param uid : UUID to find existing file
-    @param appendix_export_path : add appendix to this file path
-    @param add : GIT add status
-    @param appendix_file : appendix file to add [None] for renaming
+    @brief Add or rename attachment file.
+    @param title : file title for naming.
+    @param uid : UUID to find existing file.
+    @param appendix_export_path : attachment export directory path.
+    @param add : whether to git-add the file.
+    @param appendix_file : attachment file to add, None for rename only.
     """
     if appendix_file is not None:
         _, file_extension = os.path.splitext(appendix_file)
@@ -635,111 +610,106 @@ def add_appendix(title: str, uid: str, appendix_export_path: str, add: bool, app
 
 
 def set_general_json_data(json_data: dict[Any, Any], json_type: str, type_field: str, version_field: str,
-                          version_number: str, id_field: str, uid: Optional[str] = None) -> str:
+                          version_number: str, id_field: str, uid: str | None = None) -> str:
     """!
-    @brief Set general JSON data
-    @param json_data : receipt data
-    @param json_type : type parameter to write in JSON file
-    @param type_field : type field name
-    @param version_field : version field name
-    @param version_number : version number
-    @param id_field : ID field name
-    @param uid : UUID of receipt [None] receipt is new to add
-    @return UID
+    @brief Set general JSON metadata fields (type, version, ID).
+    @param json_data : data dictionary to update.
+    @param json_type : type value to write.
+    @param type_field : type field name.
+    @param version_field : version field name.
+    @param version_number : version number value.
+    @param id_field : ID field name.
+    @param uid : existing UUID, None to generate new one.
+    @return UUID string.
     """
-    if uid is None:
-        s_id = str(uuid.uuid4())
-    else:
-        s_id = uid
+    generated_uid = str(uuid.uuid4()) if uid is None else uid
     json_data[type_field] = json_type
     json_data[version_field] = version_number
-    json_data[id_field] = s_id
-    return s_id
+    json_data[id_field] = generated_uid
+    return generated_uid
 
 
 def get_date_title(date: str) -> str:
     """!
-    @brief Get date title name
-    @param date : date string dd.mm.yyyy
-    @return date title yyyy_mm_dd
+    @brief Convert date string to file title format.
+    @param date : date string in dd.mm.yyyy format.
+    @return Date string in yyyy_mm_dd format.
     """
-    title = date[6:10] + "_" + date[3:5] + "_" + date[0:2]
-    return title
+    return f"{date[6:10]}_{date[3:5]}_{date[0:2]}"
 
 
-def add_receipt(d_receipt_data: dict[EReceiptFields, Any], receipt_type: str, json_export_path: str, appendix_export_path: str, add: bool,
-                uid: Optional[str] = None, appendix_file: Optional[str] = None, rename: bool = False, number_in_title: bool = False) -> None:
+def add_receipt(receipt_data: dict[EReceiptFields, Any], receipt_type: str, json_export_path: str, appendix_export_path: str, add: bool,
+                uid: str | None = None, appendix_file: str | None = None, rename: bool = False, number_in_title: bool = False) -> None:
     """!
-    @brief Add or actualize receipt (data and appendix) to accounting.
-    @param d_receipt_data : receipt data
-    @param receipt_type : type parameter to write in JSON file
-    @param json_export_path : add JSON to this file path
-    @param appendix_export_path : add appendix to this file path
-    @param add : GIT add status
-    @param uid : UUID of receipt [None] receipt is new to add
-    @param appendix_file : appendix file to add with JSON data
-    @param rename : status if existing file should renamed (JSON and appendix)
-    @param number_in_title : status if invoice number is in file title
+    @brief Add or update receipt data and attachment.
+    @param receipt_data : receipt data to export.
+    @param receipt_type : type parameter to write in JSON file.
+    @param json_export_path : JSON export directory path.
+    @param appendix_export_path : attachment export directory path.
+    @param add : whether to git-add the exported files.
+    @param uid : UUID of receipt, None if new.
+    @param appendix_file : attachment file path to add.
+    @param rename : whether to rename existing files.
+    @param number_in_title : whether to include invoice number in file title.
     """
-    s_id = set_general_json_data(d_receipt_data, receipt_type, EReceiptFields.JSON_TYPE,
-                                 EReceiptFields.JSON_VERSION, JSON_VERSION_RECEIPT,
-                                 EReceiptFields.ID, uid)
-    date = d_receipt_data[EReceiptFields.INVOICE_DATE]
-    l_title_data = [get_date_title(date)]
+    receipt_uid = set_general_json_data(receipt_data, receipt_type, EReceiptFields.JSON_TYPE,
+                                        EReceiptFields.JSON_VERSION, JSON_VERSION_RECEIPT,
+                                        EReceiptFields.ID, uid)
+    date = receipt_data[EReceiptFields.INVOICE_DATE]
+    title_parts = [get_date_title(date)]
     if number_in_title:
-        l_title_data += [d_receipt_data[EReceiptFields.INVOICE_NUMBER]]
-    l_title_data += [d_receipt_data[EReceiptFields.TRADE_PARTNER], d_receipt_data[EReceiptFields.DESCRIPTION]]
-    title = get_file_name(l_title_data, s_id)
+        title_parts += [receipt_data[EReceiptFields.INVOICE_NUMBER]]
+    title_parts += [receipt_data[EReceiptFields.TRADE_PARTNER], receipt_data[EReceiptFields.DESCRIPTION]]
+    title = get_file_name(title_parts, receipt_uid)
     if (appendix_file is not None) or rename:
         if appendix_file is None:
-            if d_receipt_data[EReceiptFields.ATTACHMENT]:
-                _, file_extension = os.path.splitext(d_receipt_data[EReceiptFields.ATTACHMENT])
-                file_extension = file_extension.lower()
+            if receipt_data[EReceiptFields.ATTACHMENT]:
+                _, file_extension = os.path.splitext(receipt_data[EReceiptFields.ATTACHMENT])
             else:
-                file_extension = PDF_TYPE  # only for compatible with old version without existing attachment
+                file_extension = PDF_TYPE  # compatibility with old version without existing attachment
         else:
             _, file_extension = os.path.splitext(appendix_file)
-            file_extension = file_extension.lower()
-        d_receipt_data[EReceiptFields.ATTACHMENT] = f"{title}{file_extension}"
+        file_extension = file_extension.lower()
+        receipt_data[EReceiptFields.ATTACHMENT] = f"{title}{file_extension}"
     id_field = EReceiptFields.ID if (uid is not None) else None
-    instance = fill_data(D_RECEIPT_TEMPLATE, d_receipt_data)
-    add_json(add, instance, title, s_id, json_export_path, id_field=id_field, rename=rename)
+    instance = fill_data(RECEIPT_TEMPLATE, receipt_data)
+    add_json(add, instance, title, receipt_uid, json_export_path, id_field=id_field, rename=rename)
     if (appendix_file is not None) or rename:
-        add_appendix(title, s_id, appendix_export_path, add, appendix_file=appendix_file)
+        add_appendix(title, receipt_uid, appendix_export_path, add, appendix_file=appendix_file)
 
 
 def remove_receipt(json_folder: str, appendix_folder: str, uid: str) -> None:
     """!
-    @brief Remove receipt (data and appendix) from accounting.
-    @param json_folder : remove JSON in this file path
-    @param appendix_folder : remove appendix in this file path
-    @param uid : UUID of receipt
+    @brief Remove receipt data and attachment.
+    @param json_folder : JSON directory path.
+    @param appendix_folder : attachment directory path.
+    @param uid : UUID of receipt to remove.
     """
     delete_data(json_folder, uid, id_field=EReceiptFields.ID)
     delete_data(appendix_folder, uid)
 
 
-def clean_data(path: str, l_data: list, json_folder_name: str, appendix_folder_name: str,
+def clean_data(path: str, records: list[dict[Any, Any]], json_folder_name: str, appendix_folder_name: str,
                id_field: str, attachment_field: str) -> None:
     """!
-    @brief Clean data.
-    @param path : data path
-    @param l_data : data
-    @param json_folder_name : JSON folder name
-    @param appendix_folder_name : appendix folder name
-    @param id_field : field name of ID
-    @param attachment_field : field name of attachment
+    @brief Clean up orphaned data files and attachments.
+    @param path : data directory path.
+    @param records : list of data records.
+    @param json_folder_name : JSON folder name.
+    @param appendix_folder_name : attachment folder name.
+    @param id_field : field name of ID.
+    @param attachment_field : field name of attachment.
     """
     attachment_file_names = []
-    income_path = os.path.join(path, json_folder_name)
+    json_path = os.path.join(path, json_folder_name)
     attachment_path = os.path.join(path, appendix_folder_name)
-    for income in l_data:
-        uid = income[id_field]
-        attachment_file = find_file(attachment_path, uid, file_name=income[attachment_field])
+    for record in records:
+        uid = record[id_field]
+        attachment_file = find_file(attachment_path, uid, file_name=record[attachment_field])
         if attachment_file:
             attachment_file_names.append(os.path.basename(attachment_file))
         else:
-            file = find_json(income_path, uid, id_field=id_field)
+            file = find_json(json_path, uid, id_field=id_field)
             if file:
                 git_delete(file)  # delete meta data without attachment
     # delete attachment without meta data
@@ -754,76 +724,48 @@ def clean_data(path: str, l_data: list, json_folder_name: str, appendix_folder_n
 ##      GIT Actions      ##
 ###########################
 
-if B_USE_GIT_CMD:
-    def git_cmd(param: list[str]) -> CompletedProcess[str]:
-        """!
-        @brief Execute GIT command on cmd
-        @param param : file to add
-        @return GIT command result
-        """
-        result = run_subprocess([PORTABLE_GIT_EXE] + param)
-        return result
-
-
-def get_git_repo(file_path: str) -> bool:
+def git_cmd(param: list[str]) -> CompletedProcess[str]:
     """!
-    @brief Get git Repo with configuration.
-    @param file_path : file to add
-    @return status if git repo exist
+    @brief Execute Git command via portable Git executable.
+    @param param : Git command parameters.
+    @return Git command result.
+    """
+    result = run_subprocess([PORTABLE_GIT_EXE] + param)
+    return result
+
+
+def get_git_repo() -> bool:
+    """!
+    @brief Get Git repository with configuration.
+    @return True if using Git CMD, or False if no repository.
     """
     if os.path.isfile(PORTABLE_GIT_EXE):
-        if B_USE_GIT_CMD:
-            try:
-                _result = git_cmd(["--version"])
-            except BaseException:
-                b_git_repo = False
-            else:
-                b_git_repo = True
+        try:
+            _result = git_cmd(["--version"])
+        except Exception:
+            has_repo = False
         else:
-            try:
-                test_repo = git.Repo(os.path.abspath(REL_PATH), search_parent_directories=True)
-                test_repo.git.execute(["git", "--version"])
-            except git.exc.GitError:
-                b_git_repo = False
-            else:
-                b_git_repo = True
+            has_repo = True
     else:
-        b_git_repo = False
+        has_repo = False
 
-    if b_git_repo:
-        if not B_USE_GIT_CMD:
-            s_folder = os.path.dirname(file_path)
-            repo = git.Repo(s_folder, search_parent_directories=True)
-            with repo.config_writer() as config:
-                config.set_value("user", "name", os.getlogin())
-                # config.set_value("user", "email", "deine.email@example.com")
-        else:
-            repo = True
-    else:
-        repo = False
-    return repo
+    return has_repo
 
 
 def git_rename(old_file_path: str, new_file_path: str) -> None:
     """!
-    @brief Rename file on GIT.
-    @param old_file_path : old file name
-    @param new_file_path : new file name
+    @brief Rename file via Git.
+    @param old_file_path : current file path.
+    @param new_file_path : new file path.
     """
     if old_file_path == new_file_path:
         log.warning("File name same to rename (%s)", old_file_path)
     else:
         old_file_path = os.path.abspath(old_file_path)
         new_file_path = os.path.abspath(new_file_path)
-        repo = get_git_repo(old_file_path)
+        repo = get_git_repo()
         if repo:
-            if B_USE_GIT_CMD:
-                _result = git_cmd(["-C", os.path.abspath(REL_PATH), "mv", old_file_path, new_file_path])
-            else:
-                try:
-                    repo.index.move([old_file_path, new_file_path])
-                except git.GitCommandError as err:
-                    log.error("Git Rename failed (%s): %s", new_file_path, err)
+            _result = git_cmd(["-C", os.path.abspath(REL_PATH), "mv", old_file_path, new_file_path])
         else:
             p_old_file_path = Path(old_file_path)
             p_new_file_path = Path(new_file_path)
@@ -832,95 +774,60 @@ def git_rename(old_file_path: str, new_file_path: str) -> None:
 
 def git_add(file_path: str) -> None:
     """!
-    @brief Add file to GIT.
-    @param file_path : file to add
+    @brief Add file to Git index.
+    @param file_path : file path to add.
     """
     file_path = os.path.abspath(file_path)
-    repo = get_git_repo(file_path)
+    repo = get_git_repo()
     if repo:
-        if B_USE_GIT_CMD:
-            _result = git_cmd(["-C", os.path.abspath(REL_PATH), "add", file_path])
-        else:
-            try:
-                repo.index.add(file_path)
-            except git.GitCommandError as err:
-                log.error("Git Add failed (%s): %s", file_path, err)
+        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "add", file_path])
 
 
 def git_delete(file_path: str) -> None:
     """!
-    @brief Delete file from GIT.
-    @param file_path : file to delete
+    @brief Delete file and remove from Git index.
+    @param file_path : file path to delete.
     """
     file_path = os.path.abspath(file_path)
     delete_file(file_path)
-    repo = get_git_repo(file_path)
+    repo = get_git_repo()
     if repo:
-        if B_USE_GIT_CMD:
-            _result = git_cmd(["-C", os.path.abspath(REL_PATH), "rm", file_path])
-        else:
-            try:
-                repo.index.remove([file_path])
-            except git.GitCommandError as err:
-                log.error("Git Remove failed (%s): %s", file_path, err)
+        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "rm", file_path])
 
 
 def check_git_changes() -> tuple[bool, str]:
     """!
-    @brief Check for Git Changes.
-    @return changes status
+    @brief Check for uncommitted Git changes.
+    @return Tuple of has_changes flag and changes summary string.
     """
-    b_changes = False
-    s_changes = ""
-    repo = get_git_repo(os.path.abspath(REL_PATH))
+    has_changes = False
+    changes = ""
+    repo = get_git_repo()
     if repo:
-        if B_USE_GIT_CMD:
-            result = git_cmd(["-C", os.path.abspath(REL_PATH), "status", "--porcelain"])
-            s_changes = result.stdout
-            b_changes = bool(s_changes.strip())
-        else:
-            s_changes = ""  # TODO
-            try:
-                if repo.is_dirty(untracked_files=False):
-                    log.debug("Changes found to commit")
-                    for item in repo.index.diff(None):
-                        log.debug("Changed: %s", item.a_path)
-                    for item in repo.untracked_files:
-                        log.debug("Untracked: %s", item)
-                    b_changes = True
-                else:
-                    log.debug("No changes to commit")
-            except git.exc.InvalidGitRepositoryError:
-                log.debug("Path is no Git Path")
-    return b_changes, s_changes
+        result = git_cmd(["-C", os.path.abspath(REL_PATH), "status", "--porcelain"])
+        changes = result.stdout
+        has_changes = bool(changes.strip())
+    return has_changes, changes
 
 
 def commit_all_changes(commit_message: str) -> None:
     """!
-    @brief Commit all changes
-    @param commit_message : commit message
+    @brief Commit all changes to Git.
+    @param commit_message : commit message text.
     """
-    repo = get_git_repo(os.path.abspath(REL_PATH))
+    repo = get_git_repo()
     if repo:
-        if B_USE_GIT_CMD:
-            _result = git_cmd(["-C", os.path.abspath(REL_PATH), "add", "--all"])  # "-u" for only untracked  --all for all
-            _result = git_cmd(["-C", os.path.abspath(REL_PATH), "commit", "-m", commit_message])
-        else:
-            try:
-                repo.git.add(A=True)
-                repo.index.commit(commit_message)
-                log.debug("All changes commit")
-            except git.exc.InvalidGitRepositoryError:
-                log.debug("Path is no Git Path")
+        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "add", "--all"])  # "-u" for only untracked  --all for all
+        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "commit", "-m", commit_message])
 
 
 def create_repo() -> bool:
     """!
-    @brief Create repo
-    @return success status
+    @brief Create Git repository if not exists.
+    @return True if repository was created.
     """
-    repo = get_git_repo(os.path.abspath(REL_PATH))
-    if repo:  # create only if not exists
+    repo = get_git_repo()
+    if not repo:  # create only if not exists
         _result = git_cmd(["-C", CREATE_GIT_PATH, "init"])
         success = True
     else:
@@ -930,11 +837,11 @@ def create_repo() -> bool:
 
 def check_repo_exists() -> bool:
     """!
-    @brief Create repo
-    @return success status
+    @brief Check if Git repository exists.
+    @return True if repository exists and is valid.
     """
-    repo = get_git_repo(os.path.abspath(REL_PATH))
-    if repo:  # create only if not exists
+    repo = get_git_repo()
+    if repo:
         try:
             _result = git_cmd(["-C", os.path.abspath(REL_PATH), "rev-parse", "--is-inside-work-tree"])
             success = True
@@ -951,7 +858,7 @@ def check_repo_exists() -> bool:
 
 def tortoise_git_check_for_mod() -> None:
     """!
-    @brief Execute GIT command on cmd. Command for TortoiseGit: Check for Modifications
+    @brief Open TortoiseGit check for modifications dialog.
     """
     repo_path = os.path.abspath(REL_PATH)
     command = [TORTOISE_GIT_EXE, "/command:repostatus", f"/path:{repo_path}", "/notempfile"]
@@ -964,10 +871,10 @@ def tortoise_git_check_for_mod() -> None:
 
 def get_status(invoice: dict[EReceiptFields, Any], payment_days: int) -> tuple[str, str]:
     """!
-    @brief Get invoice status.
-    @param invoice : invoice data
-    @param payment_days : payment days
-    @return status value and icon as tuple
+    @brief Get invoice payment status and icon.
+    @param invoice : invoice data dictionary.
+    @param payment_days : number of days until due.
+    @return Tuple of status value and icon path.
     """
     if not invoice[EReceiptFields.INVOICE_DATE]:
         icon = ICON_CIRCLE_WHITE
@@ -991,14 +898,14 @@ def get_status(invoice: dict[EReceiptFields, Any], payment_days: int) -> tuple[s
     return status.value, icon
 
 
-def clear_dialog_data(dialog: "TabDocument | TabExpenditure | TabIncome") -> None:
+def clear_dialog_data(dialog: "TabReceiptBase") -> None:
     """!
-    @brief Clear data of dialog for income and expenditure.
-    @param dialog : dialog
+    @brief Clear data of receipt tab for income or expenditure.
+    @param dialog : tab instance to clear.
     """
-    dialog.l_data = []
+    dialog.receipts = []
     dialog.total_gross = 0
     dialog.total_net = 0
-    dialog.l_value = []
-    dialog.l_invoice_date = []
-    dialog.l_payment_date = []
+    dialog.values = []
+    dialog.invoice_dates = []
+    dialog.payment_dates = []

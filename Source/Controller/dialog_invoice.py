@@ -7,10 +7,10 @@
 
 import os
 import logging
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 from PyQt6 import QtWidgets
-from PyQt6.QtCore import QDate, Qt
+from PyQt6.QtCore import QDate, Qt, QObject, QEvent
 from PyQt6.QtGui import QIcon, QPixmap, QAction
 from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout, QMessageBox
 
@@ -33,8 +33,8 @@ from Source.Model.invoice_number import InvoiceNumber
 from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, INVOICE_TEMPLATE_FILE_TYPES, \
     DATE_FORMAT_XINVOICE, JSON_FILE_TYPES, read_json_file, write_json_file, \
     PDF_TYPE, XML_TYPE, JSON_TYPE
-from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
-    D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_CHARGE_REASON_CODE, D_EXEMPTION_REASON_CODE
+from Source.Model.ZUGFeRD.drafthorse_data import INVOICE_TYPE, CURRENCY, COUNTRY_CODE, PAYMENT_METHOD, \
+    VAT_CODE, UNIT, ALLOWANCE_REASON_CODE, CHARGE_REASON_CODE, EXEMPTION_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_invoice import write_customer_to_json, write_company_to_json, fill_invoice_data
 from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only, set_combo_box_items, set_line_edit_read_only, \
     set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice, set_date_optional
@@ -44,14 +44,14 @@ if TYPE_CHECKING:
 
 log = logging.getLogger(__title__)
 
-I_MAX_POSITIONS = 100
+MAX_POSITIONS = 100
 
 
 def add_icon(action: QAction, icon: str) -> None:
     """!
     @brief Assign an icon to an action.
-    @param action : Target QAction
-    @param icon : Path to icon file
+    @param action : Target QAction.
+    @param icon : Path to icon file.
     """
     image = QIcon()
     image.addPixmap(QPixmap(icon), QIcon.Mode.Normal, QIcon.State.Off)
@@ -61,7 +61,7 @@ def add_icon(action: QAction, icon: str) -> None:
 def config_invoice_type_btn(dialog: Any) -> None:
     """!
     @brief Configure the invoice creation type button and menu.
-    @param dialog : Parent dialog instance
+    @param dialog : Parent dialog instance.
     """
     generate_pdf = os.path.isfile(get_libre_office_path())
 
@@ -69,23 +69,23 @@ def config_invoice_type_btn(dialog: Any) -> None:
     dialog.btn_create.setMenu(create_options)
 
     dialog.action_create_excel = create_options.addAction(EInvoiceOption.EXCEL)
-    add_icon(dialog.action_create_excel, ICON_EXCEL_LIGHT if dialog.ui.model.c_monitor.is_light_theme() else ICON_EXCEL_DARK)
+    add_icon(dialog.action_create_excel, ICON_EXCEL_LIGHT if dialog.ui.model.monitor.is_light_theme() else ICON_EXCEL_DARK)
 
     if generate_pdf:
         dialog.action_create_pdf = create_options.addAction(EInvoiceOption.PDF)
-        add_icon(dialog.action_create_pdf, ICON_PDF_LIGHT if dialog.ui.model.c_monitor.is_light_theme() else ICON_PDF_DARK)
+        add_icon(dialog.action_create_pdf, ICON_PDF_LIGHT if dialog.ui.model.monitor.is_light_theme() else ICON_PDF_DARK)
 
     dialog.action_create_xml = create_options.addAction(EInvoiceOption.XML)
-    add_icon(dialog.action_create_xml, ICON_XML_LIGHT if dialog.ui.model.c_monitor.is_light_theme() else ICON_XML_DARK)
+    add_icon(dialog.action_create_xml, ICON_XML_LIGHT if dialog.ui.model.monitor.is_light_theme() else ICON_XML_DARK)
 
     if generate_pdf:
         dialog.action_create_zugferd = create_options.addAction(EInvoiceOption.ZUGFERD)
-        add_icon(dialog.action_create_zugferd, ICON_ZUGFERD_LIGHT if dialog.ui.model.c_monitor.is_light_theme() else ICON_ZUGFERD_DARK)
+        add_icon(dialog.action_create_zugferd, ICON_ZUGFERD_LIGHT if dialog.ui.model.monitor.is_light_theme() else ICON_ZUGFERD_DARK)
 
     # set last invoice type option
-    e_last_invoice_option = read_invoice_option()
+    last_invoice_option = read_invoice_option()
     if generate_pdf:
-        match e_last_invoice_option:  # set invoice option from last session
+        match last_invoice_option:  # set invoice option from last session
             case EInvoiceOption.EXCEL:
                 dialog.btn_create.setDefaultAction(dialog.action_create_excel)
             case EInvoiceOption.PDF:
@@ -95,9 +95,9 @@ def config_invoice_type_btn(dialog: Any) -> None:
             case EInvoiceOption.ZUGFERD:
                 dialog.btn_create.setDefaultAction(dialog.action_create_zugferd)
             case _:
-                log.error("Invalid invoice option: %s", e_last_invoice_option)
+                log.error("Invalid invoice option: %s", last_invoice_option)
     else:
-        match e_last_invoice_option:  # set invoice option from last session
+        match last_invoice_option:  # set invoice option from last session
             case EInvoiceOption.EXCEL:
                 dialog.btn_create.setDefaultAction(dialog.action_create_excel)
             case EInvoiceOption.XML:
@@ -106,7 +106,7 @@ def config_invoice_type_btn(dialog: Any) -> None:
                 dialog.btn_create.setDefaultAction(dialog.action_create_excel)  # default is PDF generation not possible
 
     # set border of button
-    match dialog.ui.model.c_monitor.e_actual_theme:
+    match dialog.ui.model.monitor.active_theme:
         case ETheme.LIGHT:
             dialog.btn_create.setStyleSheet(
                 dialog.btn_create.styleSheet() +
@@ -129,14 +129,34 @@ def config_invoice_type_btn(dialog: Any) -> None:
             dialog.action_create_zugferd.triggered.connect(lambda: dialog.create_invoice(EInvoiceOption.ZUGFERD))
 
 
+class WheelBlocker(QObject):
+    """!
+    @brief Event filter that suppresses mouse wheel events.
+           This class can be installed on widgets to prevent the mouse wheel from
+           triggering scrolling or value changes (for example on QComboBox,
+           QSpinBox, or scrollable widgets).
+    """
+
+    def eventFilter(self, obj: QObject | None, event: QEvent | None) -> bool:
+        """!
+        @brief Filters events and blocks mouse wheel events.
+        @param obj : Pointer to the object that generated the event.
+        @param event : The event object being processed.
+        @return True if the event is handled (mouse wheel events are ignored); False if event processed normally.
+        """
+        if event is not None and event.type() == QEvent.Type.Wheel:
+            return True   # ignore scroll
+        return super().eventFilter(obj, event)
+
+
 class InvoiceDialog(QDialog, Ui_DialogInvoice):
     """!
     @brief Dialog for creating and editing invoices.
-    @param ui : main window
-    @param uid : UID of the selected contact (optional)
+    @param ui : main window.
+    @param uid : UID of the selected contact (optional).
     """
 
-    def __init__(self, ui: "MainWindow", uid: Optional[str] = None, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
+    def __init__(self, ui: "MainWindow", uid: str | None = None, *args: Any, **kwargs: Any) -> None:  # pylint: disable=keyword-arg-before-vararg
         super().__init__(parent=ui, *args, **kwargs)  # type: ignore
         self.setupUi(self)
         self.setMinimumWidth(960)
@@ -145,13 +165,18 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.setWindowTitle("Rechnung erstellen")
         self.ui = ui
         self.due_days_changed = False  # True=due days changed; False=due date changed
-        self.c_invoice_number = InvoiceNumber(ui)
+        self.invoice_number = InvoiceNumber(ui)
+        self.blocker = WheelBlocker()
+        self.item_widgets: list[Ui_InvoiceItemData] = []
+        self.discounts_widgets: list[Ui_InvoiceDiscountsData] = []
+        self.surcharges_widgets: list[Ui_InvoiceSurchargesData] = []
+        self.tax_widgets: list[Ui_InvoiceTaxData] = []
 
         # select customer data
-        self.customer = None
+        self.customer: dict[Any, Any] | None = None
         self.default_uid = uid
         self.extended_mode = False
-        self.ui_invoice_data = None
+        self._ui_invoice_data: Ui_InvoiceData | None = None
         self.lock_auto_price_edit = False
         self.lock_due_date_edit = False
         if self.ui.tab_settings.company_data[COMPANY_BOOKING_FIELD][ECompanyFields.SMALL_BUSINESS_REGULATION]:
@@ -161,32 +186,44 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.default_payment_days = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYMENT_DAYS]
         self.default_payment_purpose = self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYMENT_PURPOSE]
         # items
-        self.item_gross_changed = [False] * I_MAX_POSITIONS  # True=gross changed; False=net changed
+        self.item_gross_changed = [False] * MAX_POSITIONS  # True=gross changed; False=net changed
         # discounts
-        self.discount_percent_changed = [False] * I_MAX_POSITIONS  # True=percent changed; False=net changed
-        self.discounts_layout = None
+        self.discount_percent_changed = [False] * MAX_POSITIONS  # True=percent changed; False=net changed
+        self.discounts_layout: QVBoxLayout
         self.btn_add_discount = QPushButton("Nachlass zufügen")
         self.btn_remove_discount = QPushButton("Nachlass entfernen")
         self.discounts_button_layout = QHBoxLayout()
         self.discounts_button_layout.addWidget(self.btn_add_discount)
         self.discounts_button_layout.addWidget(self.btn_remove_discount)
         # surcharges
-        self.surcharges_percent_changed = [False] * I_MAX_POSITIONS  # True=percent changed; False=net changed
-        self.surcharges_layout = None
+        self.surcharges_percent_changed = [False] * MAX_POSITIONS  # True=percent changed; False=net changed
+        self.surcharges_layout: QVBoxLayout
         self.btn_add_surcharge = QPushButton("Zuschlag zufügen")
         self.btn_remove_surcharge = QPushButton("Zuschlag entfernen")
         self.surcharges_button_layout = QHBoxLayout()
         self.surcharges_button_layout.addWidget(self.btn_add_surcharge)
         self.surcharges_button_layout.addWidget(self.btn_remove_surcharge)
         # tax
-        self.tax_layout = None
+        self.tax_layout: QVBoxLayout
         thread_dialog(self)
+
+    @property
+    def ui_invoice_data(self) -> Ui_InvoiceData:
+        """!
+        @brief Access invoice data UI, asserting it has been initialized.
+        """
+        assert self._ui_invoice_data is not None
+        return self._ui_invoice_data
+
+    @ui_invoice_data.setter
+    def ui_invoice_data(self, value: Ui_InvoiceData) -> None:
+        self._ui_invoice_data = value
 
     def show_dialog(self) -> None:
         """!
         @brief Initialize and display the invoice dialog modally.
         """
-        self.ui.model.c_monitor.set_dialog_style(self)
+        self.ui.model.monitor.apply_dialog_theme(self)
 
         config_invoice_type_btn(self)
 
@@ -202,19 +239,21 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         #  <span style="font-size:7pt; color: grey;">(BT-x)</span>
 
         # add item widget
-        self.ui_invoice_data.item_widgets = []  # item widget list
+        self.item_widgets.clear()
         # Add item button
         self.ui_invoice_data.btn_add_item.clicked.connect(self.add_item)
         self.ui_invoice_data.btn_remove_item.clicked.connect(self.remove_item)
         self.ui_invoice_data.btn_remove_item.setEnabled(False)
 
         # add discount widget
-        self.ui_invoice_data.discounts_widgets = []  # discounts widget list
-        if self.ui_invoice_data.groupBox_7_discounts.layout() is None:  # ensure that layout exists
+        self.discounts_widgets.clear()
+        existing_layout = self.ui_invoice_data.groupBox_7_discounts.layout()
+        if existing_layout is None:
             self.discounts_layout = QVBoxLayout(self.ui_invoice_data.groupBox_7_discounts)
             self.ui_invoice_data.groupBox_7_discounts.setLayout(self.discounts_layout)
         else:
-            self.discounts_layout = self.ui_invoice_data.groupBox_7_discounts.layout()
+            assert isinstance(existing_layout, QVBoxLayout)
+            self.discounts_layout = existing_layout
         # Add discount button
         self.discounts_layout.addLayout(self.discounts_button_layout)
         self.btn_add_discount.clicked.connect(self.add_discount)
@@ -222,12 +261,14 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.btn_remove_discount.setEnabled(False)
 
         # add surcharges widget
-        self.ui_invoice_data.surcharges_widgets = []  # surcharges widget list
-        if self.ui_invoice_data.groupBox_8_surcharges.layout() is None:  # ensure that layout exists
+        self.surcharges_widgets.clear()
+        existing_layout = self.ui_invoice_data.groupBox_8_surcharges.layout()
+        if existing_layout is None:
             self.surcharges_layout = QVBoxLayout(self.ui_invoice_data.groupBox_8_surcharges)
             self.ui_invoice_data.groupBox_8_surcharges.setLayout(self.surcharges_layout)
         else:
-            self.surcharges_layout = self.ui_invoice_data.groupBox_8_surcharges.layout()
+            assert isinstance(existing_layout, QVBoxLayout)
+            self.surcharges_layout = existing_layout
         # Add surcharges button
         self.surcharges_layout.addLayout(self.surcharges_button_layout)
         self.btn_add_surcharge.clicked.connect(self.add_surcharge)
@@ -235,12 +276,14 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.btn_remove_surcharge.setEnabled(False)
 
         # add tax widget
-        self.ui_invoice_data.tax_widgets = []  # tax widget list
-        if self.ui_invoice_data.groupBox_9_tax.layout() is None:  # ensure that layout exists
+        self.tax_widgets.clear()
+        existing_layout = self.ui_invoice_data.groupBox_9_tax.layout()
+        if existing_layout is None:
             self.tax_layout = QVBoxLayout(self.ui_invoice_data.groupBox_9_tax)
             self.ui_invoice_data.groupBox_9_tax.setLayout(self.tax_layout)
         else:
-            self.tax_layout = self.ui_invoice_data.groupBox_9_tax.layout()
+            assert isinstance(existing_layout, QVBoxLayout)
+            self.tax_layout = existing_layout
 
         # create first item widget
         self.add_item()
@@ -261,17 +304,17 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         # customer
         index_to_set = None
-        for i, contact in enumerate(self.ui.tab_contacts.l_data):
-            self.cb_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
+        for i, contact in enumerate(self.ui.tab_contacts.contacts):
+            self.combo_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
             if self.default_uid:
                 if contact[EContactFields.ID] == self.default_uid:
                     index_to_set = i
-        self.cb_contact_template.activated.connect(self.contact_template_activated)
+        self.combo_contact_template.activated.connect(self.contact_template_activated)
         if index_to_set is not None:
-            self.cb_contact_template.setCurrentIndex(index_to_set)
+            self.combo_contact_template.setCurrentIndex(index_to_set)
             self.contact_template_activated(index_to_set)
         else:
-            self.cb_contact_template.setCurrentIndex(-1)
+            self.combo_contact_template.setCurrentIndex(-1)
 
         self.cb_qr_code.setChecked(read_qr_code_settings())
 
@@ -283,7 +326,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def close_dialog(self) -> None:
         """!
-        @brief Close dialog.
+        @brief Close the invoice dialog and release resources.
         """
         self.close()
 
@@ -299,23 +342,31 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Rechnungsnummer (BT-1)
         dialog.le_invoice_number.setText("")  # updated by set invoice date later
         # Rechnungsdatum (BT-2)
+        dialog.de_invoice_date.installEventFilter(self.blocker)
         dialog.de_invoice_date.setDate(actual_date)
         dialog.de_invoice_date.dateChanged.connect(self.on_invoice_data_changed)
         self.on_invoice_data_changed(actual_date)
         # Code für den Rechnungstyp (BT-3)
-        set_combo_box_items(dialog.cb_invoice_type, "380", D_INVOICE_TYPE)
+        dialog.combo_invoice_type.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_invoice_type, "380", INVOICE_TYPE)
         # Code für die Rechnungswährung (BT-5)
-        set_combo_box_items(dialog.cb_currency, "EUR", D_CURRENCY)
+        dialog.combo_currency.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_currency, "EUR", CURRENCY)
         # Fälligkeitsdatum der Zahlung (BT-9)
+        dialog.de_due_date.installEventFilter(self.blocker)
+        dialog.sb_due_days.installEventFilter(self.blocker)
         dialog.de_due_date.setDate(actual_date.addDays(self.default_payment_days))
         dialog.sb_due_days.setValue(self.default_payment_days)
         dialog.de_due_date.dateChanged.connect(lambda: self.due_date_changed(False))
         dialog.sb_due_days.valueChanged.connect(lambda: self.due_date_changed(True))
         # Tatsächliches Lieferdatum (BT-72)
+        dialog.de_deliver_date.installEventFilter(self.blocker)
         dialog.de_deliver_date.setDate(actual_date)
         # Anfangsdatum des Rechnungszeitraums (BT-73)
+        dialog.de_accounting_date_from.installEventFilter(self.blocker)
         dialog.de_accounting_date_from.setDate(actual_date)
         # Enddatum des Rechnungszeitraums (BT-74)
+        dialog.de_accounting_date_to.installEventFilter(self.blocker)
         dialog.de_accounting_date_to.setDate(actual_date)
         # Käuferreferenz (BT-10)
         dialog.le_buyer_reference.setText("")
@@ -328,9 +379,11 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Auftragsnummer (BT-14)
         dialog.le_assignment_number.setText("")
         # Wareneingangsmeldung (BT-15)
+        dialog.de_receiving_advice_referenced_document.installEventFilter(self.blocker)
         dialog.le_receiving_referenced_document.setText("")
         dialog.de_receiving_advice_referenced_document.setDate(actual_date)
         # Versandanzeige (BT-16)
+        dialog.de_despatch_advice_referenced_document.installEventFilter(self.blocker)
         dialog.le_despatch_advice_referenced_document.setText("")
         dialog.de_despatch_advice_referenced_document.setDate(actual_date)
         # Ausschreibung/Los (BT-17)
@@ -340,6 +393,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Buchungskonto des Käufers (BT-19)
         dialog.le_booking_account_buyer.setText("")
         # Rechnungsreferenz (BT-25, BT-26)
+        dialog.de_invoice_reference.installEventFilter(self.blocker)
         dialog.le_booking_account_buyer.setText("")  # ID (BT-25)
         dialog.de_invoice_reference.setDate(actual_date)  # Datum (BT-26)
         # Freitext zur Rechnung (BT-22)
@@ -380,7 +434,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Verkäuferanschrift (BT-37)
         dialog.le_seller_city.setText(company_address[ECompanyFields.CITY])
         # Ländercode der Verkäuferanschrift (BT-40)
-        set_combo_box_items(dialog.cb_seller_country, company_address[ECompanyFields.COUNTRY], D_COUNTRY_CODE)
+        dialog.combo_seller_country.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_seller_country, company_address[ECompanyFields.COUNTRY], COUNTRY_CODE)
         # Kontaktstelle des Verkäufers (BT-41)
         contact_name = f"{company_contact[ECompanyFields.FIRST_NAME]} {company_contact[ECompanyFields.LAST_NAME]}"
         dialog.le_seller_contact_name.setText(contact_name)
@@ -416,7 +471,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Käuferanschrift (BT-52)
         dialog.le_buyer_city.setText("")
         # Ländercode der Käuferanschrift (BT-55)
-        set_combo_box_items(dialog.cb_buyer_country, "DE", D_COUNTRY_CODE)
+        dialog.combo_buyer_country.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_buyer_country, "DE", COUNTRY_CODE)
         # Kontaktstelle des Käufers (BT-56)
         dialog.le_buyer_contact_name.setText("")
         # E-Mail-Adresse der Kontaktstelle des Käufers (BT-58)
@@ -424,8 +480,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Telefonnummer der Kontaktstelle des Käufers (BT-57)
         dialog.le_buyer_contact_phone.setText("")
 
-        # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
-        set_combo_box_items(dialog.cb_payment_method, "58", D_PAYMENT_METHOD)
+        # Code für die Zahlungsart PAYMENT_METHOD (BT-81)
+        dialog.combo_payment_method.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_payment_method, "58", PAYMENT_METHOD)
         # Name des Zahlungskontos (BT-85)
         dialog.le_account_holder.setText(company_payment[ECompanyFields.BANK_OWNER])
         # Kennung des Zahlungskontos (BT-84)
@@ -454,7 +511,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Lieferanschrift (BT-77)
         dialog.le_deliver_city.setText("")
         # Ländercode der Lieferanschrift (BT-80)
-        set_combo_box_items(dialog.cb_deliver_country, "DE", D_COUNTRY_CODE)
+        dialog.combo_deliver_country.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_deliver_country, "DE", COUNTRY_CODE)
         # Stadt der Lieferanschrift (BT-79)
         dialog.le_deliver_region.setText("")
 
@@ -471,8 +529,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Rechnungsgesamtbetrag einschließlich Umsatzsteuer (BT-112)
         set_spin_box_read_only(dialog.dsb_sum_gross, 0.0)
         # Vorauszahlungsbetrag (BT-113)
+        dialog.dsb_paid_amount.installEventFilter(self.blocker)
         dialog.dsb_paid_amount.setValue(0.0)
         # Rundungsbetrag (BT-114)
+        dialog.dsb_rounded_amount.installEventFilter(self.blocker)
         dialog.dsb_rounded_amount.setValue(0.0)
         # Fälliger Zahlungsbetrag (BT-115)
         set_spin_box_read_only(dialog.dsb_amount_due, 0.0)
@@ -487,10 +547,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         data_totals = invoice_data["totals"]
 
         discount_dialog: Ui_InvoiceDiscountsData  # declare for typing
-        for discount_dialog in self.ui_invoice_data.discounts_widgets:
+        for discount_dialog in self.discounts_widgets:
             discount_dialog.dsb_basis_amount.setValue(data_totals["itemsNetAmount"])
         surcharge_dialog: Ui_InvoiceSurchargesData  # declare for typing
-        for surcharge_dialog in self.ui_invoice_data.surcharges_widgets:
+        for surcharge_dialog in self.surcharges_widgets:
             surcharge_dialog.dsb_basis_amount.setValue(data_totals["itemsNetAmount"])
 
         self.update_tax_widget(invoice_data)
@@ -514,10 +574,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def item_billing_period_checkbox_changed(self, state: bool, item_index: int) -> None:
         """!
         @brief Enable or disable the billing period fields for a line item.
-        @param state : Checkbox state
-        @param item_index : Index of the affected item
+        @param state : Checkbox state.
+        @param item_index : Index of the affected item.
         """
-        item_dialog: Ui_InvoiceItemData = self.ui_invoice_data.item_widgets[item_index]
+        item_dialog: Ui_InvoiceItemData = self.item_widgets[item_index]
         item_dialog.de_item_billing_period_start.setEnabled(state)
         item_dialog.de_item_billing_period_end.setEnabled(state)
         item_dialog.lbl_item_billing_period_start.setEnabled(state)
@@ -526,7 +586,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def accounting_date_checkbox_changed(self, state: int | bool) -> None:
         """!
         @brief Enable or disable the accounting period date fields.
-        @param state : Checkbox state
+        @param state : Checkbox state.
         """
         enable = bool(state)
         self.ui_invoice_data.de_accounting_date_from.setEnabled(enable)
@@ -536,7 +596,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def accounting_date_from_changed(self, from_date: QDate) -> None:
         """!
         @brief Validate the 'from' accounting date.
-        @param from_date : Selected start date
+        @param from_date : Selected start date.
         """
         to_date = self.ui_invoice_data.de_accounting_date_to.date()
         if to_date < from_date:
@@ -545,7 +605,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def accounting_date_to_changed(self, to_date: QDate) -> None:
         """!
         @brief Validate the 'to' accounting date.
-        @param to_date : Selected end date
+        @param to_date : Selected end date.
         """
         from_date = self.ui_invoice_data.de_accounting_date_from.date()
         if to_date < from_date:
@@ -555,14 +615,14 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         """!
         @brief Add a new invoice line item widget.
         """
-        item_index = len(self.ui_invoice_data.item_widgets)
-        if item_index <= I_MAX_POSITIONS:
+        item_index = len(self.item_widgets)
+        if item_index <= MAX_POSITIONS:
             item_dialog = Ui_InvoiceItemData()  # new item instance
             widget = QWidget()  # new container widget
             item_dialog.setupUi(widget)
             self.ui_invoice_data.item_layout.addWidget(widget)
             item_dialog.groupBox.setTitle(f"Position {item_index + 1}")
-            self.ui_invoice_data.item_widgets.append(item_dialog)  # store item ui for later use
+            self.item_widgets.append(item_dialog)  # store item ui for later use
             self.set_default_item_data(item_dialog)
             self.update_item_expand_status(item_dialog, self.cb_extended.isChecked())
             if item_index > 0:
@@ -576,15 +636,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             self.update_all_index_callbacks()
             self.update_total_data()
         else:
-            self.ui.set_status("Maximale Positionen erreicht.", b_highlight=True)
+            self.ui.set_status("Maximale Positionen erreicht.", highlight=True)
 
-    def set_item_index_callbacks(self, item_index, connection_exists: bool = True) -> None:
+    def set_item_index_callbacks(self, item_index: int, connection_exists: bool = True) -> None:
         """!
         @brief Assign callbacks for a specific line item.
-        @param item_index : Index of the item
-        @param connection_exists : If True, disconnect previous connections first
+        @param item_index : Index of the item.
+        @param connection_exists : If True, disconnect previous connections first.
         """
-        item_dialog = self.ui_invoice_data.item_widgets[item_index]
+        item_dialog = self.item_widgets[item_index]
         item_dialog.groupBox.setTitle(f"Position {item_index + 1}")
         # date checkbox callback
         if connection_exists:
@@ -621,8 +681,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         """!
         @brief Refresh callbacks and button visibility for all line items.
         """
-        total_items = len(self.ui_invoice_data.item_widgets)
-        for item_index, item_dialog in enumerate(self.ui_invoice_data.item_widgets):
+        total_items = len(self.item_widgets)
+        for item_index, item_dialog in enumerate(self.item_widgets):
             if total_items <= 1:
                 item_dialog.btn_delete.setVisible(False)
                 item_dialog.btn_up.setVisible(False)
@@ -645,12 +705,13 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         """!
         @brief Remove the last invoice line item.
         """
-        item_index = len(self.ui_invoice_data.item_widgets)
+        item_index = len(self.item_widgets)
         if item_index <= 2:
             self.ui_invoice_data.btn_remove_item.setEnabled(False)
         if item_index > 1:
-            last_item = self.ui_invoice_data.item_widgets.pop()
+            last_item = self.item_widgets.pop()
             widget = last_item.groupBox.parentWidget()
+            assert widget is not None
             self.ui_invoice_data.item_layout.removeWidget(widget)
             widget.setParent(None)
             self.update_all_index_callbacks()
@@ -659,27 +720,31 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def set_default_item_data(self, item_dialog: Ui_InvoiceItemData) -> None:
         """!
         @brief Initialize a line item with default values.
-        @param item_dialog : Line item widget instance
+        @param item_dialog : Line item widget instance.
         """
         actual_date = QDate.currentDate()
         # up, down and delete button
-        b_light_theme = self.ui.model.c_monitor.is_light_theme()
+        is_light_theme = self.ui.model.monitor.is_light_theme()
         item_dialog.btn_delete.setIcon(QIcon(ICON_CROSS_RED))
-        item_dialog.btn_up.setIcon(QIcon(ICON_ARROW_UP_LIGHT if b_light_theme else ICON_ARROW_UP_DARK))
-        item_dialog.btn_down.setIcon(QIcon(ICON_ARROW_DOWN_LIGHT if b_light_theme else ICON_ARROW_DOWN_DARK))
+        item_dialog.btn_up.setIcon(QIcon(ICON_ARROW_UP_LIGHT if is_light_theme else ICON_ARROW_UP_DARK))
+        item_dialog.btn_down.setIcon(QIcon(ICON_ARROW_DOWN_LIGHT if is_light_theme else ICON_ARROW_DOWN_DARK))
         # Name (BT-153)
         item_dialog.le_item_name.setText("")
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
+        item_dialog.dsb_item_vat_rate.installEventFilter(self.blocker)
         item_dialog.dsb_item_vat_rate.setValue(self.default_tax_rate)
         # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
-        set_combo_box_items(item_dialog.cb_item_vat_code, "S", D_VAT_CODE)
+        item_dialog.combo_item_vat_code.installEventFilter(self.blocker)
+        set_combo_box_items(item_dialog.combo_item_vat_code, "S", VAT_CODE)
         # Artikel-Nr. (BT-155)
         item_dialog.le_item_id.setText("")
         # Startdatum (BT-134)
+        item_dialog.de_item_billing_period_start.installEventFilter(self.blocker)
         item_dialog.de_item_billing_period_start.setDate(actual_date)
         item_dialog.de_item_billing_period_start.setEnabled(False)
         item_dialog.lbl_item_billing_period_start.setEnabled(False)
         # Enddatum (BT-135)
+        item_dialog.de_item_billing_period_end.installEventFilter(self.blocker)
         item_dialog.de_item_billing_period_end.setDate(actual_date)
         item_dialog.de_item_billing_period_end.setEnabled(False)
         item_dialog.lbl_item_billing_period_end.setEnabled(False)
@@ -690,14 +755,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Artikelbeschreibung (BT-154)
         item_dialog.pte_item_description.setPlainText("")
         # Menge (BT-129)
+        item_dialog.dsb_item_quantity.installEventFilter(self.blocker)
         item_dialog.dsb_item_quantity.setValue(1)
-        # Einheit (BT-130) D_UNIT
-        set_combo_box_items(item_dialog.cb_item_quantity_unit, "H87", D_UNIT)
+        # Einheit (BT-130) UNIT
+        item_dialog.combo_item_quantity_unit.installEventFilter(self.blocker)
+        set_combo_box_items(item_dialog.combo_item_quantity_unit, "H87", UNIT)
         # Einzelpreis (Netto) (BT-146)
+        item_dialog.dsb_item_net_unit_price.installEventFilter(self.blocker)
         item_dialog.dsb_item_net_unit_price.setValue(0.0)
         # Einzelpreis (Brutto)
+        item_dialog.dsb_item_gross_unit_price.installEventFilter(self.blocker)
         item_dialog.dsb_item_gross_unit_price.setValue(0.0)
         # Basismenge zum Artikelpreis (BT-149)
+        item_dialog.dsb_item_basis_quantity.installEventFilter(self.blocker)
         item_dialog.dsb_item_basis_quantity.setValue(1)
         # Steuerbetrag
         set_spin_box_read_only(item_dialog.dsb_item_vat_amount, 0.0)
@@ -709,13 +779,13 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def item_price_changed(self, item_index: int, gross_changed: None | bool) -> None:
         """!
         @brief Handle price changes and recalculate item totals.
-        @param item_index : Index of the affected item
-        @param gross_changed : True=gross changed, False=net changed, None=other trigger
+        @param item_index : Index of the affected item.
+        @param gross_changed : True=gross changed, False=net changed, None=other trigger.
         """
         if not self.lock_auto_price_edit:
             self.lock_auto_price_edit = True
-            item_dialog: Ui_InvoiceItemData = self.ui_invoice_data.item_widgets[item_index]
-            b_extended = self.cb_extended.isChecked()
+            item_dialog: Ui_InvoiceItemData = self.item_widgets[item_index]
+            is_extended = self.cb_extended.isChecked()
 
             if gross_changed is not None:
                 self.item_gross_changed[item_index] = gross_changed
@@ -724,7 +794,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             gross_price = item_dialog.dsb_item_gross_unit_price.value()
             vat_rate = item_dialog.dsb_item_vat_rate.value()
             item_quantity = item_dialog.dsb_item_quantity.value()
-            item_basis_quantity = item_dialog.dsb_item_basis_quantity.value() if b_extended else 1
+            item_basis_quantity = item_dialog.dsb_item_basis_quantity.value() if is_extended else 1
 
             if self.item_gross_changed[item_index]:
                 new_net_price = gross_price / (1 + (vat_rate / 100))
@@ -756,8 +826,11 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         layout = self.ui_invoice_data.item_layout
 
         # get widget from layout
-        w1 = layout.itemAt(item_index).widget()
-        w2 = layout.itemAt(swap_index).widget()
+        item1 = layout.itemAt(item_index)
+        item2 = layout.itemAt(swap_index)
+        assert item1 is not None and item2 is not None
+        w1 = item1.widget()
+        w2 = item2.widget()
         if up_clicked:
             # delete layout
             layout.removeWidget(w1)
@@ -774,8 +847,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             layout.insertWidget(swap_index, w1)
 
         # swap items from list
-        self.ui_invoice_data.item_widgets[item_index], self.ui_invoice_data.item_widgets[swap_index] = \
-            self.ui_invoice_data.item_widgets[swap_index], self.ui_invoice_data.item_widgets[item_index]
+        self.item_widgets[item_index], self.item_widgets[swap_index] = \
+            self.item_widgets[swap_index], self.item_widgets[item_index]
         self.update_all_index_callbacks()
 
     def item_delete_clicked(self, item_index: int) -> None:
@@ -783,11 +856,12 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @brief Delete an invoice item from the layout and internal list.
         @param item_index : Index of the item to delete.
         """
-        item = self.ui_invoice_data.item_widgets.pop(item_index)
+        item = self.item_widgets.pop(item_index)
         widget = item.groupBox.parentWidget()
+        assert widget is not None
         self.ui_invoice_data.item_layout.removeWidget(widget)
         widget.setParent(None)
-        total_index = len(self.ui_invoice_data.item_widgets)
+        total_index = len(self.item_widgets)
         if total_index <= 2:
             self.ui_invoice_data.btn_remove_item.setEnabled(False)
         self.update_all_index_callbacks()
@@ -798,7 +872,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @brief Add a new discount row to the invoice.
                Automatically resizes the window if necessary and connects value change callbacks.
         """
-        discount_index = len(self.ui_invoice_data.discounts_widgets)
+        discount_index = len(self.discounts_widgets)
         if discount_index == 0:
             current_size = self.size()
             current_width = current_size.width()
@@ -806,13 +880,13 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             min_width = 1150
             if current_width < min_width:
                 self.resize(min_width, current_height)
-        if discount_index <= I_MAX_POSITIONS:
+        if discount_index <= MAX_POSITIONS:
             discount_dialog = Ui_InvoiceDiscountsData()  # new discount instance
             widget = QWidget()  # new container widget
             discount_dialog.setupUi(widget)
             self.discounts_layout.insertWidget(self.discounts_layout.count() - 1, widget)  # insert widget in layout before buttons
-            self.ui_invoice_data.discounts_widgets.append(discount_dialog)  # store discount ui for later use
-            self.set_default_dis_sur_data(discount_dialog, D_ALLOWANCE_REASON_CODE)
+            self.discounts_widgets.append(discount_dialog)  # store discount ui for later use
+            self.set_default_dis_sur_data(discount_dialog, ALLOWANCE_REASON_CODE)
             self.btn_remove_discount.setEnabled(True)
             # price callback
             discount_dialog.dsb_basis_amount.valueChanged.connect(lambda: self.discount_price_changed(discount_index, None))
@@ -821,19 +895,20 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             discount_dialog.dsb_vat_rate.valueChanged.connect(lambda: self.discount_price_changed(discount_index, None))
             self.update_total_data()
         else:
-            self.ui.set_status("Maximale Nachlässe erreicht.", b_highlight=True)
+            self.ui.set_status("Maximale Nachlässe erreicht.", highlight=True)
 
     def remove_discount(self) -> None:
         """!
         @brief Remove the last discount from the invoice.
                Updates layout and disables the remove button if only one discount remains.
         """
-        discount_index = len(self.ui_invoice_data.discounts_widgets)
+        discount_index = len(self.discounts_widgets)
         if discount_index <= 1:
             self.btn_remove_discount.setEnabled(False)
         if discount_index > 0:
-            last_discount = self.ui_invoice_data.discounts_widgets.pop()
+            last_discount = self.discounts_widgets.pop()
             widget = last_discount.frame.parentWidget()
+            assert widget is not None
             self.discounts_layout.removeWidget(widget)
             widget.setParent(None)
             self.update_total_data()
@@ -843,7 +918,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @brief Add a new surcharge row to the invoice.
                Automatically resizes the window if necessary and connects value change callbacks.
         """
-        surcharge_index = len(self.ui_invoice_data.surcharges_widgets)
+        surcharge_index = len(self.surcharges_widgets)
         if surcharge_index == 0:
             current_size = self.size()
             current_width = current_size.width()
@@ -851,13 +926,13 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             min_width = 1150
             if current_width < min_width:
                 self.resize(min_width, current_height)
-        if surcharge_index <= I_MAX_POSITIONS:
+        if surcharge_index <= MAX_POSITIONS:
             surcharge_dialog = Ui_InvoiceSurchargesData()  # new surcharge instance
             widget = QWidget()  # new container widget
             surcharge_dialog.setupUi(widget)
             self.surcharges_layout.insertWidget(self.surcharges_layout.count() - 1, widget)  # insert widget in layout before buttons
-            self.ui_invoice_data.surcharges_widgets.append(surcharge_dialog)  # store surcharge ui for later use
-            self.set_default_dis_sur_data(surcharge_dialog, D_CHARGE_REASON_CODE)
+            self.surcharges_widgets.append(surcharge_dialog)  # store surcharge ui for later use
+            self.set_default_dis_sur_data(surcharge_dialog, CHARGE_REASON_CODE)
             self.btn_remove_surcharge.setEnabled(True)
             # price callback
             surcharge_dialog.dsb_basis_amount.valueChanged.connect(lambda: self.surcharge_price_changed(surcharge_index, None))
@@ -866,39 +941,45 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             surcharge_dialog.dsb_vat_rate.valueChanged.connect(lambda: self.surcharge_price_changed(surcharge_index, None))
             self.update_total_data()
         else:
-            self.ui.set_status("Maximale Zuschläge erreicht.", b_highlight=True)
+            self.ui.set_status("Maximale Zuschläge erreicht.", highlight=True)
 
     def remove_surcharge(self) -> None:
         """!
         @brief Remove the last surcharge from the invoice.
                Updates layout and disables the remove button if only one surcharge remains.
         """
-        surcharge_index = len(self.ui_invoice_data.surcharges_widgets)
+        surcharge_index = len(self.surcharges_widgets)
         if surcharge_index <= 1:
-            self.btn_remove_discount.setEnabled(False)
+            self.btn_remove_surcharge.setEnabled(False)
         if surcharge_index > 0:
-            last_surcharge = self.ui_invoice_data.surcharges_widgets.pop()
+            last_surcharge = self.surcharges_widgets.pop()
             widget = last_surcharge.frame.parentWidget()
+            assert widget is not None
             self.surcharges_layout.removeWidget(widget)
             widget.setParent(None)
             self.update_total_data()
 
     def set_default_dis_sur_data(self, dialog: Ui_InvoiceDiscountsData | Ui_InvoiceSurchargesData, reason_codes: dict[str, str]) -> None:
         """!
-        @brief Set default discounts or surcharges data
-        @param dialog : dialog
-        @param reason_codes : reason codes
+        @brief Set default discounts or surcharges data.
+        @param dialog : Discount or surcharge dialog.
+        @param reason_codes : Reason codes.
         """
         # Grundbetrag (BT-93) (BT-100)
+        dialog.dsb_basis_amount.installEventFilter(self.blocker)
         set_spin_box_read_only(dialog.dsb_basis_amount, 0.0)
         # Prozent (BT-94) (BT-101)
+        dialog.dsb_percent.installEventFilter(self.blocker)
         dialog.dsb_percent.setValue(0)
         # Betrag (Netto) (BT-92) (BT-99)
+        dialog.dsb_net_amount.installEventFilter(self.blocker)
         dialog.dsb_net_amount.setValue(0.0)
         # Steuersatz (BT-96) (BT-103)
+        dialog.dsb_vat_rate.installEventFilter(self.blocker)
         dialog.dsb_vat_rate.setValue(self.default_tax_rate)
         # Steuerkategorie (BT-95) (BT-102)
-        set_combo_box_items(dialog.cb_vat_code, "S", D_VAT_CODE)
+        dialog.combo_vat_code.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_vat_code, "S", VAT_CODE)
         # Betrag Brutto
         set_spin_box_read_only(dialog.dsb_gross_amount, 0.0)
         # Steuerbetrag (Netto)
@@ -912,17 +993,18 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Grund (BT-97) (BT-104)
         dialog.le_reason.setText("")
         # Code des Grundes (BT-98) (BT-105)
-        set_combo_box_items(dialog.cb_reason_code, "", reason_codes)
+        dialog.combo_reason_code.installEventFilter(self.blocker)
+        set_combo_box_items(dialog.combo_reason_code, "", reason_codes)
 
-    def discount_price_changed(self, discount_index: int, percent_changed: bool) -> None:
+    def discount_price_changed(self, discount_index: int, percent_changed: bool | None) -> None:
         """!
-        @brief Discount price changed
-        @param discount_index : discount index
-        @param percent_changed : True: percent changed; False: ne changed; None=other (use last changed)
+        @brief Handle discount price change.
+        @param discount_index : Discount index.
+        @param percent_changed : True=percent changed, False=net changed, None=other (use last changed).
         """
         if not self.lock_auto_price_edit:
             self.lock_auto_price_edit = True
-            discount_dialog: Ui_InvoiceDiscountsData = self.ui_invoice_data.discounts_widgets[discount_index]
+            discount_dialog: Ui_InvoiceDiscountsData = self.discounts_widgets[discount_index]
 
             if percent_changed is not None:
                 self.discount_percent_changed[discount_index] = percent_changed
@@ -946,15 +1028,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         self.update_total_data()
 
-    def surcharge_price_changed(self, surcharge_index: int, percent_changed: bool) -> None:
+    def surcharge_price_changed(self, surcharge_index: int, percent_changed: bool | None) -> None:
         """!
-        @brief Surcharge price changed
-        @param surcharge_index : discount index
-        @param percent_changed : True: percent changed; False: ne changed; None=other (use last changed)
+        @brief Handle surcharge price change.
+        @param surcharge_index : Surcharge index.
+        @param percent_changed : True=percent changed, False=net changed, None=other (use last changed).
         """
         if not self.lock_auto_price_edit:
             self.lock_auto_price_edit = True
-            surcharge_dialog: Ui_InvoiceSurchargesData = self.ui_invoice_data.surcharges_widgets[surcharge_index]
+            surcharge_dialog: Ui_InvoiceSurchargesData = self.surcharges_widgets[surcharge_index]
 
             if percent_changed is not None:
                 self.surcharges_percent_changed[surcharge_index] = percent_changed
@@ -978,54 +1060,55 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         self.update_total_data()
 
-    def update_item_expand_status(self, item_dialog: Ui_InvoiceItemData, b_visible: bool) -> None:
+    def update_item_expand_status(self, item_dialog: Ui_InvoiceItemData, is_visible: bool) -> None:
         """!
-        @brief Update widgets for item expand status
-        @param item_dialog : item dialog
-        @param b_visible : visible status
+        @brief Update widget visibility for item expand status.
+        @param item_dialog : Item dialog.
+        @param is_visible : Visibility status.
         """
         # Steuerkategorie (BT-151)
-        item_dialog.lbl_item_vat_code.setVisible(b_visible)
-        item_dialog.cb_item_vat_code.setVisible(b_visible)
+        item_dialog.lbl_item_vat_code.setVisible(is_visible)
+        item_dialog.combo_item_vat_code.setVisible(is_visible)
         # Artikel-Nr. (BT-155)
-        item_dialog.lbl_item_id.setVisible(b_visible)
-        item_dialog.le_item_id.setVisible(b_visible)
+        item_dialog.lbl_item_id.setVisible(is_visible)
+        item_dialog.le_item_id.setVisible(is_visible)
         # Startdatum (BT-134)
-        item_dialog.lbl_item_billing_period_start.setVisible(b_visible)
-        item_dialog.de_item_billing_period_start.setVisible(b_visible)
+        item_dialog.lbl_item_billing_period_start.setVisible(is_visible)
+        item_dialog.de_item_billing_period_start.setVisible(is_visible)
         # Enddatum (BT-135)
-        item_dialog.lbl_item_billing_period_end.setVisible(b_visible)
-        item_dialog.de_item_billing_period_end.setVisible(b_visible)
+        item_dialog.lbl_item_billing_period_end.setVisible(is_visible)
+        item_dialog.de_item_billing_period_end.setVisible(is_visible)
         # Set Date checkbox
-        item_dialog.cb_item_billing_period.setVisible(b_visible)
+        item_dialog.cb_item_billing_period.setVisible(is_visible)
         # Referenz zur Bestellposition (BT-132)
-        item_dialog.lbl_item_order_position.setVisible(b_visible)
-        item_dialog.le_item_order_position.setVisible(b_visible)
+        item_dialog.lbl_item_order_position.setVisible(is_visible)
+        item_dialog.le_item_order_position.setVisible(is_visible)
         # Objektkennung auf Ebene der Rechnungsposition (BT-128)
-        item_dialog.lbl_object_reference.setVisible(b_visible)
-        item_dialog.le_object_reference.setVisible(b_visible)
+        item_dialog.lbl_object_reference.setVisible(is_visible)
+        item_dialog.le_object_reference.setVisible(is_visible)
         # Basismenge zum Artikelpreis (BT-149)
-        item_dialog.lbl_item_basis_quantity.setVisible(b_visible)
-        item_dialog.dsb_item_basis_quantity.setVisible(b_visible)
+        item_dialog.lbl_item_basis_quantity.setVisible(is_visible)
+        item_dialog.dsb_item_basis_quantity.setVisible(is_visible)
 
     def set_default_tax_data(self, tax_dialog: Ui_InvoiceTaxData) -> None:
         """!
-        @brief Set default tax data. Set only editable data
-        @param tax_dialog : tax dialog
+        @brief Initialize tax widget with empty exemption fields.
+        @param tax_dialog : Tax widget instance to initialize.
         """
         # Befreiungsgrund (BT-120)
         tax_dialog.le_exemption_reason.setText("")
         # Code für Befreiungsgrund (BT-121)
-        set_combo_box_items(tax_dialog.cb_exemption_reason_code, "", D_EXEMPTION_REASON_CODE)
+        tax_dialog.combo_exemption_reason_code.installEventFilter(self.blocker)
+        set_combo_box_items(tax_dialog.combo_exemption_reason_code, "", EXEMPTION_REASON_CODE)
 
     def set_tax_data(self, tax_dialog: Ui_InvoiceTaxData, tax_data: dict[str, Any]) -> None:
         """!
-        @brief Set default tax data. Set only editable data
-        @param tax_dialog : tax dialog
-        @param tax_data : tax data
+        @brief Populate tax widget with calculated tax values as read-only fields.
+        @param tax_dialog : Tax widget instance to populate.
+        @param tax_data : Dictionary with tax category, rate, and amount values.
         """
         # Steuerkategorie (BT-118)
-        set_line_edit_read_only(tax_dialog.le_tax_category, tax_data["code"], D_VAT_CODE)
+        set_line_edit_read_only(tax_dialog.le_tax_category, tax_data["code"], VAT_CODE)
         # Steuersatz (BT-119)
         set_spin_box_read_only(tax_dialog.dsb_tax_rate, tax_data["rate"])
         # Gesamt (Netto) (BT-116)
@@ -1034,125 +1117,126 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         set_spin_box_read_only(tax_dialog.dsb_tax_amount, tax_data["vatAmount"])
         # Gesamt (Brutto)
         set_spin_box_read_only(tax_dialog.dsb_tax_gross, tax_data["netAmount"] + tax_data["vatAmount"])
-        b_visible = bool(tax_data["rate"] == 0)
+        is_visible = bool(tax_data["rate"] == 0)
         # Befreiungsgrund (BT-120)
-        tax_dialog.lbl_exemption_reason.setVisible(b_visible)
-        tax_dialog.le_exemption_reason.setVisible(b_visible)
+        tax_dialog.lbl_exemption_reason.setVisible(is_visible)
+        tax_dialog.le_exemption_reason.setVisible(is_visible)
         tax_dialog.le_exemption_reason.setText(tax_data["exemptionReason"])
         # Code für Befreiungsgrund (BT-121)
-        tax_dialog.lbl_exemption_reason_code.setVisible(b_visible)
-        tax_dialog.cb_exemption_reason_code.setVisible(b_visible)
-        set_combo_box_value(tax_dialog.cb_exemption_reason_code, tax_data["exemptionReasonCode"], D_EXEMPTION_REASON_CODE)
+        tax_dialog.lbl_exemption_reason_code.setVisible(is_visible)
+        tax_dialog.combo_exemption_reason_code.setVisible(is_visible)
+        set_combo_box_value(tax_dialog.combo_exemption_reason_code, tax_data["exemptionReasonCode"], EXEMPTION_REASON_CODE)
 
     def update_tax_widget(self, invoice_data: dict[str, Any]) -> None:
         """!
-        @brief Update tax widget
-        @param invoice_data : invoice data
+        @brief Synchronize tax widgets with calculated tax breakdown from invoice data.
+        @param invoice_data : Invoice data dictionary containing tax entries.
         """
         taxes_data = invoice_data.get("taxes", {})
-        existing_widgets = len(self.ui_invoice_data.tax_widgets)
+        existing_widgets = len(self.tax_widgets)
         required_widgets = len(taxes_data.items())
 
         for tax_index, (_tax_name, tax_data) in enumerate(taxes_data.items()):
-            if len(self.ui_invoice_data.tax_widgets) <= tax_index:
+            if len(self.tax_widgets) <= tax_index:
                 tax_dialog = Ui_InvoiceTaxData()  # new item instance
                 widget = QWidget()  # new container widget
                 tax_dialog.setupUi(widget)
                 self.tax_layout.insertWidget(self.tax_layout.count(), widget)
-                self.ui_invoice_data.tax_widgets.append(tax_dialog)  # store item ui for later use
+                self.tax_widgets.append(tax_dialog)  # store item ui for later use
                 self.set_default_tax_data(tax_dialog)
             else:
-                tax_dialog = self.ui_invoice_data.tax_widgets[tax_index]
+                tax_dialog = self.tax_widgets[tax_index]
 
             self.set_tax_data(tax_dialog, tax_data)
 
         widgets_to_delete = existing_widgets - required_widgets
         if widgets_to_delete > 0:
             for _i in range(widgets_to_delete):
-                last_tax = self.ui_invoice_data.tax_widgets.pop()
-                widget = last_tax.frame.parentWidget()
-                self.tax_layout.removeWidget(widget)
-                widget.setParent(None)
+                last_tax = self.tax_widgets.pop()
+                tax_widget = last_tax.frame.parentWidget()
+                assert tax_widget is not None
+                self.tax_layout.removeWidget(tax_widget)
+                tax_widget.setParent(None)
 
     def expand_mode_changed(self) -> None:
         """!
-        @brief Update widgets for new expand status
+        @brief Update widget visibility for new expand status.
         """
-        b_visible = self.cb_extended.isChecked()
+        is_visible = self.cb_extended.isChecked()
 
         dialog = self.ui_invoice_data
         # Rechnungstitel
-        dialog.lbl_invoice_title.setVisible(b_visible)
-        dialog.le_invoice_title.setVisible(b_visible)
+        dialog.lbl_invoice_title.setVisible(is_visible)
+        dialog.le_invoice_title.setVisible(is_visible)
         # Code für den Rechnungstyp (BT-3)
-        dialog.lbl_invoice_type.setVisible(b_visible)
-        dialog.cb_invoice_type.setVisible(b_visible)
+        dialog.lbl_invoice_type.setVisible(is_visible)
+        dialog.combo_invoice_type.setVisible(is_visible)
         # Code für die Rechnungswährung (BT-5)
-        dialog.lbl_currency.setVisible(b_visible)
-        dialog.cb_currency.setVisible(b_visible)
+        dialog.lbl_currency.setVisible(is_visible)
+        dialog.combo_currency.setVisible(is_visible)
         # Fälligkeitsdatum der Zahlung (BT-9)
-        dialog.lbl_due_date.setVisible(b_visible)
-        dialog.de_due_date.setVisible(b_visible)
-        dialog.sb_due_days.setVisible(b_visible)
-        dialog.lbl_due_days.setVisible(b_visible)
+        dialog.lbl_due_date.setVisible(is_visible)
+        dialog.de_due_date.setVisible(is_visible)
+        dialog.sb_due_days.setVisible(is_visible)
+        dialog.lbl_due_days.setVisible(is_visible)
         # Käuferreferenz (BT-10)
-        dialog.lbl_buyer_reference.setVisible(b_visible)
-        dialog.le_buyer_reference.setVisible(b_visible)
+        dialog.lbl_buyer_reference.setVisible(is_visible)
+        dialog.le_buyer_reference.setVisible(is_visible)
         # Projektnummer (BT-11)
-        dialog.lbl_project_number.setVisible(b_visible)
-        dialog.le_project_number.setVisible(b_visible)
+        dialog.lbl_project_number.setVisible(is_visible)
+        dialog.le_project_number.setVisible(is_visible)
         # Vertragsnummer (BT-12)
-        dialog.lbl_contract_number.setVisible(b_visible)
-        dialog.le_contract_number.setVisible(b_visible)
+        dialog.lbl_contract_number.setVisible(is_visible)
+        dialog.le_contract_number.setVisible(is_visible)
         # Bestellnummer (BT-13)
-        dialog.lbl_order_number.setVisible(b_visible)
-        dialog.le_order_number.setVisible(b_visible)
+        dialog.lbl_order_number.setVisible(is_visible)
+        dialog.le_order_number.setVisible(is_visible)
         # Auftragsnummer (BT-14)
-        dialog.lbl_assignment_number.setVisible(b_visible)
-        dialog.le_assignment_number.setVisible(b_visible)
+        dialog.lbl_assignment_number.setVisible(is_visible)
+        dialog.le_assignment_number.setVisible(is_visible)
         # Wareneingangsmeldung (BT-15)
-        dialog.lbl_receiving_advice_referenced_document.setVisible(b_visible)
-        dialog.le_receiving_referenced_document.setVisible(b_visible)
-        dialog.lbl_receiving_document_date.setVisible(b_visible)
-        dialog.de_receiving_advice_referenced_document.setVisible(b_visible)
+        dialog.lbl_receiving_advice_referenced_document.setVisible(is_visible)
+        dialog.le_receiving_referenced_document.setVisible(is_visible)
+        dialog.lbl_receiving_document_date.setVisible(is_visible)
+        dialog.de_receiving_advice_referenced_document.setVisible(is_visible)
         # Versandanzeige (BT-16)
-        dialog.lbl_despatch_advice_referenced_document.setVisible(b_visible)
-        dialog.le_despatch_advice_referenced_document.setVisible(b_visible)
-        dialog.lbl_despatch_advice_referenced_document_date.setVisible(b_visible)
-        dialog.de_despatch_advice_referenced_document.setVisible(b_visible)
+        dialog.lbl_despatch_advice_referenced_document.setVisible(is_visible)
+        dialog.le_despatch_advice_referenced_document.setVisible(is_visible)
+        dialog.lbl_despatch_advice_referenced_document_date.setVisible(is_visible)
+        dialog.de_despatch_advice_referenced_document.setVisible(is_visible)
         # Ausschreibung/Los (BT-17)
-        dialog.lbl_additional_referenced_document.setVisible(b_visible)
-        dialog.le_additional_referenced_document.setVisible(b_visible)
+        dialog.lbl_additional_referenced_document.setVisible(is_visible)
+        dialog.le_additional_referenced_document.setVisible(is_visible)
         # Objektreferenz (BT-18)
-        dialog.lbl_object_reference.setVisible(b_visible)
-        dialog.le_object_reference.setVisible(b_visible)
+        dialog.lbl_object_reference.setVisible(is_visible)
+        dialog.le_object_reference.setVisible(is_visible)
         # Buchungskonto des Käufers (BT-19)
-        dialog.lbl_booking_account_buyer.setVisible(b_visible)
-        dialog.le_booking_account_buyer.setVisible(b_visible)
+        dialog.lbl_booking_account_buyer.setVisible(is_visible)
+        dialog.le_booking_account_buyer.setVisible(is_visible)
         # Rechnungsreferenz (BT-25, BT-26)
-        dialog.lbl_invoice_reference.setVisible(b_visible)
-        dialog.le_invoice_reference.setVisible(b_visible)
-        dialog.lbl_invoice_reference_date.setVisible(b_visible)
-        dialog.de_invoice_reference.setVisible(b_visible)
+        dialog.lbl_invoice_reference.setVisible(is_visible)
+        dialog.le_invoice_reference.setVisible(is_visible)
+        dialog.lbl_invoice_reference_date.setVisible(is_visible)
+        dialog.de_invoice_reference.setVisible(is_visible)
         # Einleitungstext
-        dialog.lbl_introduction_text.setVisible(b_visible)
-        dialog.pte_introduction_text.setVisible(b_visible)
+        dialog.lbl_introduction_text.setVisible(is_visible)
+        dialog.pte_introduction_text.setVisible(is_visible)
 
         # Verkäufer
-        dialog.groupBox_2_seller.setVisible(b_visible)
+        dialog.groupBox_2_seller.setVisible(is_visible)
 
         # Käufer
-        dialog.groupBox_3_buyer.setVisible(b_visible)
+        dialog.groupBox_3_buyer.setVisible(is_visible)
 
         # Zahlungsdetails
-        dialog.groupBox_4_payment.setVisible(b_visible)
+        dialog.groupBox_4_payment.setVisible(is_visible)
 
         # Lieferdetails
-        dialog.groupBox_5_delivery.setVisible(b_visible)
+        dialog.groupBox_5_delivery.setVisible(is_visible)
 
         item_dialog: Ui_InvoiceItemData  # declare for typing
-        for item_dialog in dialog.item_widgets:
-            self.update_item_expand_status(item_dialog, b_visible)
+        for item_dialog in self.item_widgets:
+            self.update_item_expand_status(item_dialog, is_visible)
 
         # Nachlässe
         dialog.groupBox_7_discounts.setVisible(False)  # TODO wenn Berechnung korrekt verwenden
@@ -1161,41 +1245,41 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.groupBox_8_surcharges.setVisible(False)  # TODO wenn Berechnung korrekt verwenden
 
         # Steuern
-        dialog.groupBox_9_tax.setVisible(b_visible)
+        dialog.groupBox_9_tax.setVisible(is_visible)
 
         # Summe der Nettobeträge aller Rechnungspositionen (BT-106)
-        dialog.lbl_sum_positions.setVisible(b_visible)
-        dialog.dsb_sum_positions.setVisible(b_visible)
-        dialog.lbl_sum_positions_symbol.setVisible(b_visible)
+        dialog.lbl_sum_positions.setVisible(is_visible)
+        dialog.dsb_sum_positions.setVisible(is_visible)
+        dialog.lbl_sum_positions_symbol.setVisible(is_visible)
         # Summe der Zuschläge auf Dokumentenebene (BT-108)
-        dialog.lbl_sum_surcharges.setVisible(b_visible)
-        dialog.dsb_sum_surcharges.setVisible(b_visible)
-        dialog.lbl_sum_surcharges_symbol.setVisible(b_visible)
+        dialog.lbl_sum_surcharges.setVisible(is_visible)
+        dialog.dsb_sum_surcharges.setVisible(is_visible)
+        dialog.lbl_sum_surcharges_symbol.setVisible(is_visible)
         # Summe der Abschläge auf Dokumentenebene (BT-107)
-        dialog.lbl_sum_discounts.setVisible(b_visible)
-        dialog.dsb_sum_discounts.setVisible(b_visible)
-        dialog.lbl_sum_discounts_symbol.setVisible(b_visible)
+        dialog.lbl_sum_discounts.setVisible(is_visible)
+        dialog.dsb_sum_discounts.setVisible(is_visible)
+        dialog.lbl_sum_discounts_symbol.setVisible(is_visible)
         # Vorauszahlungsbetrag (BT-113)
-        dialog.lbl_paid_amount.setVisible(b_visible)
-        dialog.dsb_paid_amount.setVisible(b_visible)
-        dialog.lbl_paid_amount_symbol.setVisible(b_visible)
+        dialog.lbl_paid_amount.setVisible(is_visible)
+        dialog.dsb_paid_amount.setVisible(is_visible)
+        dialog.lbl_paid_amount_symbol.setVisible(is_visible)
         # Rundungsbetrag (BT-114)
-        dialog.lbl_rounded_amount.setVisible(b_visible)
-        dialog.dsb_rounded_amount.setVisible(b_visible)
-        dialog.lbl_rounded_amount_symbol.setVisible(b_visible)
+        dialog.lbl_rounded_amount.setVisible(is_visible)
+        dialog.dsb_rounded_amount.setVisible(is_visible)
+        dialog.lbl_rounded_amount_symbol.setVisible(is_visible)
         # Fälliger Zahlungsbetrag (BT-115)
-        dialog.lbl_amount_due.setVisible(b_visible)
-        dialog.dsb_amount_due.setVisible(b_visible)
-        dialog.lbl_amount_due_symbol.setVisible(b_visible)
+        dialog.lbl_amount_due.setVisible(is_visible)
+        dialog.dsb_amount_due.setVisible(is_visible)
+        dialog.lbl_amount_due_symbol.setVisible(is_visible)
 
         self.update_total_data()  # required if basis quantity not 1
 
-    def select_logo(self, fix_logo: Optional[str] = None) -> None:
+    def select_logo(self, fix_logo: str | None = None) -> None:
         """!
-        @brief Open file dialog to select logo and setup preview and path
-        @param fix_logo : set fix logo file without dialog asking
+        @brief Open file dialog to select logo and setup preview and path.
+        @param fix_logo : Fixed logo file path (no dialog opened if set).
         """
-        if fix_logo is not None:
+        if fix_logo:
             logo_path = fix_logo
         else:
             logo_path, _ = QFileDialog.getOpenFileName(parent=self.ui, caption="Logo auswählen",
@@ -1209,10 +1293,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def contact_template_activated(self, _index: int) -> None:
         """!
-        @brief Contact template was selected. Update Address field.
-        @param _index : index of selected template entry
+        @brief Contact template was selected. Update address fields.
+        @param _index : Index of selected template entry.
         """
-        contact = self.cb_contact_template.currentData()
+        contact = self.combo_contact_template.currentData()
         self.customer = contact
         self.ui_invoice_data.le_buyer_company.setText(contact[EContactFields.NAME])  # Name des Käufers (BT-44) TODO textumbruch ermöglichen
         self.ui_invoice_data.le_buyer_name.setText(contact[EContactFields.TRADE_NAME])  # Handelsname (BT-45)
@@ -1225,7 +1309,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.ui_invoice_data.le_buyer_street_2.setText(contact_address[EContactFields.STREET_2])  # Zeile 2 der Käuferanschrift (BT-51)
         self.ui_invoice_data.le_buyer_plz.setText(contact_address[EContactFields.PLZ])  # Postleitzahl der Käuferanschrift (BT-53)
         self.ui_invoice_data.le_buyer_city.setText(contact_address[EContactFields.CITY])  # Stadt der Käuferanschrift (BT-52)
-        self.ui_invoice_data.cb_buyer_country.setCurrentText(contact_address[EContactFields.COUNTRY])  # Ländercode der Käuferanschrift (BT-55)
+        self.ui_invoice_data.combo_buyer_country.setCurrentText(contact_address[EContactFields.COUNTRY])  # Ländercode der Käuferanschrift (BT-55)
         contact_contact = contact[CONTACT_CONTACT_FIELD]  # contact
         person = " ".join(filter(None, [contact_contact[EContactFields.FIRST_NAME], contact_contact[EContactFields.LAST_NAME]]))
         self.ui_invoice_data.le_buyer_contact_name.setText(person)  # Kontaktstelle des Käufers (BT-56)
@@ -1234,70 +1318,71 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def import_btn_clicked(self) -> None:
         """!
-        @brief Import button clicked
+        @brief Handle import button click.
         """
-        s_file_name_path, _ = QFileDialog.getOpenFileName(parent=self.ui, caption="Öffnen",
-                                                          directory=self.ui.model.get_last_path(),
-                                                          filter=INVOICE_TEMPLATE_FILE_TYPES)
-        if s_file_name_path:
-            self.ui.model.set_last_path(os.path.dirname(s_file_name_path))
-            _, file_extension = os.path.splitext(s_file_name_path)
+        selected_path, _ = QFileDialog.getOpenFileName(parent=self.ui, caption="Öffnen",
+                                                       directory=self.ui.model.get_last_path(),
+                                                       filter=INVOICE_TEMPLATE_FILE_TYPES)
+        if selected_path:
+            self.ui.model.set_last_path(os.path.dirname(selected_path))
+            _, file_extension = os.path.splitext(selected_path)
             if file_extension in [JSON_TYPE, JSON_TYPE.upper()]:
-                data = read_json_file(s_file_name_path)
+                data = read_json_file(selected_path)
                 self.write_json_data_to_ui(data)
                 self.ui.set_status("Rechnungsdaten importiert.")
             elif file_extension in [PDF_TYPE, PDF_TYPE.upper()]:
-                if check_zugferd(s_file_name_path):
-                    file_content = extract_xml_from_pdf(s_file_name_path)
+                if check_zugferd(selected_path):
+                    file_content = extract_xml_from_pdf(selected_path)
+                    assert file_content is not None
                     data = convert_facturx_to_json(file_content)
                     self.write_json_data_to_ui(data)
                 else:
-                    self.ui.set_status("NUR ZUGFeRD PDF Dateien können importiert werden.", b_highlight=True)
+                    self.ui.set_status("NUR ZUGFeRD PDF Dateien können importiert werden.", highlight=True)
             elif file_extension in [XML_TYPE, XML_TYPE.upper()]:
-                if check_xinvoice(s_file_name_path):
-                    file_content = extract_xml_from_xinvoice(s_file_name_path)
+                if check_xinvoice(selected_path):
+                    file_content = extract_xml_from_xinvoice(selected_path)
                     data = convert_facturx_to_json(file_content)
                     self.write_json_data_to_ui(data)
                 else:
-                    self.ui.set_status("Diese XML ist keine E-Rechnung.", b_highlight=True)
+                    self.ui.set_status("Diese XML ist keine E-Rechnung.", highlight=True)
             else:
-                self.ui.set_status("Dateityp nicht num Import geeignet.", b_highlight=True)
+                self.ui.set_status("Dateityp nicht num Import geeignet.", highlight=True)
 
     def export_btn_clicked(self) -> None:
         """!
-        @brief Export button clicked
+        @brief Handle export button click.
         """
         default_filename = f"{__title__}-Rechnung{JSON_TYPE}"
         default_path = os.path.join(self.ui.model.get_last_path(), default_filename)
-        s_file_name_path, _ = QFileDialog.getSaveFileName(parent=self.ui, caption="Speichern unter",
-                                                          directory=default_path,
-                                                          filter=JSON_FILE_TYPES)
-        if s_file_name_path:
-            self.ui.model.set_last_path(os.path.dirname(s_file_name_path))
+        selected_path, _ = QFileDialog.getSaveFileName(parent=self.ui, caption="Speichern unter",
+                                                       directory=default_path,
+                                                       filter=JSON_FILE_TYPES)
+        if selected_path:
+            self.ui.model.set_last_path(os.path.dirname(selected_path))
             data = self.read_ui_data_to_json()
             fill_invoice_data(data)
-            write_json_file(s_file_name_path, data)
+            write_json_file(selected_path, data)
 
     def on_invoice_data_changed(self, date: QDate) -> None:
         """!
-        @brief Invoice Date changed. Update invoice number.
-        @param date : date
+        @brief Handle invoice date change. Update invoice number.
+        @param date : Invoice date.
         """
         self.due_date_changed(None)  # update due date
         # invoice number
-        invoice_number = self.c_invoice_number.create_invoice_number(date)
+        invoice_number = self.invoice_number.create_invoice_number(date)
         self.ui_invoice_data.le_invoice_number.setText(invoice_number)
         # invoice date
-        currentDate = QDate.currentDate()
-        if date != currentDate:
+        current_date = QDate.currentDate()
+        if date != current_date:
             self.ui_invoice_data.de_invoice_date.setStyleSheet("QDateEdit { background-color: red; }")
         else:
             self.ui_invoice_data.de_invoice_date.setStyleSheet("border: 1px solid palette(dark);")
 
     def due_date_changed(self, due_days_changed: None | bool) -> None:
         """!
-        @brief Due date changed
-        @param due_days_changed : changed object True=days False=date None=other (use last changed)
+        @brief Recalculate due date or due days when either field changes.
+        @param due_days_changed : Changed object. True=days, False=date, None=other (use last changed).
         """
         if not self.lock_due_date_edit:
             self.lock_due_date_edit = True
@@ -1320,46 +1405,46 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
     def check_item_name(self) -> bool:
         """!
-        @brief Check item name
-        @return valid status
+        @brief Check that all item names are set.
+        @return True if all item names are set.
         """
         valid_item = True
-        for item_dialog in self.ui_invoice_data.item_widgets:
+        for item_dialog in self.item_widgets:
             if not item_dialog.le_item_name.text():
                 item_dialog.le_item_name.setStyleSheet("border: 2px solid red;")
                 valid_item = False
                 break
         return valid_item
 
-    def create_invoice(self, e_invoice_option: EInvoiceOption) -> None:
+    def create_invoice(self, invoice_option: EInvoiceOption) -> None:
         """!
-        @brief Create invoice.
-        @param e_invoice_option : invoice option
+        @brief Validate inputs, generate ZUGFeRD PDF, and save the invoice file.
+        @param invoice_option : Determines output format (PDF, XRechnung, etc.).
         """
-        b_extended = self.cb_extended.isChecked()
+        is_extended = self.cb_extended.isChecked()
         dialog = self.ui_invoice_data
 
-        self.cb_contact_template.setStyleSheet("border: 1px solid palette(dark);")
+        self.combo_contact_template.setStyleSheet("border: 1px solid palette(dark);")
         dialog.le_invoice_number.setStyleSheet("border: 1px solid palette(dark);")
-        for item_dialog in dialog.item_widgets:
+        for item_dialog in self.item_widgets:
             item_dialog.le_item_name.setStyleSheet("border: 1px solid palette(dark);")
         dialog.le_seller_company.setStyleSheet("border: 1px solid palette(dark);")
 
-        if not b_extended and self.customer is None:  # TODO bei Extended weitere Pflichtfelder prüfen
-            self.cb_contact_template.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Kein Kunde ausgewählt.", b_highlight=True)
+        if not is_extended and self.customer is None:  # TODO bei Extended weitere Pflichtfelder prüfen
+            self.combo_contact_template.setStyleSheet("border: 2px solid red;")
+            self.ui.set_status("Kein Kunde ausgewählt.", highlight=True)
         elif not dialog.le_invoice_number.text():
             dialog.le_invoice_number.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Keine Rechnungsnummer vorhanden.", b_highlight=True)
+            self.ui.set_status("Keine Rechnungsnummer vorhanden.", highlight=True)
         elif not self.check_item_name():
             # border for first missing item name was set in function
-            self.ui.set_status("Kein Artikelname vorhanden.", b_highlight=True)
-        elif b_extended and not dialog.le_seller_company.text():
+            self.ui.set_status("Kein Artikelname vorhanden.", highlight=True)
+        elif is_extended and not dialog.le_seller_company.text():
             dialog.le_seller_company.setStyleSheet("border: 2px solid red;")
-            self.ui.set_status("Kein Name des Rechnungsstellers", b_highlight=True)
+            self.ui.set_status("Kein Name des Rechnungsstellers", highlight=True)
         else:
             invoice_data = self.read_ui_data_to_json()
-            write_invoice_option(e_invoice_option)
+            write_invoice_option(invoice_option)
             create_qr_code = self.cb_qr_code.isChecked()
             write_qr_code_settings(create_qr_code)
             custom_invoice = False
@@ -1367,31 +1452,30 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
                 plugin = try_load_plugin("custom_invoice", "plugins/custom_invoice.py")
                 if plugin and hasattr(plugin, "create_custom_invoice"):
                     func = plugin.create_custom_invoice
-                    if function_accepts_params(func, invoice_data, e_invoice_option, create_qr_code):
-                        func(invoice_data, e_invoice_option, create_qr_code)
+                    if function_accepts_params(func, invoice_data, invoice_option, create_qr_code):
+                        func(invoice_data, invoice_option, create_qr_code)
                         custom_invoice = True
                     else:
                         QMessageBox.warning(self, "Plugin Hinweis", "Dein verwendetes Plugin wird nicht mehr unterstützt.\nEine Rechnung im Standardformat wird erstellt!")
             if not custom_invoice:
-                create_general_invoice(invoice_data, e_invoice_option, create_qr_code)
-            self.close()
+                create_general_invoice(invoice_data, invoice_option, create_qr_code)
 
     def read_ui_data_to_json(self) -> dict[str, Any]:
         """!
-        @brief Visualize xml invoice in dialog.
-        @return invoice json file in PDF24 Format (D_DEFAULT_INVOICE_DATA)
+        @brief Read all invoice dialog fields and convert to ZUGFeRD-compatible JSON.
+        @return Invoice data dictionary with ZUGFeRD BT-field keys.
         """
-        b_extended = self.cb_extended.isChecked()
+        is_extended = self.cb_extended.isChecked()
 
         dialog = self.ui_invoice_data
-        data = {}
-        data["title"] = dialog.le_invoice_title.text() if b_extended else ""  # Rechnungstitel
+        data: dict[str, Any] = {}
+        data["title"] = dialog.le_invoice_title.text() if is_extended else ""  # Rechnungstitel
         data["number"] = dialog.le_invoice_number.text()  # Rechnungsnummer (BT-1)
         q_invoice_date = dialog.de_invoice_date.date()
         data["issueDate"] = q_invoice_date.toString(DATE_FORMAT_XINVOICE)  # Rechnungsdatum (BT-2)
-        data["typeCode"] = dialog.cb_invoice_type.currentData() if b_extended else "380"  # Code für den Rechnungstyp (BT-3)
-        data["currencyCode"] = dialog.cb_currency.currentData() if b_extended else "EUR"  # Code für die Rechnungswährung (BT-5)
-        if b_extended:
+        data["typeCode"] = dialog.combo_invoice_type.currentData() if is_extended else "380"  # Code für den Rechnungstyp (BT-3)
+        data["currencyCode"] = dialog.combo_currency.currentData() if is_extended else "EUR"  # Code für die Rechnungswährung (BT-5)
+        if is_extended:
             data["dueDate"] = dialog.de_due_date.date().toString(DATE_FORMAT_XINVOICE)  # Fälligkeitsdatum der Zahlung (BT-9)
         else:
             q_due_date = q_invoice_date.addDays(self.default_payment_days)
@@ -1399,12 +1483,12 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         data["deliveryDate"] = dialog.de_deliver_date.date().toString(DATE_FORMAT_XINVOICE)  # Tatsächliches Lieferdatum (BT-72)
         data["billingPeriodStartDate"] = dialog.de_accounting_date_from.date().toString(DATE_FORMAT_XINVOICE) if dialog.cb_accounting_date.isChecked() else ""  # Anfangsdatum des Rechnungszeitraums (BT-73)
         data["billingPeriodEndDate"] = dialog.de_accounting_date_to.date().toString(DATE_FORMAT_XINVOICE) if dialog.cb_accounting_date.isChecked() else ""  # Enddatum des Rechnungszeitraums (BT-74)
-        data["buyerReference"] = dialog.le_buyer_reference.text() if b_extended else ""  # Käuferreferenz (BT-10)
-        data["projectReference"] = dialog.le_project_number.text() if b_extended else ""  # Projektnummer (BT-11)
-        data["contractReference"] = dialog.le_contract_number.text() if b_extended else ""  # Vertragsnummer (BT-12)
-        data["purchaseOrderReference"] = dialog.le_order_number.text() if b_extended else ""  # Bestellnummer (BT-13)
-        data["salesOrderReference"] = dialog.le_assignment_number.text() if b_extended else ""  # Auftragsnummer (BT-14)
-        if b_extended:
+        data["buyerReference"] = dialog.le_buyer_reference.text() if is_extended else ""  # Käuferreferenz (BT-10)
+        data["projectReference"] = dialog.le_project_number.text() if is_extended else ""  # Projektnummer (BT-11)
+        data["contractReference"] = dialog.le_contract_number.text() if is_extended else ""  # Vertragsnummer (BT-12)
+        data["purchaseOrderReference"] = dialog.le_order_number.text() if is_extended else ""  # Bestellnummer (BT-13)
+        data["salesOrderReference"] = dialog.le_assignment_number.text() if is_extended else ""  # Auftragsnummer (BT-14)
+        if is_extended:
             # Wareneingangsmeldung (BT-15)
             data_receiving_advice_reference = data.setdefault("receivingAdviceReference", {})
             data_receiving_advice_reference["id"] = dialog.le_receiving_referenced_document.text()
@@ -1439,9 +1523,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Freitext zur Rechnung (BT-22)
         data["note"] = dialog.pte_note.toPlainText()
         # Einleitungstext
-        data["introText"] = dialog.pte_introduction_text.toPlainText() if b_extended else ""
+        data["introText"] = dialog.pte_introduction_text.toPlainText() if is_extended else ""
 
-        if b_extended:
+        if is_extended:
             data_seller = data.setdefault("seller", {})
             data_seller["name"] = dialog.le_seller_company.text()  # Name des Verkäufers (BT-27)
             data_seller["tradeName"] = dialog.le_seller_name.text()  # Handelsname (BT-28)
@@ -1458,18 +1542,18 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             data_seller_address["line2"] = dialog.le_seller_street_2.text()  # Zeile 2 der Verkäuferanschrift (BT-36)
             data_seller_address["postCode"] = dialog.le_seller_plz.text()  # Postleitzahl der Verkäuferanschrift (BT-38)
             data_seller_address["city"] = dialog.le_seller_city.text()  # Stadt der Verkäuferanschrift (BT-37)
-            data_seller_address["countryCode"] = dialog.cb_seller_country.currentData()  # Ländercode der Verkäuferanschrift (BT-40)
+            data_seller_address["countryCode"] = dialog.combo_seller_country.currentData()  # Ländercode der Verkäuferanschrift (BT-40)
             data_seller_contact = data_seller.setdefault("contact", {})
             data_seller_contact["name"] = dialog.le_seller_contact_name.text()  # Kontaktstelle des Verkäufers (BT-41)
             data_seller_contact["email"] = dialog.le_seller_contact_mail.text()  # E-Mail-Adresse der Kontaktstelle des Verkäufers (BT-43)
             data_seller_contact["phone"] = dialog.le_seller_contact_phone.text()  # Telefonnummer der Kontaktstelle des Verkäufers (BT-42)
-            data_seller_contact["fax"] = dialog.le_seller_contact_fax.hide()  # Fax
+            data_seller_contact["fax"] = dialog.le_seller_contact_fax.text()  # Fax
             data_seller["logoData"] = dialog.lbl_seller_logo_path.text()  # Logo Pfad
         else:
             logo_path = os.path.join(self.ui.model.data_path, LOGO_BRIEF_PATH)
             write_company_to_json(data, self.ui.tab_settings.company_data, logo_path=logo_path)
 
-        if b_extended:
+        if is_extended:
             data_buyer = data.setdefault("buyer", {})
             data_buyer["name"] = dialog.le_buyer_company.text()  # Name des Käufers (BT-44)
             data_buyer["tradeName"] = dialog.le_buyer_name.text()  # Handelsname (BT-45)
@@ -1482,7 +1566,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             data_buyer_address["line2"] = dialog.le_buyer_street_2.text()  # Zeile 2 der Käuferanschrift (BT-51)
             data_buyer_address["postCode"] = dialog.le_buyer_plz.text()  # Postleitzahl der Käuferanschrift (BT-53)
             data_buyer_address["city"] = dialog.le_buyer_city.text()  # Stadt der Käuferanschrift (BT-52)
-            data_buyer_address["countryCode"] = dialog.cb_buyer_country.currentData()  # Ländercode der Käuferanschrift (BT-55)
+            data_buyer_address["countryCode"] = dialog.combo_buyer_country.currentData()  # Ländercode der Käuferanschrift (BT-55)
             data_buyer_contact = data_buyer.setdefault("contact", {})
             data_buyer_contact["name"] = dialog.le_buyer_contact_name.text()  # Kontaktstelle des Käufers (BT-56)
             data_buyer_contact["email"] = dialog.le_buyer_contact_mail.text()  # E-Mail-Adresse der Kontaktstelle des Käufers (BT-58)
@@ -1491,19 +1575,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             write_customer_to_json(data, self.customer)
 
         data_payment = data.setdefault("payment", {})
-        if b_extended:
+        if is_extended:
             data_payment_methods = data_payment.setdefault("methods", [])
             data_payment_method = {}
-            data_payment_method["typeCode"] = dialog.cb_payment_method.currentData()  # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
+            data_payment_method["typeCode"] = dialog.combo_payment_method.currentData()  # Code für die Zahlungsart PAYMENT_METHOD (BT-81)
             data_payment_method["accountName"] = dialog.le_account_holder.text()  # Name des Zahlungskontos (BT-85)
             data_payment_method["iban"] = dialog.le_iban.text()  # Kennung des Zahlungskontos (BT-84)
             data_payment_method["bic"] = dialog.le_bic.text()  # Kennung des Zahlungsdienstleisters (BT-86)
             data_payment_method["bankName"] = dialog.le_bank_name.text()  # Name der Bank
             data_payment_methods.append(data_payment_method)
-        data_payment["reference"] = dialog.le_payment_purpose.text()  # Verwendungszweck (BT-83)
+            data_payment["reference"] = dialog.le_payment_purpose.text()  # Verwendungszweck (BT-83)
         data_payment["terms"] = dialog.pte_payment_terms.toPlainText()  # Zahlungsbedingungen (BT-20)
 
-        if b_extended:
+        if is_extended:
             data_delivery = data.setdefault("delivery", {})
             data_delivery["recipientName"] = dialog.le_deliver_name.text()  # Name des Waren- oder Dienstleistungsempfängers (BT-70)
             data_delivery["locationId"] = dialog.le_deliver_place_ident.text()  # Kennung des Lieferorts (BT-71)
@@ -1515,7 +1599,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             deliver_city = dialog.le_deliver_city.text()
             data_delivery_address["city"] = deliver_city  # Stadt der Lieferanschrift (BT-77)
             if deliver_city:  # set only country if city present
-                data_delivery_address["countryCode"] = dialog.cb_deliver_country.currentData()  # Ländercode der Lieferanschrift (BT-80)
+                data_delivery_address["countryCode"] = dialog.combo_deliver_country.currentData()  # Ländercode der Lieferanschrift (BT-80)
             else:
                 data_delivery_address["countryCode"] = ""
             data_delivery_address["region"] = dialog.le_deliver_region.text()  # Stadt der Lieferanschrift (BT-79)
@@ -1523,19 +1607,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # position
         data_items = data.setdefault("items", [])
         data_taxes = data.setdefault("taxes", {})
-        for _item_pos, item_dialog in enumerate(dialog.item_widgets):
-            data_item = {}
+        for _item_pos, item_dialog in enumerate(self.item_widgets):
+            data_item: dict[str, Any] = {}
             data_item["name"] = item_dialog.le_item_name.text()  # Name (BT-153)
             vat_rate = item_dialog.dsb_item_vat_rate.value()  # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
             data_item["vatRate"] = vat_rate
-            vat_code = item_dialog.cb_item_vat_code.currentData() if b_extended else "S"  # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
+            vat_code = item_dialog.combo_item_vat_code.currentData() if is_extended else "S"  # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
             data_item["vatCode"] = vat_code
-            data_item["id"] = item_dialog.le_item_id.text() if b_extended else ""  # Artikel-Nr. (BT-155)
-            b_use_date = b_extended and item_dialog.cb_item_billing_period.isChecked()
-            data_item["billingPeriodStart"] = item_dialog.de_item_billing_period_start.date().toString(DATE_FORMAT_XINVOICE) if b_use_date else ""  # Startdatum (BT-134)
-            data_item["billingPeriodEnd"] = item_dialog.de_item_billing_period_end.date().toString(DATE_FORMAT_XINVOICE) if b_use_date else ""  # Enddatum (BT-135)
-            data_item["orderPosition"] = item_dialog.le_item_order_position.text() if b_extended else ""  # Referenz zur Bestellposition (BT-132)
-            object_references = item_dialog.le_object_reference.text() if b_extended else ""  # Objektkennung auf Ebene der Rechnungsposition (BT-128)
+            data_item["id"] = item_dialog.le_item_id.text() if is_extended else ""  # Artikel-Nr. (BT-155)
+            is_date_used = is_extended and item_dialog.cb_item_billing_period.isChecked()
+            data_item["billingPeriodStart"] = item_dialog.de_item_billing_period_start.date().toString(DATE_FORMAT_XINVOICE) if is_date_used else ""  # Startdatum (BT-134)
+            data_item["billingPeriodEnd"] = item_dialog.de_item_billing_period_end.date().toString(DATE_FORMAT_XINVOICE) if is_date_used else ""  # Enddatum (BT-135)
+            data_item["orderPosition"] = item_dialog.le_item_order_position.text() if is_extended else ""  # Referenz zur Bestellposition (BT-132)
+            object_references = item_dialog.le_object_reference.text() if is_extended else ""  # Objektkennung auf Ebene der Rechnungsposition (BT-128)
             if object_references:
                 data_object_references = data_item.setdefault("objectReferences", [])
                 reference = {}
@@ -1544,72 +1628,72 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
                 data_object_references.append(reference)
             data_item["description"] = item_dialog.pte_item_description.toPlainText()  # Artikelbeschreibung (BT-154)
             data_item["quantity"] = item_dialog.dsb_item_quantity.value()  # Menge (BT-129)
-            data_item["quantityUnit"] = item_dialog.cb_item_quantity_unit.currentData()  # Einheit (BT-130) D_UNIT
+            data_item["quantityUnit"] = item_dialog.combo_item_quantity_unit.currentData()  # Einheit (BT-130) UNIT
             data_item["netUnitPrice"] = item_dialog.dsb_item_net_unit_price.value()  # Einzelpreis (Netto) (BT-146)
-            data_item["basisQuantity"] = item_dialog.dsb_item_basis_quantity.value() if b_extended else 1  # Basismenge zum Artikelpreis (BT-149)
+            data_item["basisQuantity"] = item_dialog.dsb_item_basis_quantity.value() if is_extended else 1  # Basismenge zum Artikelpreis (BT-149)
             data_items.append(data_item)
-            if b_extended:
+            if is_extended:
                 # Steuern
                 vat_rate_normalized = normalize_decimal(vat_rate)
                 vat_key = f"{vat_code}-{vat_rate_normalized}"
                 if vat_key not in data_taxes:
-                    tax_widget = dialog.tax_widgets[len(data_taxes) - 1]
+                    tax_widget = self.tax_widgets[len(data_taxes) - 1]
                     vat_value = {
                         "exemptionReason": tax_widget.le_exemption_reason.text(),  # Befreiungsgrund (BT-120)
-                        "exemptionReasonCode": tax_widget.cb_exemption_reason_code.currentData()  # Code für Befreiungsgrund (BT-121)
+                        "exemptionReasonCode": tax_widget.combo_exemption_reason_code.currentData()  # Code für Befreiungsgrund (BT-121)
                     }
                     data_taxes[vat_key] = vat_value
 
-        if b_extended:
+        if is_extended:
             # Nachlässe
             data_allowances = data.setdefault("allowances", [])
-            for allowance_dialog in dialog.discounts_widgets:
-                data_allowance = {}
+            for allowance_dialog in self.discounts_widgets:
+                data_allowance: dict[str, Any] = {}
                 data_allowance["basisAmount"] = allowance_dialog.dsb_basis_amount.value()  # Grundbetrag (BT-93)
                 data_allowance["netAmount"] = allowance_dialog.dsb_net_amount.value()  # Betrag (Netto) (BT-92)
                 data_allowance["percent"] = allowance_dialog.dsb_percent.value()  # Prozent (BT-94)
                 data_allowance["reason"] = allowance_dialog.le_reason.text()  # Grund (BT-97)
-                data_allowance["reasonCode"] = allowance_dialog.cb_reason_code.currentData()  # Code des Grundes (BT-98)
-                data_allowance["vatCode"] = allowance_dialog.cb_vat_code.currentData()  # Steuerkategorie (BT-95)
+                data_allowance["reasonCode"] = allowance_dialog.combo_reason_code.currentData()  # Code des Grundes (BT-98)
+                data_allowance["vatCode"] = allowance_dialog.combo_vat_code.currentData()  # Steuerkategorie (BT-95)
                 data_allowance["vatRate"] = allowance_dialog.dsb_vat_rate.value()  # Steuersatz (BT-96)
                 data_allowances.append(data_allowance)
             # Zuschläge
             data_charges = data.setdefault("charges", [])
-            for charge_dialog in dialog.surcharges_widgets:
-                data_charge = {}
+            for charge_dialog in self.surcharges_widgets:
+                data_charge: dict[str, Any] = {}
                 data_charge["basisAmount"] = charge_dialog.dsb_basis_amount.value()  # Grundbetrag (BT-100)
                 data_charge["netAmount"] = charge_dialog.dsb_net_amount.value()  # Betrag (Netto) (BT-99)
                 data_charge["percent"] = charge_dialog.dsb_percent.value()  # Prozent (BT-101)
                 data_charge["reason"] = charge_dialog.le_reason.text()  # Grund (BT-104)
-                data_charge["reasonCode"] = charge_dialog.cb_reason_code.currentData()  # Code des Grundes (BT-105)
-                data_charge["vatCode"] = charge_dialog.cb_vat_code.currentData()  # Steuerkategorie (BT-102)
+                data_charge["reasonCode"] = charge_dialog.combo_reason_code.currentData()  # Code des Grundes (BT-105)
+                data_charge["vatCode"] = charge_dialog.combo_vat_code.currentData()  # Steuerkategorie (BT-102)
                 data_charge["vatRate"] = charge_dialog.dsb_vat_rate.value()  # Steuersatz (BT-103)
                 data_charges.append(data_charge)
 
         # Gesamtsummen (nur die Eingaben der Rest wird errechnet)
         data_totals = data.setdefault("totals", {})
-        data_totals["paidAmount"] = dialog.dsb_paid_amount.value() if b_extended else 0  # Vorauszahlungsbetrag (BT-113)
-        data_totals["roundingAmount"] = dialog.dsb_rounded_amount.value() if b_extended else 0  # Rundungsbetrag (BT-114)
+        data_totals["paidAmount"] = dialog.dsb_paid_amount.value() if is_extended else 0  # Vorauszahlungsbetrag (BT-113)
+        data_totals["roundingAmount"] = dialog.dsb_rounded_amount.value() if is_extended else 0  # Rundungsbetrag (BT-114)
 
         return data
 
-    def write_json_data_to_ui(self, data: dict[str, Any], import_all: bool = False):
+    def write_json_data_to_ui(self, data: dict[str, Any], import_all: bool = False) -> None:
         """!
-        @brief Write JSON data to UI
-        @param data : JSON data
-        @param import_all : import all
+        @brief Populate invoice dialog fields from ZUGFeRD/XRechnung JSON data.
+        @param data : Invoice data dictionary with ZUGFeRD BT-field keys.
+        @param import_all : If True, import all fields including dates and numbers.
         """
         dialog = self.ui_invoice_data
-        dialog.le_invoice_title.setText(data.get("title"))  # Rechnungstitel
+        dialog.le_invoice_title.setText(data.get("title", ""))  # Rechnungstitel
         if import_all:
-            dialog.le_invoice_number.setText(data.get("number"))  # Rechnungsnummer (BT-1)
+            dialog.le_invoice_number.setText(data.get("number", ""))  # Rechnungsnummer (BT-1)
             # Rechnungsdatum (BT-2)
             invoice_date = data.get("issueDate")
             set_date_optional(dialog.de_invoice_date, invoice_date)
         # Code für den Rechnungstyp (BT-3)
-        set_combo_box_value(dialog.cb_invoice_type, data.get("typeCode"), D_INVOICE_TYPE)
+        set_combo_box_value(dialog.combo_invoice_type, data.get("typeCode"), INVOICE_TYPE)
         # Code für die Rechnungswährung (BT-5)
-        set_combo_box_value(dialog.cb_currency, data.get("currencyCode"), D_CURRENCY)
+        set_combo_box_value(dialog.combo_currency, data.get("currencyCode"), CURRENCY)
         if import_all:
             # Fälligkeitsdatum der Zahlung (BT-9)
             due_date = data.get("dueDate")
@@ -1691,7 +1775,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.le_seller_plz.setText(data_seller_address.get("postCode", ""))  # Postleitzahl der Verkäuferanschrift (BT-38)
         dialog.le_seller_city.setText(data_seller_address.get("city", ""))  # Stadt der Verkäuferanschrift (BT-37)
         # Ländercode der Verkäuferanschrift (BT-40)
-        set_combo_box_value(dialog.cb_seller_country, data_seller_address.get("countryCode"), D_COUNTRY_CODE)
+        set_combo_box_value(dialog.combo_seller_country, data_seller_address.get("countryCode"), COUNTRY_CODE)
         data_seller_contact = data_seller.setdefault("contact", {})
         dialog.le_seller_contact_name.setText(data_seller_contact.get("name", ""))  # Kontaktstelle des Verkäufers (BT-41)
         dialog.le_seller_contact_mail.setText(data_seller_contact.get("email", ""))  # E-Mail-Adresse der Kontaktstelle des Verkäufers (BT-43)
@@ -1712,7 +1796,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.le_buyer_plz.setText(data_buyer_address.get("postCode", ""))  # Postleitzahl der Käuferanschrift (BT-53)
         dialog.le_buyer_city.setText(data_buyer_address.get("city", ""))  # Stadt der Käuferanschrift (BT-52)
         # Ländercode der Käuferanschrift (BT-55)
-        set_combo_box_value(dialog.cb_buyer_country, data_buyer_address.get("countryCode"), D_COUNTRY_CODE)
+        set_combo_box_value(dialog.combo_buyer_country, data_buyer_address.get("countryCode"), COUNTRY_CODE)
         data_buyer_contact = data_buyer.setdefault("contact", {})
         dialog.le_buyer_contact_name.setText(data_buyer_contact.get("name", ""))  # Kontaktstelle des Käufers (BT-56)
         dialog.le_buyer_contact_mail.setText(data_buyer_contact.get("email", ""))  # E-Mail-Adresse der Kontaktstelle des Käufers (BT-58)
@@ -1721,14 +1805,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         data_payment = data.setdefault("payment", {})
         data_payment_methods = data_payment.setdefault("methods", [])
         data_payment_method = data_payment_methods[0] if (len(data_payment_methods) > 0) else {}
-        # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
-        set_combo_box_value(dialog.cb_payment_method, data_payment_method.get("typeCode"), D_PAYMENT_METHOD)
+        # Code für die Zahlungsart PAYMENT_METHOD (BT-81)
+        set_combo_box_value(dialog.combo_payment_method, data_payment_method.get("typeCode"), PAYMENT_METHOD)
         dialog.le_account_holder.setText(data_payment_method.get("accountName", ""))  # Name des Zahlungskontos (BT-85)
         dialog.le_iban.setText(data_payment_method.get("iban", ""))  # Kennung des Zahlungskontos (BT-84)
         dialog.le_bic.setText(data_payment_method.get("bic", ""))  # Kennung des Zahlungsdienstleisters (BT-86)
         dialog.le_bank_name.setText(data_payment_method.get("bankName", ""))  # bank name
-        dialog.le_payment_purpose.setText(data_payment.get("reference", ""))  # Verwendungszweck (BT-83)
-        dialog.pte_payment_terms.setPlainText(data_payment.get("terms", ""))  # Zahlungsbedingungen (BT-20)
+        if import_all:
+            dialog.le_payment_purpose.setText(data_payment.get("reference", ""))  # Verwendungszweck (BT-83)
+            dialog.pte_payment_terms.setPlainText(data_payment.get("terms", ""))  # Zahlungsbedingungen (BT-20)
 
         data_delivery = data.setdefault("delivery", {})
         dialog.le_deliver_name.setText(data_delivery.get("recipientName", ""))  # Name des Waren- oder Dienstleistungsempfängers (BT-70)
@@ -1740,10 +1825,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.le_deliver_plz.setText(data_delivery_address.get("postCode", ""))  # Postleitzahl der Lieferanschrift (BT-78)
         dialog.le_deliver_city.setText(data_delivery_address.get("city", ""))  # Stadt der Lieferanschrift (BT-77)
         # Ländercode der Lieferanschrift (BT-80)
-        set_combo_box_value(dialog.cb_deliver_country, data_delivery_address.get("countryCode"), D_COUNTRY_CODE)
+        set_combo_box_value(dialog.combo_deliver_country, data_delivery_address.get("countryCode"), COUNTRY_CODE)
         dialog.le_deliver_region.setText(data_delivery_address.get("region", ""))  # Stadt der Lieferanschrift (BT-79)
         # remove additional existing items
-        existing_items = len(self.ui_invoice_data.item_widgets)
+        existing_items = len(self.item_widgets)
         if existing_items > 1:
             for _i in range(existing_items - 1):
                 self.remove_item()
@@ -1751,11 +1836,11 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         for item_idx, data_item in enumerate(data.setdefault("items", [])):  # TODO wenn schon vorhanden alte Löschen auch bei Zuschläge und Nachlass
             if item_idx > 0:  # add additional item widget before
                 self.add_item()
-            item_dialog: Ui_InvoiceItemData = dialog.item_widgets[item_idx]
+            item_dialog: Ui_InvoiceItemData = self.item_widgets[item_idx]
             item_dialog.le_item_name.setText(data_item.get("name", ""))  # Name (BT-153)
             item_dialog.dsb_item_vat_rate.setValue(data_item.get("vatRate", self.default_tax_rate))  # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
             # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
-            set_combo_box_value(item_dialog.cb_item_vat_code, data_item.get("vatCode"), D_VAT_CODE)
+            set_combo_box_value(item_dialog.combo_item_vat_code, data_item.get("vatCode"), VAT_CODE)
             item_dialog.le_item_id.setText(data_item.get("id", ""))  # Artikel-Nr. (BT-155)
             # Startdatum (BT-134)
             item_billing_period_start = data_item.get("billingPeriodStart")
@@ -1773,37 +1858,37 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
                 item_dialog.le_object_reference.setText("")
             item_dialog.pte_item_description.setPlainText(data_item.get("description", ""))  # Artikelbeschreibung (BT-154)
             item_dialog.dsb_item_quantity.setValue(data_item.get("quantity", ""))  # Menge (BT-129)
-            # Einheit (BT-130) D_UNIT
-            set_combo_box_value(item_dialog.cb_item_quantity_unit, data_item.get("quantityUnit"), D_UNIT)
+            # Einheit (BT-130) UNIT
+            set_combo_box_value(item_dialog.combo_item_quantity_unit, data_item.get("quantityUnit"), UNIT)
             item_dialog.dsb_item_net_unit_price.setValue(data_item.get("netUnitPrice", 0))  # Einzelpreis (Netto) (BT-146)
             item_dialog.dsb_item_basis_quantity.setValue(data_item.get("basisQuantity", 1))  # Basismenge zum Artikelpreis (BT-149)
 
         # Nachlässe
         for allowance_idx, data_allowance in enumerate(data.setdefault("allowances", [])):
             self.add_discount()
-            charge_allowance: Ui_InvoiceDiscountsData = dialog.discounts_widgets[allowance_idx]
+            charge_allowance: Ui_InvoiceDiscountsData = self.discounts_widgets[allowance_idx]
             charge_allowance.dsb_basis_amount.setValue(data_allowance.get("basisAmount", 0))  # Grundbetrag (BT-93)
             charge_allowance.dsb_net_amount.setValue(data_allowance.get("netAmount", 0))  # Betrag (Netto) (BT-92)
             charge_allowance.dsb_percent.setValue(data_allowance.get("percent", 0))  # Prozent (BT-94)
             charge_allowance.le_reason.setText(data_allowance.get("reason", ""))  # Grund (BT-97)
             # Code des Grundes (BT-98)
-            set_combo_box_value(charge_allowance.cb_reason_code, data_allowance.get("reasonCode"), D_UNIT)
+            set_combo_box_value(charge_allowance.combo_reason_code, data_allowance.get("reasonCode"), UNIT)
             # Steuerkategorie (BT-95)
-            set_combo_box_value(charge_allowance.cb_vat_code, data_allowance.get("vatCode"), D_VAT_CODE)
+            set_combo_box_value(charge_allowance.combo_vat_code, data_allowance.get("vatCode"), VAT_CODE)
             charge_allowance.dsb_vat_rate.setValue(data_allowance.get("vatRate", self.default_tax_rate))  # Steuersatz (BT-96)
 
         # Zuschläge
         for charge_idx, data_charge in enumerate(data.setdefault("charges", [])):
             self.add_surcharge()
-            charge_dialog: Ui_InvoiceSurchargesData = dialog.surcharges_widgets[charge_idx]
+            charge_dialog: Ui_InvoiceSurchargesData = self.surcharges_widgets[charge_idx]
             charge_dialog.dsb_basis_amount.setValue(data_charge.get("basisAmount", 0))  # Grundbetrag (BT-100)
             charge_dialog.dsb_net_amount.setValue(data_charge.get("netAmount", 0))  # Betrag (Netto) (BT-99)
             charge_dialog.dsb_percent.setValue(data_charge.get("percent", 0))  # Prozent (BT-101)
             charge_dialog.le_reason.setText(data_charge.get("reason", ""))  # Grund (BT-104)
             # Code des Grundes (BT-105)
-            set_combo_box_value(charge_dialog.cb_reason_code, data_charge.get("reasonCode"), D_UNIT)
+            set_combo_box_value(charge_dialog.combo_reason_code, data_charge.get("reasonCode"), UNIT)
             # Steuerkategorie (BT-102)
-            set_combo_box_value(charge_dialog.cb_vat_code, data_charge.get("vatCode"), D_VAT_CODE)
+            set_combo_box_value(charge_dialog.combo_vat_code, data_charge.get("vatCode"), VAT_CODE)
             charge_dialog.dsb_vat_rate.setValue(data_charge.get("vatRate", self.default_tax_rate))  # Steuersatz (BT-103)
 
         self.update_tax_widget(data)  # update taxes to write exemption reason to UI

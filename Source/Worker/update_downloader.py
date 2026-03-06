@@ -1,7 +1,7 @@
 """!
 ********************************************************************************
 @file   update_downloader.py
-@brief  Download update
+@brief  Background worker for downloading and installing application updates.
 ********************************************************************************
 """
 
@@ -16,7 +16,7 @@ from Source.Model.data_handler import delete_file
 
 log = logging.getLogger(__title__)
 
-I_TIMEOUT = 5  # timeout for tool download
+DOWNLOAD_TIMEOUT = 5  # timeout for tool download
 BASIS_VERSION_FILE = f"{__title__}.exe"
 NEW_VERSION_FILE = f"_temp_new_{__title__}.exe"
 OLD_VERSION_FILE = f"_temp_old_{__title__}.exe"
@@ -25,7 +25,7 @@ UPDATER_SCRIPT = "_temp_updater.bat"
 
 def delete_temp_update_files() -> None:
     """!
-    @brief Delete temporary update files
+    @brief Delete temporary update files created during the update process.
     """
     delete_file(NEW_VERSION_FILE)
     delete_file(OLD_VERSION_FILE)
@@ -34,7 +34,7 @@ def delete_temp_update_files() -> None:
 
 def generate_and_start_updater_script() -> None:
     """!
-    @brief Generate and start updater script
+    @brief Generate a batch script that renames the new executable and launch it.
     """
     batch_commands = [
         'timeout /t 1',
@@ -50,33 +50,29 @@ def generate_and_start_updater_script() -> None:
 
 class UpdateDownloader(QThread):
     """!
-    @brief Update downloader
+    @brief Background QThread worker that downloads application updates from GitHub with progress reporting.
     """
     status_signal = pyqtSignal(str)
     finish_signal = pyqtSignal(bool)
 
     def __init__(self) -> None:  # pylint: disable=useless-parent-delegation
         super().__init__()
-        self.latest_version = None
+        self.latest_version: str | None = None
 
     def download_update(self) -> bool:
         """!
-        @brief Download the latest update, save it locally, and optionally emit progress signals
-        @return success_status : download success status
+        @brief Download the latest update, save it locally, and emit progress signals.
+        @return True if download succeeded, False otherwise.
         """
-        success_status = False
-        url = f"https://github.com/{__owner__}/{__repo__}/releases/download/v{self.latest_version}/{__title__}.exe"
+        success = False
+        url = f"https://github.com/{__owner__}/{__repo__}/releases/download/{self.latest_version}/{__title__}.exe"
         # download update
         try:
-            response = requests.get(url, stream=True, timeout=I_TIMEOUT)
+            response = requests.get(url, stream=True, timeout=DOWNLOAD_TIMEOUT)
             response.raise_for_status()
 
-            # Gesamtlänge aus dem Header (falls vorhanden)
-            total_length = response.headers.get('content-length')
-            if total_length is not None:
-                total_length = int(total_length)
-            else:
-                total_length = 0  # unbekannt
+            # Total length from header (if available)
+            total_length = int(response.headers.get('content-length', 0))
 
             downloaded = 0
             last_status_text = ""
@@ -84,26 +80,26 @@ class UpdateDownloader(QThread):
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
                     downloaded += len(chunk)
+                    mb_done = downloaded / (1024 * 1024)
                     if total_length > 0:
                         percent = downloaded / total_length * 100
-                        mb_done = downloaded / (1024 * 1024)
                         mb_total = total_length / (1024 * 1024)
                         status_text = f"{mb_done:.1f} von {mb_total:.1f} MB ({percent:.1f}%)"
                     else:
-                        mb_done = downloaded / (1024 * 1024)
-                        status_text = f"{mb_done:.1f}  MB heruntergeladen"
+                        status_text = f"{mb_done:.1f} MB heruntergeladen"
                     if status_text != last_status_text:
                         self.status_signal.emit(status_text)
                         last_status_text = status_text
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as e:
+            log.error(e)
             self.status_signal.emit("Update fehlgeschlagen")
         else:
-            success_status = True
-        return success_status
+            success = True
+        return success
 
     def run(self) -> None:
         """!
-        @brief Execute the update download in a separate thread and emit finish signal when done
+        @brief Execute the update download in a separate thread and emit finish signal when done.
         """
-        success_status = self.download_update()
-        self.finish_signal.emit(success_status)
+        success = self.download_update()
+        self.finish_signal.emit(success)

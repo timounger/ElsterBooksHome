@@ -1,13 +1,13 @@
 """!
 ********************************************************************************
 @file   drafthorse_import.py
-@brief  Create drafthorse invoices
+@brief  Import and visualize ZUGFeRD and XRechnung invoices.
 ********************************************************************************
 """
 
 # pylint: disable=protected-access
 import logging
-from typing import Optional, Any
+from typing import Any
 from datetime import datetime
 from decimal import Decimal
 from drafthorse.models.document import Document
@@ -18,9 +18,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QAbstractSpinBox, QComboBox, Q
     QPlainTextEdit, QLineEdit, QLabel
 
 from Source.version import __title__
-from Source.Model.data_handler import convert_to_de_date, DATE_FORMAT_XML, EReceiptFields, fill_data, D_RECEIPT_TEMPLATE, XML_TYPE
-from Source.Model.ZUGFeRD.drafthorse_data import D_INVOICE_TYPE, D_CURRENCY, D_COUNTRY_CODE, D_PAYMENT_METHOD, \
-    D_VAT_CODE, D_UNIT, D_ALLOWANCE_REASON_CODE, D_EXEMPTION_REASON_CODE, D_CHARGE_REASON_CODE
+from Source.Model.data_handler import convert_to_de_date, DATE_FORMAT_XML, EReceiptFields, fill_data, RECEIPT_TEMPLATE, XML_TYPE
+from Source.Model.ZUGFeRD.drafthorse_data import INVOICE_TYPE, CURRENCY, COUNTRY_CODE, PAYMENT_METHOD, \
+    VAT_CODE, UNIT, ALLOWANCE_REASON_CODE, EXEMPTION_REASON_CODE, CHARGE_REASON_CODE
 from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json
 from Source.Views.widgets.invoice_item_data_ui import Ui_InvoiceItemData
 from Source.Views.widgets.invoice_item_discounts_data_ui import Ui_InvoiceItemDiscountsData
@@ -37,52 +37,55 @@ log = logging.getLogger(__title__)
 ###########################
 
 
-def create_value_description(entry: str, d_items: dict[str, str]) -> str:
+def create_value_description(entry: str | None, items_map: dict[str, str]) -> str:
     """!
-    @brief Create value description
-    @param entry : value
-    @param d_items : value description
-    @return description value
+    @brief Format entry code and its meaning as display string.
+    @param entry : code value to format.
+    @param items_map : mapping of codes to their descriptions.
+    @return formatted string with code and description.
     """
-    description = d_items.get(entry, "Unbekannt")
-    description_value = f"{entry} - {description}"
-    return description_value
+    if entry is None:
+        return ""
+    description = items_map.get(entry, "Unbekannt")
+    return f"{entry} - {description}"
 
 
-def set_combo_box_value(widget: QComboBox, entry: str, d_items: dict[str, str]) -> None:
+def set_combo_box_value(widget: QComboBox, entry: str | None, items_map: dict[str, str]) -> None:
     """!
-    @brief Set combobox box value
-    @param widget : widget
-    @param entry : default value
-    @param d_items : items in combo box
+    @brief Set combo box display text to formatted code description.
+    @param widget : combo box widget to update.
+    @param entry : code value to display.
+    @param items_map : mapping of codes to their descriptions.
     """
-    widget.setCurrentText(create_value_description(entry, d_items))
+    widget.setCurrentText(create_value_description(entry, items_map))
 
 
-def set_combo_box_items(widget: QComboBox, entry: str, d_items: dict[str, str]) -> None:
+def set_combo_box_items(widget: QComboBox, entry: str, items_map: dict[str, str]) -> None:
     """!
-    @brief Set combobox box with items and set default
-    @param widget : widget
-    @param entry : default value
-    @param d_items : items in combo box
+    @brief Populate combo box with all items and select default entry.
+    @param widget : combo box widget to populate.
+    @param entry : code value to select as default.
+    @param items_map : mapping of codes to their descriptions.
     """
-    for i, key in enumerate(d_items):
-        widget.addItem(create_value_description(key, d_items), key)
+    for i, key in enumerate(items_map):
+        widget.addItem(create_value_description(key, items_map), key)
         if key == entry:  # set default
             widget.setCurrentIndex(i)
 
 
-def set_combo_box_read_only(widget: QComboBox, entry: str, d_items: dict[str, str]) -> None:
+def set_combo_box_read_only(widget: QComboBox, entry: str, items_map: dict[str, str]) -> None:
     """!
-    @brief Set combobox box with single value and set as read only without focus
-    @param widget : widget
-    @param entry : entry
-    @param d_items : items in combo box
+    @brief Set combo box with single value as read-only without focus.
+    @param widget : combo box widget to set read-only.
+    @param entry : code value to display.
+    @param items_map : mapping of codes to their descriptions.
     """
-    widget.addItem(create_value_description(entry, d_items), entry)
+    widget.addItem(create_value_description(entry, items_map), entry)
     widget.setCurrentIndex(0)
     widget.setEditable(True)  # required before set read only line
-    widget.lineEdit().setReadOnly(True)  # do not open combo box if click on text
+    line_edit = widget.lineEdit()
+    if line_edit:
+        line_edit.setReadOnly(True)  # do not open combo box if click on text
     COMBO_BOX_READ_ONLY_STYLE = \
         """
         QComboBox::drop-down {
@@ -100,19 +103,19 @@ def set_combo_box_read_only(widget: QComboBox, entry: str, d_items: dict[str, st
 
 def parse_date_string_to_qdate(date_string: str) -> QDate:
     """!
-    @brief Parse date as string in format DATE_FORMAT_XML to qdate
-    @param date_string : date as string
-    @return parsed qdate
+    @brief Parse date string in DATE_FORMAT_XML format to QDate.
+    @param date_string : date string in XML format (e.g. "20240115").
+    @return parsed QDate object.
     """
     dt = datetime.strptime(str(date_string), DATE_FORMAT_XML)
     return QDate(dt.year, dt.month, dt.day)
 
 
-def set_date_optional(widget: QDateEdit, date_string: str) -> None:
+def set_date_optional(widget: QDateEdit, date_string: str | None) -> None:
     """!
-    @brief Set date if possible
-    @param widget : widget
-    @param date_string : date to set
+    @brief Set date widget value if date string is not empty.
+    @param widget : date edit widget to update.
+    @param date_string : date string in XML format.
     """
     if date_string:
         widget.setDate(parse_date_string_to_qdate(date_string))
@@ -120,9 +123,9 @@ def set_date_optional(widget: QDateEdit, date_string: str) -> None:
 
 def set_date_read_only(widget: QDateEdit, date_string: str) -> None:
     """!
-    @brief Set date as read only without focus
-    @param widget : widget
-    @param date_string : date as string in format DATE_FORMAT_XML
+    @brief Set date widget as read-only without focus.
+    @param widget : date edit widget to set read-only.
+    @param date_string : date string in DATE_FORMAT_XML format.
     """
     widget.setDate(parse_date_string_to_qdate(date_string))
     widget.setReadOnly(True)
@@ -131,12 +134,12 @@ def set_date_read_only(widget: QDateEdit, date_string: str) -> None:
     widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # disable mouse focus
 
 
-def set_spin_box_read_only(widget: QSpinBox | QDoubleSpinBox, value: int | float, max_decimals: Optional[int] = None) -> None:
+def set_spin_box_read_only(widget: QSpinBox | QDoubleSpinBox, value: int | float, max_decimals: int | None = None) -> None:
     """!
-    @brief Set spin box as read only without focus
-    @param widget : widget
-    @param value : value to set
-    @param max_decimals : reduce decimals to minimum required with this maximum
+    @brief Set spin box as read-only without focus.
+    @param widget : spin box widget to set read-only.
+    @param value : numeric value to display.
+    @param max_decimals : maximum decimal places for QDoubleSpinBox display.
     """
     if max_decimals is not None:
         if isinstance(widget, QDoubleSpinBox):
@@ -149,31 +152,34 @@ def set_spin_box_read_only(widget: QSpinBox | QDoubleSpinBox, value: int | float
             widget.setDecimals(decimals)
         else:
             raise TypeError("Widget is not QDoubleSpinBox to set Decimals")
-    widget.setValue(value)
+    if isinstance(widget, QSpinBox):
+        widget.setValue(int(value))
+    else:
+        widget.setValue(value)
     widget.setReadOnly(True)
     widget.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
     widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)  # disable mouse focus
     widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)  # disable mouse focus
 
 
-def set_line_edit_read_only(widget: QLineEdit, value: str, d_items: Optional[dict[str, str]] = None) -> None:
+def set_line_edit_read_only(widget: QLineEdit, value: str, items_map: dict[str, str] | None = None) -> None:
     """!
-    @brief Set label as read only and optional with description for value
-    @param widget : widget
-    @param value : value to set
-    @param d_items : translation items
+    @brief Set line edit as read-only with optional code description.
+    @param widget : line edit widget to set read-only.
+    @param value : text value to display.
+    @param items_map : optional mapping to format value as code description.
     """
-    if d_items is not None:
-        value = create_value_description(value, d_items)
+    if items_map is not None:
+        value = create_value_description(value, items_map)
     widget.setText(value)
     widget.setReadOnly(True)
 
 
 def set_plain_text_read_only(widget: QPlainTextEdit, value: str) -> None:
     """!
-    @brief Set label as read only
-    @param widget : widget
-    @param value : value to set
+    @brief Set plain text widget as read-only.
+    @param widget : plain text widget to set read-only.
+    @param value : text content to display.
     """
     widget.setPlainText(value)
     widget.setReadOnly(True)
@@ -181,18 +187,20 @@ def set_plain_text_read_only(widget: QPlainTextEdit, value: str) -> None:
 
 def set_optional_entry(widget: QLineEdit | QPlainTextEdit | QSpinBox | QDoubleSpinBox | QDateEdit,
                        value: str,
-                       other_widget: Optional[QLabel | list[QLabel]] = None) -> None:
+                       other_widget: QLabel | list[QLabel] | None = None) -> None:
     """!
-    @brief Set optional entry
-    @param widget : widget
-    @param value : value to set
-    @param other_widget : other widgets
+    @brief Set widget value as read-only, or hide widget and associated labels if value is empty.
+    @param widget : input widget to set or hide.
+    @param value : value to display (empty string hides the widget).
+    @param other_widget : associated label(s) to hide when value is empty.
     """
     if value:
         if isinstance(widget, QDateEdit):
             set_date_read_only(widget, value)
-        elif isinstance(widget, (QSpinBox, QDoubleSpinBox)):
-            set_spin_box_read_only(widget, value)
+        elif isinstance(widget, QDoubleSpinBox):
+            set_spin_box_read_only(widget, float(value))
+        elif isinstance(widget, QSpinBox):
+            set_spin_box_read_only(widget, int(value))
         elif isinstance(widget, QLineEdit):
             set_line_edit_read_only(widget, value)
         elif isinstance(widget, QPlainTextEdit):
@@ -215,90 +223,84 @@ def set_optional_entry(widget: QLineEdit | QPlainTextEdit | QSpinBox | QDoubleSp
 
 def extract_xml_from_pdf(pdf_path: str) -> bytes | None:
     """!
-    @brief Extract XML content from PDF
-    @param pdf_path : PDF file path
-    @return XML content
+    @brief Extract embedded ZUGFeRD XML from PDF file.
+    @param pdf_path : path to the PDF file.
+    @return XML content as bytes, or None if no XML found.
     """
     file_content = None
-    doc = fitz.open(pdf_path)
+    with fitz.open(pdf_path) as doc:
+        # check attachments
+        for i in range(doc.embfile_count()):
+            attachment = doc.embfile_info(i)
+            file_name = attachment['name']
+            if file_name.endswith(XML_TYPE):
+                file_content = doc.embfile_get(attachment['name'])
+                break
 
-    # check attachments
-    for i in range(doc.embfile_count()):
-        attachment = doc.embfile_info(i)
-        file_name = attachment['name']
-        if file_name.endswith(XML_TYPE):
-            file_content = doc.embfile_get(attachment['name'])
-            break
-
-    # in some cases: check for embedded x-invoice
-    if file_content is None:
-        for i in range(doc.xref_length()):
-            try:
-                obj = doc.xref_object(i, compressed=True)
-                if "/Type/EmbeddedFile" in obj:
-                    # filename = doc.xref_get_key(i, "UF")[1] or f"embedded_{i}.xml"  # get filename
-                    file_content = doc.xref_stream(i)  # extract stream
-                    break
-            except Exception:
-                file_content = None
+        # in some cases: check for embedded x-invoice
+        if file_content is None:
+            for i in range(doc.xref_length()):
+                try:
+                    obj = doc.xref_object(i, compressed=True)
+                    if "/Type/EmbeddedFile" in obj:
+                        # filename = doc.xref_get_key(i, "UF")[1] or f"embedded_{i}.xml"  # get filename
+                        file_content = doc.xref_stream(i)  # extract stream
+                        break
+                except Exception:
+                    file_content = None
     return file_content
 
 
 def extract_xml_from_xinvoice(xml_path: str) -> bytes:
     """!
-    @brief Extract XML content from xinvoice
-    @param xml_path : XML file path
-    @return XML content
+    @brief Read XML content from XRechnung file.
+    @param xml_path : path to the XRechnung XML file.
+    @return XML content as bytes.
     """
     with open(xml_path, "rb") as file:
-        file_content = file.read()
-    return file_content
+        return file.read()
 
 
 def check_zugferd(pdf_path: str) -> bool:
     """!
-    @brief Check if document ZUGFeRD
-    @param pdf_path : PDF file path
-    @return status if document is ZUGFeRD
+    @brief Check if PDF contains a valid ZUGFeRD invoice.
+    @param pdf_path : path to the PDF file.
+    @return True if document contains valid ZUGFeRD XML.
     """
-    b_is_zugferd = False
     xml_content = extract_xml_from_pdf(pdf_path)
-    if xml_content is not None:
-        try:
-            _doc = Document.parse(xml_content)
-        except TypeError:
-            pass
-        else:
-            b_is_zugferd = True
-    return b_is_zugferd
+    if xml_content is None:
+        return False
+    try:
+        Document.parse(xml_content)
+    except TypeError:
+        return False
+    return True
 
 
 def check_xinvoice(xml_path: str) -> bool:
     """!
-    @brief Check if document xinvoice
-    @param xml_path : XML file path
-    @return status if document is xinvoice
+    @brief Check if file contains a valid XRechnung invoice.
+    @param xml_path : path to the XML file.
+    @return True if file contains valid XRechnung XML.
     """
-    b_is_xinvoice = False
     xml_content = extract_xml_from_xinvoice(xml_path)
-    if xml_content is not None:
-        try:
-            _doc = Document.parse(xml_content)
-        except TypeError:
-            pass
-        else:
-            b_is_xinvoice = True
-    return b_is_xinvoice
+    if xml_content is None:
+        return False
+    try:
+        Document.parse(xml_content)
+    except TypeError:
+        return False
+    return True
 
 
-def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: str = "", expenditure_group: str = "") -> dict[EReceiptFields, Any]:
+def import_invoice(xml_content: bytes | None, is_income: bool, income_group: str = "", expenditure_group: str = "") -> dict[EReceiptFields, Any]:
     """!
-    @brief Import invoice
-    @param xml_content : XML content
-    @param is_income : True: is income; False: is expenditure
-    @param income_group : income group
-    @param expenditure_group : expenditure group
-    @return data
+    @brief Import invoice data from XML content into receipt dictionary.
+    @param xml_content : ZUGFeRD/XRechnung XML content as bytes.
+    @param is_income : True for income, False for expenditure.
+    @param income_group : receipt group name for income.
+    @param expenditure_group : receipt group name for expenditure.
+    @return populated receipt dictionary, or empty dict if XML is None.
     """
     if xml_content is not None:
         doc = Document.parse(xml_content)
@@ -327,12 +329,12 @@ def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: 
         gross = doc.trade.settlement.monetary_summation.grand_total._amount
         net = doc.trade.settlement.monetary_summation.tax_basis_total._amount
 
-        b_success = True
+        success = True
     else:
-        b_success = False
+        success = False
 
     receipt: dict[EReceiptFields, Any] = {}
-    if b_success:
+    if success:
         receipt[EReceiptFields.TRADE_PARTNER] = trade_partner
         receipt[EReceiptFields.DESCRIPTION] = description
         receipt[EReceiptFields.INVOICE_DATE] = invoice_date
@@ -342,45 +344,43 @@ def import_invoice(xml_content: Optional[bytes], is_income: bool, income_group: 
         receipt[EReceiptFields.AMOUNT_NET] = float(net)
         receipt[EReceiptFields.BAR] = False
         receipt[EReceiptFields.GROUP] = income_group if is_income else expenditure_group
-        receipt = fill_data(D_RECEIPT_TEMPLATE, receipt)
+        receipt = fill_data(RECEIPT_TEMPLATE, receipt)
     return receipt
 
 
 def import_zugferd(pdf_path: str, is_income: bool,
                    income_group: str = "", expenditure_group: str = "") -> dict[EReceiptFields, Any]:
     """!
-    @brief Read items from ZUGFeRD file
-    @param pdf_path : PDF file path
-    @param is_income : True: is income; False: is expenditure
-    @param income_group : income group
-    @param expenditure_group : expenditure group
-    @return data
+    @brief Import receipt data from ZUGFeRD PDF file.
+    @param pdf_path : path to the ZUGFeRD PDF file.
+    @param is_income : True for income, False for expenditure.
+    @param income_group : receipt group name for income.
+    @param expenditure_group : receipt group name for expenditure.
+    @return populated receipt dictionary.
     """
     xml_content = extract_xml_from_pdf(pdf_path)
-    data = import_invoice(xml_content, is_income, income_group, expenditure_group)
-    return data
+    return import_invoice(xml_content, is_income, income_group, expenditure_group)
 
 
 def import_xinvoice(xml_path: str, is_income: bool,
                     income_group: str = "", expenditure_group: str = "") -> dict[EReceiptFields, Any]:
     """!
-    @brief Read items from ZUGFeRD file
-    @param xml_path : XML file path
-    @param is_income : True: is income; False: is expenditure
-    @param income_group : income group
-    @param expenditure_group : expenditure group
-    @return import success status
+    @brief Import receipt data from XRechnung XML file.
+    @param xml_path : path to the XRechnung XML file.
+    @param is_income : True for income, False for expenditure.
+    @param income_group : receipt group name for income.
+    @param expenditure_group : receipt group name for expenditure.
+    @return populated receipt dictionary.
     """
     xml_content = extract_xml_from_xinvoice(xml_path)
-    data = import_invoice(xml_content, is_income, income_group, expenditure_group)
-    return data
+    return import_invoice(xml_content, is_income, income_group, expenditure_group)
 
 
-def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
+def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: bytes) -> None:
     """!
-    @brief Visualize xml invoice in dialog.
-    @param dialog : invoice dialog
-    @param xml_content : xml content of invoice
+    @brief Visualize e-invoice XML data in read-only dialog fields.
+    @param dialog : invoice data dialog to populate.
+    @param xml_content : ZUGFeRD/XRechnung XML content as bytes.
     """
     data = convert_facturx_to_json(xml_content)
 
@@ -393,9 +393,9 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Rechnungsdatum (BT-2)
     set_date_read_only(dialog.de_invoice_date, data["issueDate"])
     # Code für den Rechnungstyp (BT-3)
-    set_combo_box_read_only(dialog.cb_invoice_type, data["typeCode"], D_INVOICE_TYPE)
+    set_combo_box_read_only(dialog.combo_invoice_type, data["typeCode"], INVOICE_TYPE)
     # Code für die Rechnungswährung (BT-5)
-    set_combo_box_read_only(dialog.cb_currency, data["currencyCode"], D_CURRENCY)
+    set_combo_box_read_only(dialog.combo_currency, data["currencyCode"], CURRENCY)
     # Fälligkeitsdatum der Zahlung (BT-9)
     due_date = data["dueDate"]
     if due_date:
@@ -412,7 +412,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     set_optional_entry(dialog.de_deliver_date, data["deliveryDate"], dialog.lbl_deliver_date)
     # Anfangsdatum des Rechnungszeitraums (BT-73)
     accounting_period_start = data["billingPeriodStartDate"]
-    set_optional_entry(dialog.de_accounting_date_from, accounting_period_start, dialog.de_accounting_date_from)
+    set_optional_entry(dialog.de_accounting_date_from, accounting_period_start)
     # Enddatum des Rechnungszeitraums (BT-74)
     accounting_period_end = data["billingPeriodEndDate"]
     set_optional_entry(dialog.de_accounting_date_to, accounting_period_end, dialog.lbl_accounting_to)
@@ -445,7 +445,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     set_optional_entry(dialog.de_despatch_advice_referenced_document, despatch_advice_reference_date, dialog.lbl_despatch_advice_referenced_document_date)
     # Ausschreibung/Los (BT-17)
     tender_references = data["tenderReferences"]
-    if len(tender_references) > 0:
+    if tender_references:
         tender_references_id = tender_references[0]["id"]
         set_optional_entry(dialog.le_additional_referenced_document, tender_references_id, dialog.lbl_additional_referenced_document)
     else:
@@ -453,7 +453,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.le_additional_referenced_document.hide()
     # Objektreferenz (BT-18)
     object_references = data["objectReferences"]
-    if len(object_references) > 0:
+    if object_references:
         object_references_id = object_references[0]["id"]
         set_optional_entry(dialog.le_object_reference, object_references_id, dialog.lbl_object_reference)
     else:
@@ -461,7 +461,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.le_object_reference.hide()
     # Buchungskonto des Käufers (BT-19)
     buyer_accounting_accounts = data["buyerAccountingAccounts"]
-    if len(buyer_accounting_accounts) > 0:
+    if buyer_accounting_accounts:
         buyer_accounting_accounts_id = buyer_accounting_accounts[0]["id"]
         set_optional_entry(dialog.le_booking_account_buyer, buyer_accounting_accounts_id, dialog.lbl_booking_account_buyer)
     else:
@@ -469,7 +469,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.le_booking_account_buyer.hide()
     # Rechnungsreferenz (BT-25, BT-26)
     invoice_references = data["invoiceReferences"]
-    if len(invoice_references) > 0:
+    if invoice_references:
         invoice_references_id = invoice_references[0]["id"]
         invoice_references_date = invoice_references[0]["issueDate"]
         if invoice_references_id or invoice_references_date:
@@ -530,7 +530,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Stadt der Verkäuferanschrift (BT-37)
     set_optional_entry(dialog.le_seller_city, data_seller["address"]["city"], dialog.lbl_seller_city)
     # Ländercode der Verkäuferanschrift (BT-40)
-    set_combo_box_read_only(dialog.cb_seller_country, data_seller["address"]["countryCode"], D_COUNTRY_CODE)
+    set_combo_box_read_only(dialog.combo_seller_country, data_seller["address"]["countryCode"], COUNTRY_CODE)
     # Kontaktstelle des Verkäufers (BT-41)
     seller_contact_name = data_seller["contact"]["name"]
     set_optional_entry(dialog.le_seller_contact_name, seller_contact_name, dialog.lbl_seller_contact_name)
@@ -575,7 +575,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Stadt der Käuferanschrift (BT-52)
     set_optional_entry(dialog.le_buyer_city, data_buyer["address"]["city"], dialog.lbl_buyer_city)
     # Ländercode der Käuferanschrift (BT-55)
-    set_combo_box_read_only(dialog.cb_buyer_country, data_buyer["address"]["countryCode"], D_COUNTRY_CODE)
+    set_combo_box_read_only(dialog.combo_buyer_country, data_buyer["address"]["countryCode"], COUNTRY_CODE)
     # Kontaktstelle des Käufers (BT-56)
     buyer_contact_name = data_buyer["contact"]["name"]
     set_optional_entry(dialog.le_buyer_contact_name, buyer_contact_name, dialog.lbl_buyer_contact_name)
@@ -590,15 +590,15 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         dialog.lbl_buyer_contact.hide()
 
     data_payment = data["payment"]
-    if len(data_payment["methods"]) > 0:
+    if data_payment["methods"]:
         payment_method = data_payment["methods"][0]  # TODO mehrere Zahlungsoptionen ermöglichen
-        # Code für die Zahlungsart D_PAYMENT_METHOD (BT-81)
+        # Code für die Zahlungsart PAYMENT_METHOD (BT-81)
         payment_method_code = payment_method["typeCode"]
         if payment_method_code:
-            set_combo_box_read_only(dialog.cb_payment_method, payment_method_code, D_PAYMENT_METHOD)
+            set_combo_box_read_only(dialog.combo_payment_method, payment_method_code, PAYMENT_METHOD)
         else:
             dialog.lbl_payment_method.hide()
-            dialog.cb_payment_method.hide()
+            dialog.combo_payment_method.hide()
         # Name des Zahlungskontos (BT-85)
         set_optional_entry(dialog.le_account_holder, payment_method["accountName"], dialog.lbl_account_holder)
         # Kennung des Zahlungskontos (BT-84)
@@ -607,7 +607,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         set_optional_entry(dialog.le_bic, payment_method["bic"], dialog.lbl_bic)
     else:
         dialog.lbl_payment_method.hide()
-        dialog.cb_payment_method.hide()
+        dialog.combo_payment_method.hide()
         dialog.lbl_account_holder.hide()
         dialog.le_account_holder.hide()
         dialog.lbl_iban.hide()
@@ -651,20 +651,20 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
     # Ländercode der Lieferanschrift (BT-80)
     delivery_country = data_delivery["address"]["countryCode"]
     if delivery_country:
-        set_combo_box_read_only(dialog.cb_deliver_country, delivery_country, D_COUNTRY_CODE)
+        set_combo_box_read_only(dialog.combo_deliver_country, delivery_country, COUNTRY_CODE)
     else:
         dialog.lbl_deliver_country.hide()
-        dialog.cb_deliver_country.hide()
+        dialog.combo_deliver_country.hide()
     # Stadt der Lieferanschrift (BT-79)
     delivery_region = data_delivery["address"]["region"]
     set_optional_entry(dialog.le_deliver_region, delivery_region, dialog.lbl_deliver_region)
     if all(not x for x in [delivery_street_1, delivery_street_2, delivery_street_3,
                            delivery_plz, delivery_city, delivery_country, delivery_region]):
         dialog.lbl_deliver_address.hide()
-        b_delivery_address = False
+        has_delivery_address = False
     else:
-        b_delivery_address = True
-    if not b_delivery_address and not delivery_recipient_name and not delivery_location_id:
+        has_delivery_address = True
+    if not has_delivery_address and not delivery_recipient_name and not delivery_location_id:
         dialog.groupBox_5_delivery.hide()
 
     # position
@@ -686,7 +686,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
         set_spin_box_read_only(item_dialog.dsb_item_vat_rate, data_item["vatRate"], max_decimals=2)
         # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
-        set_combo_box_read_only(item_dialog.cb_item_vat_code, data_item["vatCode"], D_VAT_CODE)
+        set_combo_box_read_only(item_dialog.combo_item_vat_code, data_item["vatCode"], VAT_CODE)
         # Artikel-Nr. (BT-155)
         set_optional_entry(item_dialog.le_item_id, data_item["id"], item_dialog.lbl_item_id)
         # Startdatum (BT-134)
@@ -698,7 +698,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         set_optional_entry(item_dialog.le_item_order_position, data_item["orderPosition"], item_dialog.lbl_item_order_position)
         # Objektkennung auf Ebene der Rechnungsposition (BT-128)
         item_object_references = data_item["objectReferences"]
-        if len(item_object_references) > 0:
+        if item_object_references:
             set_optional_entry(item_dialog.le_object_reference, item_object_references[0]["id"], item_dialog.lbl_object_reference)
         else:
             item_dialog.lbl_object_reference.hide()
@@ -707,8 +707,8 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         set_optional_entry(item_dialog.pte_item_description, data_item["description"], item_dialog.lbl_item_description)
         # Menge (BT-129)
         set_spin_box_read_only(item_dialog.dsb_item_quantity, data_item["quantity"], max_decimals=4)
-        # Einheit (BT-130) D_UNIT
-        set_combo_box_read_only(item_dialog.cb_item_quantity_unit, data_item["quantityUnit"], D_UNIT)
+        # Einheit (BT-130) UNIT
+        set_combo_box_read_only(item_dialog.combo_item_quantity_unit, data_item["quantityUnit"], UNIT)
         # Einzelpreis (Netto) (BT-146)
         set_spin_box_read_only(item_dialog.dsb_item_net_unit_price, data_item["netUnitPrice"])
         # Einzelpreis (Brutto)
@@ -731,11 +731,11 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         data_item_allowances = data_item.get("allowances", [])
         data_item_charges = data_item.get("charges", [])
         if data_item_allowances or data_item_charges:
-            if item_dialog.widget_charge.layout() is None:  # ensure that layout exists
-                layout_charge = QVBoxLayout(item_dialog.widget_charge)
-                item_dialog.widget_charge.setLayout(layout_charge)
-            else:
-                layout_charge = item_dialog.widget_charge.layout()
+            existing_layout = item_dialog.widget_charge.layout()
+            if existing_layout is None:  # ensure that layout exists
+                existing_layout = QVBoxLayout(item_dialog.widget_charge)
+                item_dialog.widget_charge.setLayout(existing_layout)
+            layout_charge = existing_layout
             # Nachlässe
             for data_item_allowance in data_item_allowances:
                 item_discount_dialog = Ui_InvoiceItemDiscountsData()
@@ -745,7 +745,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
                 set_spin_box_read_only(item_discount_dialog.dsb_percent, data_item_allowance["percent"])  # Prozent (BT-138)
                 set_spin_box_read_only(item_discount_dialog.dsb_net_amount, data_item_allowance["netAmount"])  # Betrag (Netto) (BT-136)
                 set_line_edit_read_only(item_discount_dialog.le_reason, data_item_allowance["reason"])  # Grund (BT-139)
-                set_combo_box_read_only(item_discount_dialog.cb_reason_code, data_item_allowance["reasonCode"], D_ALLOWANCE_REASON_CODE)  # Code des Grundes (BT-140)
+                set_combo_box_read_only(item_discount_dialog.combo_reason_code, data_item_allowance["reasonCode"], ALLOWANCE_REASON_CODE)  # Code des Grundes (BT-140)
             # Zuschläge
             for data_item_charge in data_item_charges:
                 item_surcharge_dialog = Ui_InvoiceItemSurchargeData()
@@ -755,18 +755,18 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
                 set_spin_box_read_only(item_surcharge_dialog.dsb_percent, data_item_charge["percent"])  # Prozent (BT-143)
                 set_spin_box_read_only(item_surcharge_dialog.dsb_net_amount, data_item_charge["netAmount"])  # Betrag (Netto) (BT-141)
                 set_line_edit_read_only(item_surcharge_dialog.le_reason, data_item_charge["reason"])  # Grund (BT-144)
-                set_combo_box_read_only(item_surcharge_dialog.cb_reason_code, data_item_charge["reasonCode"], D_CHARGE_REASON_CODE)  # Code des Grundes (BT-145)
+                set_combo_box_read_only(item_surcharge_dialog.combo_reason_code, data_item_charge["reasonCode"], CHARGE_REASON_CODE)  # Code des Grundes (BT-145)
         else:
             item_dialog.line_charge.hide()
 
     # Nachlässe
     data_allowances = data["allowances"]
-    if len(data_allowances) > 0:
-        if dialog.groupBox_7_discounts.layout() is None:  # ensure that layout exists
-            layout = QVBoxLayout(dialog.groupBox_7_discounts)
-            dialog.groupBox_7_discounts.setLayout(layout)
-        else:
-            layout = dialog.groupBox_7_discounts.layout()
+    if data_allowances:
+        existing_layout = dialog.groupBox_7_discounts.layout()
+        if existing_layout is None:  # ensure that layout exists
+            existing_layout = QVBoxLayout(dialog.groupBox_7_discounts)
+            dialog.groupBox_7_discounts.setLayout(existing_layout)
+        layout = existing_layout
         for data_allowance in data_allowances:
             # create discount widget
             discount_dialog = Ui_InvoiceDiscountsData()
@@ -782,7 +782,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
             # Steuersatz (BT-96)
             set_spin_box_read_only(discount_dialog.dsb_vat_rate, data_allowance["vatRate"], max_decimals=2)
             # Steuerkategorie (BT-95)
-            set_combo_box_read_only(discount_dialog.cb_vat_code, data_allowance["vatCode"], D_VAT_CODE)
+            set_combo_box_read_only(discount_dialog.combo_vat_code, data_allowance["vatCode"], VAT_CODE)
             # Betrag Brutto
             discount_dialog.lbl_gross_amount.hide()
             discount_dialog.dsb_gross_amount.hide()
@@ -794,34 +794,34 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
             # Grund (BT-97)
             set_line_edit_read_only(discount_dialog.le_reason, data_allowance["reason"])
             # Code des Grundes (BT-98)
-            set_combo_box_read_only(discount_dialog.cb_reason_code, data_allowance["reasonCode"], D_ALLOWANCE_REASON_CODE)
+            set_combo_box_read_only(discount_dialog.combo_reason_code, data_allowance["reasonCode"], ALLOWANCE_REASON_CODE)
     else:
         dialog.groupBox_7_discounts.hide()
 
     # Zuschläge
     data_charges = data["charges"]
-    if len(data_charges) > 0:
-        if dialog.groupBox_8_surcharges.layout() is None:  # ensure that layout exists
-            layout = QVBoxLayout(dialog.groupBox_8_surcharges)
-            dialog.groupBox_8_surcharges.setLayout(layout)
-        else:
-            layout = dialog.groupBox_8_surcharges.layout()
-        for data_allowance in data_charges:
+    if data_charges:
+        existing_layout = dialog.groupBox_8_surcharges.layout()
+        if existing_layout is None:  # ensure that layout exists
+            existing_layout = QVBoxLayout(dialog.groupBox_8_surcharges)
+            dialog.groupBox_8_surcharges.setLayout(existing_layout)
+        layout = existing_layout
+        for data_charge in data_charges:
             # create surcharge widget
             surcharge_dialog = Ui_InvoiceSurchargesData()
             widget = QWidget()  # new container widget
             surcharge_dialog.setupUi(widget)
             layout.addWidget(widget)  # insert widget in layout
             # Grundbetrag (BT-100)
-            set_spin_box_read_only(surcharge_dialog.dsb_basis_amount, data_allowance["basisAmount"])
+            set_spin_box_read_only(surcharge_dialog.dsb_basis_amount, data_charge["basisAmount"])
             # Prozent (BT-101)
-            set_spin_box_read_only(surcharge_dialog.dsb_percent, data_allowance["percent"])
+            set_spin_box_read_only(surcharge_dialog.dsb_percent, data_charge["percent"])
             # Betrag (Netto) (BT-99)
-            set_spin_box_read_only(surcharge_dialog.dsb_net_amount, data_allowance["netAmount"])
+            set_spin_box_read_only(surcharge_dialog.dsb_net_amount, data_charge["netAmount"])
             # Steuersatz (BT-103)
-            set_spin_box_read_only(surcharge_dialog.dsb_vat_rate, data_allowance["vatRate"], max_decimals=2)
+            set_spin_box_read_only(surcharge_dialog.dsb_vat_rate, data_charge["vatRate"], max_decimals=2)
             # Steuerkategorie (BT-102)
-            set_combo_box_read_only(surcharge_dialog.cb_vat_code, data_allowance["vatCode"], D_VAT_CODE)
+            set_combo_box_read_only(surcharge_dialog.combo_vat_code, data_charge["vatCode"], VAT_CODE)
             # Betrag Brutto
             surcharge_dialog.lbl_gross_amount.hide()
             surcharge_dialog.dsb_gross_amount.hide()
@@ -831,18 +831,18 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
             surcharge_dialog.dsb_vat_amount.hide()
             surcharge_dialog.lbl_vat_amount_symbol.hide()
             # Grund (BT-104)
-            set_line_edit_read_only(surcharge_dialog.le_reason, data_allowance["reason"])
+            set_line_edit_read_only(surcharge_dialog.le_reason, data_charge["reason"])
             # Code des Grundes (BT-105)
-            set_combo_box_read_only(surcharge_dialog.cb_reason_code, data_allowance["reasonCode"], D_CHARGE_REASON_CODE)
+            set_combo_box_read_only(surcharge_dialog.combo_reason_code, data_charge["reasonCode"], CHARGE_REASON_CODE)
     else:
         dialog.groupBox_8_surcharges.hide()
 
     # Steuern
-    if dialog.groupBox_9_tax.layout() is None:  # ensure that layout exists
-        layout = QVBoxLayout(dialog.groupBox_9_tax)
-        dialog.groupBox_9_tax.setLayout(layout)
-    else:
-        layout = dialog.groupBox_9_tax.layout()
+    existing_layout = dialog.groupBox_9_tax.layout()
+    if existing_layout is None:  # ensure that layout exists
+        existing_layout = QVBoxLayout(dialog.groupBox_9_tax)
+        dialog.groupBox_9_tax.setLayout(existing_layout)
+    layout = existing_layout
     for _tax_name, tax_data in data["taxes"].items():
         # create item widget
         tax_dialog = Ui_InvoiceTaxData()
@@ -850,7 +850,7 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         tax_dialog.setupUi(widget)
         layout.addWidget(widget)  # insert widget in layout
         # Steuerkategorie (BT-118)
-        set_line_edit_read_only(tax_dialog.le_tax_category, tax_data["code"], D_VAT_CODE)
+        set_line_edit_read_only(tax_dialog.le_tax_category, tax_data["code"], VAT_CODE)
         # Steuersatz (BT-119)
         set_spin_box_read_only(tax_dialog.dsb_tax_rate, tax_data["rate"], max_decimals=2)
         # Gesamt (Netto) (BT-116)
@@ -868,10 +868,10 @@ def visualize_xml_invoice(dialog: Ui_InvoiceData, xml_content: str) -> None:
         # Code für Befreiungsgrund (BT-121)
         exemption_reason_code = tax_data.get("exemptionReasonCode", "")
         if exemption_reason_code:
-            set_combo_box_read_only(tax_dialog.cb_exemption_reason_code, exemption_reason_code, D_EXEMPTION_REASON_CODE)
+            set_combo_box_read_only(tax_dialog.combo_exemption_reason_code, exemption_reason_code, EXEMPTION_REASON_CODE)
         else:
             tax_dialog.lbl_exemption_reason_code.setVisible(False)
-            tax_dialog.cb_exemption_reason_code.setVisible(False)
+            tax_dialog.combo_exemption_reason_code.setVisible(False)
 
     data_totals = data["totals"]
     # Summe der Nettobeträge aller Rechnungspositionen (BT-106)

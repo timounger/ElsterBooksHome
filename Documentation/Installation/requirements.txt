@@ -1,47 +1,48 @@
 # General
-pip==25.3
+pip==26.0.1
 requests==2.32.5
 openpyxl==3.1.3 # 3.1.4 has diagram bug
 colorama==0.4.6
-GitPython==3.1.45
-pillow==12.0.0
+GitPython==3.1.46
+pillow==12.1.1
 
 # Source
-PyQt6==6.10.1
+PyQt6==6.10.2
 PyQt6-Charts==6.10.0
 darkdetect==0.7.1 # <0.8.0 required by pyqtdarktheme
 pyqtdarktheme==2.1.0
-Markdown==3.10
-jsonschema==4.25.1
-PyMuPDF==1.26.7
+Markdown==3.10.2
+jsonschema==4.26.0
+PyMuPDF==1.27.1
 drafthorse==2025.2.0
 pytesseract==0.3.13
-openai==2.14.0
+openai==2.25.0
 mistralai==1.5.2 # html lib conflict
+google-genai==1.66.0
 ollama==0.6.1
-psutil==7.2.1
+psutil==7.2.2
 pywin32==311
 zeep==4.3.2
 tzdata==2025.3
-reportlab==4.4.7
+reportlab==4.4.10
 svglib==1.6.0
-fints==4.2.4
+fints==5.0.0
 qrcode==8.2
 
 # Executable
-pyinstaller==6.17.0
+pyinstaller==6.19.0
 beautifulsoup4==4.14.3
 
 # Test
 pip-audit==2.10.0
 autopep8==2.3.2
 mypy==1.19.1
-pylint==4.0.4
+pylint==4.0.5
 
 # Documentation
 astunparse==1.6.3
-mkdocs-material==9.7.1
-mkdocstrings-python==2.0.1
-mkdocs_puml==2.3.0
+mkdocs-material==9.7.4
+mkdocstrings-python==2.0.3
+mkdocs_puml==2.1.0 # httpx lib conflict to install newest google-genai
 mkdocs-minify-plugin==0.8.0
 mkdocs-api-autonav==0.4.0

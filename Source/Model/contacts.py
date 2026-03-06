@@ -1,14 +1,14 @@
 """!
 ********************************************************************************
 @file   contacts.py
-@brief  contacts
+@brief  Manage contact data persistence and validation.
 ********************************************************************************
 """
 
 import os
 import logging
 import enum
-from typing import Optional, Any
+from typing import Any
 
 from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
@@ -30,7 +30,7 @@ CONTACT_CONTACT_FIELD = "contact"
 
 class EContactFields(str, enum.Enum):
     """!
-    @brief Contact fields.
+    @brief Contact data field identifiers.
     """
     # general
     JSON_TYPE = "json_type"
@@ -56,7 +56,7 @@ class EContactFields(str, enum.Enum):
     PHONE = "phone"
 
 
-D_CONTACT_TEMPLATE = {
+CONTACT_TEMPLATE = {
     EContactFields.JSON_TYPE: "",
     EContactFields.JSON_VERSION: "",
     EContactFields.ID: "",
@@ -71,7 +71,7 @@ D_CONTACT_TEMPLATE = {
         EContactFields.STREET_2: "",  # Straße 2 (BT-51)
         EContactFields.PLZ: "",  # PLZ (BT-53)
         EContactFields.CITY: "",  # Ort (BT-52)
-        EContactFields.COUNTRY: "DE",  # Land (BT-55) D_COUNTRY_CODE
+        EContactFields.COUNTRY: "DE",  # Land (BT-55)
     },
     CONTACT_CONTACT_FIELD: {
         EContactFields.FIRST_NAME: "",  # Name (BT-56) first
@@ -82,51 +82,50 @@ D_CONTACT_TEMPLATE = {
 }
 
 
-def validate_contact(data: dict[EContactFields, Any]) -> list[str]:
+def validate_contact(data: dict[EContactFields | str, Any]) -> list[str]:
     """!
-    @brief Validate contact data.
-    @param data : data to validate
-    @return found error at validation
+    @brief Validate contact data against schema.
+    @param data : contact data to validate.
+    @return List of validation error messages.
     """
     schemata_path = os.path.join(SCHEMATA_PATH, CONTACT_SCHEMA_FILE)
     schemata = read_json_file(schemata_path)
-    _is_valid, error = validate_data(data, schemata)
-    return error
+    _, errors = validate_data(data, schemata)
+    return errors
 
 
-def read_contacts(path: str) -> list[dict[EContactFields, str]]:
+def read_contacts(path: str) -> list[dict[EContactFields | str, Any]]:
     """!
-    @brief Read contacts.
-    @param path : read in this path
-    @return list with existing contacts JSON data
+    @brief Read all contact records.
+    @param path : data directory path.
+    @return List of contact data dictionaries.
     """
-    l_contacts = read_json_files(os.path.join(path, CONTACT_FOLDER), D_CONTACT_TEMPLATE)
-    return l_contacts
+    return read_json_files(os.path.join(path, CONTACT_FOLDER), CONTACT_TEMPLATE)
 
 
-def add_contact(path: str, add: bool, contact: dict[EContactFields, str],
-                contact_id: Optional[str] = None, rename: bool = False) -> None:
+def add_contact(path: str, add: bool, contact: dict[EContactFields | str, Any],
+                contact_id: str | None = None, rename: bool = False) -> None:
     """!
-    @brief Add or actualize contact.
-    @param path : export to this path
-    @param add : GIT add status
-    @param contact : contact data to export
-    @param contact_id : contact ID
-    @param rename : whether the file name should be renamed based on receipt data
+    @brief Add or update contact data.
+    @param path : data directory path.
+    @param add : whether to git-add the exported file.
+    @param contact : contact data to export.
+    @param contact_id : unique contact identifier.
+    @param rename : whether to rename the file based on contact data.
     """
-    s_id = set_general_json_data(contact, CONTACT_TYPE, EContactFields.JSON_TYPE,
-                                 EContactFields.JSON_VERSION, JSON_VERSION_CONTACT,
-                                 EContactFields.ID, contact_id)
-    instance = fill_data(D_CONTACT_TEMPLATE, contact)
-    title = get_file_name(instance[EContactFields.NAME], s_id)
+    uid = set_general_json_data(contact, CONTACT_TYPE, EContactFields.JSON_TYPE,
+                                EContactFields.JSON_VERSION, JSON_VERSION_CONTACT,
+                                EContactFields.ID, contact_id)
+    instance = fill_data(CONTACT_TEMPLATE, contact)
+    title = get_file_name(instance[EContactFields.NAME], uid)
     id_field = EContactFields.ID if (contact_id is not None) else None
-    add_json(add, instance, title, s_id, os.path.join(path, CONTACT_FOLDER), id_field=id_field, rename=rename)
+    add_json(add, instance, title, uid, os.path.join(path, CONTACT_FOLDER), id_field=id_field, rename=rename)
 
 
 def remove_contact(path: str, contact_id: str) -> None:
     """!
-    @brief Remove contact.
-    @param path : delete in this path
-    @param contact_id : contact ID
+    @brief Remove contact data.
+    @param path : data directory path.
+    @param contact_id : unique contact identifier to delete.
     """
     delete_data(os.path.join(path, CONTACT_FOLDER), contact_id, id_field=EContactFields.ID)
