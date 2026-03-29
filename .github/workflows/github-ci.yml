@@ -1,13 +1,13 @@
 ---
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Central ElsterBooks GitHub CI
 # Doc: https://docs.github.com/de/actions
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 name: ElsterBooks CI
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Token Permission
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 permissions:
   actions: write
   checks: none
@@ -37,34 +37,34 @@ env:
   BINARY_EXE_NAME: bin_Exe
   BINARY_PATH: ./Executable/bin
 
-#--------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # WORKFLOW TRIGGER
-#--------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 on:
   push:
     branches:
       - test_version
     paths:
       - "Source/version.py"
-  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:  # Allows you to run this workflow manually from the Actions tab
     inputs:
       create_release:
         description: "Create Release. All jobs are executed."
         type: boolean
         default: false
 
-#--------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # WORKFLOW JOBS
-#--------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 jobs:
   doc-MkDocStrings:
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ env.PYTHON_ARCH }}
@@ -75,38 +75,38 @@ jobs:
         working-directory: ./Documentation
         run: run_mkdoc_build.bat
       - name: Upload MkDocStrings Output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.MKDOCSTRINGS_OUTPUT_NAME }}
           path: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
-  #------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------
   doc-Pages:
     needs: doc-MkDocStrings
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download MkDocStrings Output
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ env.MKDOCSTRINGS_OUTPUT_NAME }}
           path: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
       - name: Deploy to Github Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ github.token }}
           publish_dir: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
-  #------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------
   build-Exe:
     if: (github.event_name == 'push')
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 120
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           architecture: ${{ env.PYTHON_ARCH }}
@@ -117,7 +117,7 @@ jobs:
         working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
         run: get_package_list.bat
       - name: Upload Package list
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: installed_packages.txt
           path: ./Documentation/Installation/installed_packages.txt
@@ -125,11 +125,11 @@ jobs:
         working-directory: ./Executable
         run: generate_executable.bat
       - name: Upload Executable
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ env.BINARY_EXE_NAME }}
           path: ${{ env.BINARY_PATH }}
-  #------------------------------------------------------------------------------
+  # ------------------------------------------------------------------------------
   create-Release:
     if: inputs.create_release || (github.event_name == 'push')
     needs: build-Exe
@@ -137,9 +137,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Download Executable
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ${{ env.BINARY_EXE_NAME }}
           path: ${{ env.BINARY_PATH }}
@@ -157,24 +157,13 @@ jobs:
           tag_name="v${{ env.file_version }}"
           git tag "$tag_name"
           git push origin "$tag_name"
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create release and upload assets
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ env.file_version }}
-          release_name: "[ElsterBooks] v${{ env.file_version }}"
+          name: "[ElsterBooks] v${{ env.file_version }}"
           body: "Git SHA: ${{ github.sha }}\n\n${{ env.commit_message }}"
           draft: false
           prerelease: false
-      - name: Upload Executable files to release assets
-        shell: bash
-        run: |
-          for file in ${{ env.BINARY_PATH }}/*; do
-            filename=$(basename "$file")
-            curl -X POST "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.create_release.outputs.id }}/assets?name=$filename" \
-              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-              -H "Content-Type: $(file -b --mime-type $file)" \
-              --data-binary @"$file"
-          done
+          files: ${{ env.BINARY_PATH }}/*
+          token: ${{ github.token }}

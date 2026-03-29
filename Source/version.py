@@ -32,7 +32,7 @@ if VERSION_BUILD == 0:
 else:
     BUILD_PRERELEASE = True
     __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}.{VERSION_BUILD}"
-BUILD_NUITKA = False  # True: Nuitka; False: PyInstaller
+BUILD_NUITKA = True  # True: Nuitka; False: PyInstaller
 
 BUILD_NAME: str | None = None  # Name of current build depending on feature flags
 
