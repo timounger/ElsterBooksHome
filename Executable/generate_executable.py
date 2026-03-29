@@ -62,7 +62,58 @@ EXCLUDE_MODULES = [
     "cairo",
     "freetype",
     "rlPyCairo",
-    # can not imported by PyInstaller - exclude to avoid warnings
+    # CI/dev tools - not needed at runtime
+    "astroid",
+    "autopep8",
+    "pycodestyle",
+    "pylint",
+    "mccabe",
+    "isort",
+    "dill",
+    "tomli",
+    "tomlkit",
+    "platformdirs",
+    "pathspec",
+    # documentation
+    "mkdocs",
+    "mkdocs_material",
+    "mkdocs_material_extensions",
+    "mkdocstrings",
+    "mkdocstrings_python",
+    "mkdocs_autorefs",
+    "mkdocs_get_deps",
+    "mkdocs_api_autonav",
+    "mkdocs_minify_plugin",
+    "mkdocs_puml",
+    "ghp_import",
+    "babel",
+    "Markdown",
+    "mergedeep",
+    "pyyaml_env_tag",
+    "watchdog",
+    "paginate",
+    "htmlmin2",
+    "csscompressor",
+    "jsmin",
+    "pymdown_extensions",
+    # build tools
+    "nuitka",
+    "pyinstaller",
+    "pyinstaller_hooks_contrib",
+    "pefile",
+    "pywin32_ctypes",
+    "altgraph",
+    "ordered_set",
+    # security audit
+    "pip_audit",
+    "pip_api",
+    "pip_requirements_parser",
+    "cyclonedx_python_lib",
+    "py_serializable",
+    "boolean",
+    "license_expression",
+    "packageurl_python",
+    # not needed on target
     "serial.tools.list_ports_osx",
     "darkdetect._mac_detect",
 ]
@@ -191,6 +242,30 @@ if __name__ == "__main__":
 
         # Excluded modules
         command.extend(get_flag_list("nofollow-import-to", EXCLUDE_MODULES))
+
+        # Exclude unused Qt modules to reduce size
+        command.append("--noinclude-qt-translations")
+        EXCLUDE_QT_PLUGINS = [
+            "PyQt6.Qt3D*",
+            "PyQt6.QtBluetooth",
+            "PyQt6.QtDesigner",
+            "PyQt6.QtLocation",
+            "PyQt6.QtMultimedia*",
+            "PyQt6.QtNfc",
+            "PyQt6.QtPositioning",
+            "PyQt6.QtQuick*",
+            "PyQt6.QtQml*",
+            "PyQt6.QtRemoteObjects",
+            "PyQt6.QtSensors",
+            "PyQt6.QtSerialPort",
+            "PyQt6.QtSpatialAudio",
+            "PyQt6.QtTest",
+            "PyQt6.QtTextToSpeech",
+            "PyQt6.QtWebChannel",
+            "PyQt6.QtWebEngine*",
+            "PyQt6.QtWebSockets",
+        ]
+        command.extend(get_flag_list("nofollow-import-to", EXCLUDE_QT_PLUGINS))
 
         # Source file
         command.append(source_file)

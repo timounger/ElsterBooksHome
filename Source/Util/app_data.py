@@ -52,9 +52,9 @@ if running_as_exe():
     else:
         _EXE_DIR = "."
     CREATE_GIT_PATH = _EXE_DIR
-    REL_PATH = os.path.join(_EXE_DIR, "Data")
-    TOOLS_FOLDER = os.path.join(_EXE_DIR, "Tools")
-    EXPORT_PATH = os.path.join(_EXE_DIR, "Export")
+    REL_PATH = "Data"
+    TOOLS_FOLDER = "Tools"
+    EXPORT_PATH = "Export"
 else:
     CREATE_GIT_PATH = "../"
     REL_PATH = "../Data"
