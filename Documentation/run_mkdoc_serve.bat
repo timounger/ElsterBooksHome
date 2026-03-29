@@ -5,6 +5,12 @@
 ::set PLANTUML_SERVER=http://127.0.0.1:8080
 start http://localhost:8000
 
+mkdir "docs\_assets\images"
+copy "..\Resources\app.ico" "docs\_assets\images\app.ico"
+copy "..\Resources\favicon.ico" "docs\_assets\images\favicon.ico"
+copy "..\Resources\splash.gif" "docs\_assets\images\splash.gif"
+copy "..\Resources\InvoiceImage\zugferd.svg" "docs\_assets\images\zugferd.svg"
+
 ..\.venv\Scripts\mkdocs serve
 
 pause

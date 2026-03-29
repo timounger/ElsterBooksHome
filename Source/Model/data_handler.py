@@ -313,18 +313,17 @@ def get_file_name_content(file_path: str) -> tuple[str | None, str | None]:
     return file_date, file_content
 
 
-def get_pdf_text(pdf_path: str) -> str:
+def get_pdf_text(pdf_path: str, max_pages: int = 0) -> str:
     """!
     @brief Extract text content from PDF file.
     @param pdf_path : PDF file path.
-    @return Extracted text from all pages.
+    @param max_pages : Maximum number of pages to extract. 0 for all pages.
+    @return Extracted text.
     """
-    text = ""
     with fitz.open(pdf_path) as pdf_document:
-        for page_num in range(pdf_document.page_count):
-            page = pdf_document[page_num]
-            text += page.get_text() + "\n"
-    return text
+        page_count = pdf_document.page_count if max_pages == 0 else min(pdf_document.page_count, max_pages)
+        pages = [pdf_document[page_num].get_text() for page_num in range(page_count)]
+    return "\n".join(pages)
 
 
 ###########################

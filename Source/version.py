@@ -9,7 +9,7 @@ import sys
 
 # Version
 VERSION_MAJOR = 0  # Major changes, breaks API compatibility (e.g. incompatible changes)
-VERSION_MINOR = 5  # Minor changes, API compatible (e.g. new feature)
+VERSION_MINOR = 6  # Minor changes, API compatible (e.g. new feature)
 VERSION_PATCH = 0  # Bug fixes
 VERSION_BUILD = 0  # Build number (0 = release, >0 = pre-release)
 
@@ -32,6 +32,7 @@ if VERSION_BUILD == 0:
 else:
     BUILD_PRERELEASE = True
     __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}.{VERSION_BUILD}"
+BUILD_NUITKA = False  # True: Nuitka; False: PyInstaller
 
 BUILD_NAME: str | None = None  # Name of current build depending on feature flags
 
@@ -41,8 +42,12 @@ def running_as_exe() -> bool:
     @brief Check if we are currently running as an executable or directly in Python.
     @return [True|False] running as an EXE
     """
-    # PyInstaller creates a temp folder and stores path in _MEIPASS
-    return hasattr(sys, "_MEIPASS")
+    if BUILD_NUITKA:
+        # Nuitka sets __compiled__ in globals when running as compiled executable
+        return "__compiled__" in globals()
+    else:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        return hasattr(sys, "_MEIPASS")
 
 
 # Git version

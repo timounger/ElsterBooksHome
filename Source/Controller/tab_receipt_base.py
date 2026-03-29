@@ -83,12 +83,12 @@ class TabReceiptBase:
                 self._export_func(self.ui.model.data_path, self.ui.model.git_add, receipt, receipt[EReceiptFields.ID], rename=rename)
             status, icon = get_status(receipt, self.ui.tab_settings.company_data[COMPANY_DEFAULT_FIELD][ECompanyFields.PAYMENT_DAYS])
             if isinstance(receipt[EReceiptFields.AMOUNT_NET], (float, int)):
-                net_cell = CellData(text=f"{receipt[EReceiptFields.AMOUNT_NET]:.2f} EUR", right_align=True)
+                net_cell = CellData(text=f"{receipt[EReceiptFields.AMOUNT_NET]:.2f} EUR", right_align=True, sort_value=receipt[EReceiptFields.AMOUNT_NET])
                 self.total_net += receipt[EReceiptFields.AMOUNT_NET]
             else:
                 net_cell = CellData(text="", right_align=True)
             if isinstance(receipt[EReceiptFields.AMOUNT_GROSS], (float, int)):
-                gross_cell = CellData(text=f"{receipt[EReceiptFields.AMOUNT_GROSS]:.2f} EUR", right_align=True)
+                gross_cell = CellData(text=f"{receipt[EReceiptFields.AMOUNT_GROSS]:.2f} EUR", right_align=True, sort_value=receipt[EReceiptFields.AMOUNT_GROSS])
                 self.total_gross += receipt[EReceiptFields.AMOUNT_GROSS]
                 self.values.append(receipt[EReceiptFields.AMOUNT_GROSS])
                 self.invoice_dates.append(receipt[EReceiptFields.INVOICE_DATE])
@@ -123,14 +123,17 @@ class TabReceiptBase:
         self._clean_func(self.ui.model.data_path)
         self.set_table_data()
 
-    def check_for_paid(self, transactions: list[Transaction]) -> None:
+    def check_for_paid(self, transactions: list[Transaction]) -> int:
         """!
         @brief Matches bank transactions to mark receipts as paid.
         @param transactions : List of bank transactions to match.
+        @return Number of matched transactions.
         """
+        matched = 0
         if self._check_paid_func:
-            self._check_paid_func(self.ui.model.data_path, transactions)
+            matched = self._check_paid_func(self.ui.model.data_path, transactions)
             self.set_table_data()
+        return matched
 
     def on_item_double_clicked(self, row: int, col: int, _value: str) -> None:
         """!

@@ -87,7 +87,7 @@ def get_expenditure_files(path: str) -> list[str]:
     return get_file_names_in_folder(os.path.join(path, EXPENDITURE_FILE_PATH))
 
 
-def check_paid_expenditure(path: str, transactions: list[Transaction], validate_only: bool = False) -> None:
+def check_paid_expenditure(path: str, transactions: list[Transaction], validate_only: bool = False) -> int:
     """!
     @brief Check and match expenditure payments against bank transactions.
     @param path : data directory path.
@@ -95,6 +95,7 @@ def check_paid_expenditure(path: str, transactions: list[Transaction], validate_
     @param validate_only : True to only validate existing matches, False to update payment dates.
     """
     today = datetime.now()
+    matched_count = 0
     expenditures = read_expenditure(path)
     for data in expenditures:
         bar_paid = data[EReceiptFields.BAR]
@@ -130,3 +131,5 @@ def check_paid_expenditure(path: str, transactions: list[Transaction], validate_
                 if payment_date_low:
                     data[EReceiptFields.PAYMENT_DATE] = payment_date_low.strftime(DATE_FORMAT_JSON)
                     export_expenditure(path, False, data, data[EReceiptFields.ID])
+                    matched_count += 1
+    return matched_count

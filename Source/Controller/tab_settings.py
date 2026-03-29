@@ -12,12 +12,14 @@ from typing import TYPE_CHECKING
 from PyQt6.QtGui import QPixmap, QFont
 
 from Source.version import __title__
-from Source.Util.app_data import EAiType, ICON_CIRCLE_WHITE, ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE
+from Source.Util.app_data import EAiType, ICON_CIRCLE_WHITE, ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE, \
+    read_beverage_mode, write_beverage_mode
 from Source.Model.data_handler import fill_data, get_git_repo
 from Source.Model.company import LOGO_BRIEF_PATH, read_company, ECompanyFields, COMPANY_TEMPLATE, \
     COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, COMPANY_PAYMENT_FIELD
 from Source.Views.tabs.tab_settings_ui import Ui_Settings
 from Source.Controller.dialog_company import CompanyDialog
+from Source.Controller.dialog_article import ArticleSelectDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
@@ -65,6 +67,11 @@ class TabSettings:
         else:
             self.company_data = company_data
         self.ui_settings.btn_change_company_data.clicked.connect(self.change_company_data)
+        # article management button
+        self.ui_settings.btn_manage_articles.clicked.connect(self.manage_articles)
+        # beverage mode checkbox
+        self.ui_settings.cb_beverage_mode.setChecked(read_beverage_mode())
+        self.ui_settings.cb_beverage_mode.stateChanged.connect(lambda state: write_beverage_mode(bool(state)))
         self.update_company_data()
 
     def update_company_data(self) -> None:
@@ -216,6 +223,12 @@ class TabSettings:
         if ai_status:
             text += f" - {ai_status}"
         self.ui_settings.lbl_ai.setText(f"<img src='{status_icon}' width='14' height='14' style='vertical-align: middle; padding-right: 5px;'> {text}")
+
+    def manage_articles(self) -> None:
+        """!
+        @brief Opens the article management dialog for creating, editing, and deleting article templates.
+        """
+        ArticleSelectDialog(self.ui).exec()
 
     def change_company_data(self) -> None:
         """!

@@ -28,6 +28,7 @@ CLAUDE.md
 /Executable/bin
 /Executable/ElsterBooks.spec
 /Executable/PyInstaller_warnings.txt
+/Executable/Nuitka_warnings.txt
 
 # Resources
 /Resources/Tools

@@ -43,7 +43,7 @@ class MonitorScale:
         # Theme
         self.selected_theme = read_theme_settings()
         log.debug("Select Theme: %s", self.selected_theme)
-        self.active_theme = ETheme.LIGHT
+        self.active_theme: ETheme | None = None
         self.resolve_active_theme(self.selected_theme)
         self.update_icons(update_all=True)  # force update icons
 

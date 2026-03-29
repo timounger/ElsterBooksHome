@@ -12,13 +12,14 @@ from typing import Any, TYPE_CHECKING
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QDate, Qt, QObject, QEvent
 from PyQt6.QtGui import QIcon, QPixmap, QAction
-from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout, QMessageBox
+from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout, QMessageBox, QComboBox, QCompleter
 
 from Source.version import __title__
-from Source.Util.app_data import EInvoiceOption, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, \
+from Source.Util.app_data import EInvoiceOption, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, ICON_SEARCH_LIST_LIGHT, ICON_SEARCH_LIST_DARK, \
     ICON_CROSS_RED, ICON_ARROW_UP_LIGHT, ICON_ARROW_UP_DARK, ICON_ARROW_DOWN_LIGHT, ICON_ARROW_DOWN_DARK, \
     ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, \
-    write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, try_load_plugin, function_accepts_params
+    write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, try_load_plugin, function_accepts_params, \
+    read_beverage_mode
 from Source.Views.dialogs.dialog_invoice_general_ui import Ui_DialogInvoice
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
 from Source.Views.widgets.invoice_item_data_ui import Ui_InvoiceItemData
@@ -28,6 +29,7 @@ from Source.Views.widgets.invoice_tax_data_ui import Ui_InvoiceTaxData
 from Source.Model.company import ECompanyFields, LOGO_BRIEF_PATH, COMPANY_BOOKING_FIELD, \
     COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, COMPANY_PAYMENT_FIELD, COMPANY_DEFAULT_FIELD
 from Source.Model.contacts import EContactFields, CONTACT_CONTACT_FIELD, CONTACT_ADDRESS_FIELD
+from Source.Model.article import EArticleFields
 from Source.Model.general_invoice import create_general_invoice
 from Source.Model.invoice_number import InvoiceNumber
 from Source.Model.data_handler import get_libre_office_path, IMAGE_FILE_TYPES, NO_TAX_RATE, INVOICE_TEMPLATE_FILE_TYPES, \
@@ -39,12 +41,15 @@ from Source.Model.ZUGFeRD.drafthorse_invoice import write_customer_to_json, writ
 from Source.Model.ZUGFeRD.drafthorse_import import set_spin_box_read_only, set_combo_box_items, set_line_edit_read_only, \
     set_combo_box_value, check_zugferd, extract_xml_from_pdf, check_xinvoice, extract_xml_from_xinvoice, set_date_optional
 from Source.Model.ZUGFeRD.drafthorse_convert import convert_facturx_to_json, normalize_decimal
+from Source.Controller.dialog_article import ArticleSelectDialog
+from Source.Controller.deposit_widget import DepositWidget
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
 log = logging.getLogger(__title__)
 
 MAX_POSITIONS = 100
+DEPOSIT_POSITION_NAME = "Pfand-Ausgleich"
 
 
 def add_icon(action: QAction, icon: str) -> None:
@@ -244,7 +249,6 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.ui_invoice_data.btn_add_item.clicked.connect(self.add_item)
         self.ui_invoice_data.btn_remove_item.clicked.connect(self.remove_item)
         self.ui_invoice_data.btn_remove_item.setEnabled(False)
-
         # add discount widget
         self.discounts_widgets.clear()
         existing_layout = self.ui_invoice_data.groupBox_7_discounts.layout()
@@ -285,8 +289,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             assert isinstance(existing_layout, QVBoxLayout)
             self.tax_layout = existing_layout
 
+        # beverage dealer mode
+        self.is_beverage_mode = read_beverage_mode()
+
         # create first item widget
         self.add_item()
+
+        # deposit widget (only in beverage dealer mode)
+        if self.is_beverage_mode:
+            self._init_deposit_widget()
 
         # delivery time
         self.ui_invoice_data.cb_accounting_date.stateChanged.connect(self.accounting_date_checkbox_changed)
@@ -304,6 +315,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
 
         # customer
         index_to_set = None
+        self.combo_contact_template.setEditable(True)
+        self.combo_contact_template.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.combo_contact_template.completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        self.combo_contact_template.completer().setFilterMode(Qt.MatchFlag.MatchContains)
         for i, contact in enumerate(self.ui.tab_contacts.contacts):
             self.combo_contact_template.addItem(contact[EContactFields.NAME].replace("\n", " "), contact)  # show in single row
             if self.default_uid:
@@ -620,7 +635,12 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             item_dialog = Ui_InvoiceItemData()  # new item instance
             widget = QWidget()  # new container widget
             item_dialog.setupUi(widget)
-            self.ui_invoice_data.item_layout.addWidget(widget)
+            # insert before deposit widget to keep it at the bottom
+            if hasattr(self, 'deposit_container'):
+                deposit_index = self.ui_invoice_data.item_layout.indexOf(self.deposit_container)
+                self.ui_invoice_data.item_layout.insertWidget(deposit_index, widget)
+            else:
+                self.ui_invoice_data.item_layout.addWidget(widget)
             item_dialog.groupBox.setTitle(f"Position {item_index + 1}")
             self.item_widgets.append(item_dialog)  # store item ui for later use
             self.set_default_item_data(item_dialog)
@@ -628,7 +648,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             if item_index > 0:
                 self.ui_invoice_data.btn_remove_item.setEnabled(True)
             else:
-                item_dialog.btn_delete.setVisible(False)
+                if not self.is_beverage_mode:
+                    item_dialog.btn_delete.setVisible(False)
                 item_dialog.btn_up.setVisible(False)
             item_dialog.btn_down.setVisible(False)
             self.set_item_index_callbacks(item_index, connection_exists=False)
@@ -676,6 +697,9 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if connection_exists:
             item_dialog.btn_delete.clicked.disconnect()
         item_dialog.btn_delete.clicked.connect(lambda: self.item_delete_clicked(item_index))
+        if connection_exists:
+            item_dialog.btn_item_select.clicked.disconnect()
+        item_dialog.btn_item_select.clicked.connect(lambda: self.item_select_article(item_index))
 
     def update_all_index_callbacks(self) -> None:
         """!
@@ -684,7 +708,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         total_items = len(self.item_widgets)
         for item_index, item_dialog in enumerate(self.item_widgets):
             if total_items <= 1:
-                item_dialog.btn_delete.setVisible(False)
+                item_dialog.btn_delete.setVisible(self.is_beverage_mode)
                 item_dialog.btn_up.setVisible(False)
                 item_dialog.btn_down.setVisible(False)
             elif item_index == 0:
@@ -706,9 +730,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @brief Remove the last invoice line item.
         """
         item_index = len(self.item_widgets)
-        if item_index <= 2:
+        min_items = 0 if self.is_beverage_mode else 1
+        if item_index <= min_items + 1:
             self.ui_invoice_data.btn_remove_item.setEnabled(False)
-        if item_index > 1:
+        if item_index > min_items:
             last_item = self.item_widgets.pop()
             widget = last_item.groupBox.parentWidget()
             assert widget is not None
@@ -728,6 +753,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         item_dialog.btn_delete.setIcon(QIcon(ICON_CROSS_RED))
         item_dialog.btn_up.setIcon(QIcon(ICON_ARROW_UP_LIGHT if is_light_theme else ICON_ARROW_UP_DARK))
         item_dialog.btn_down.setIcon(QIcon(ICON_ARROW_DOWN_LIGHT if is_light_theme else ICON_ARROW_DOWN_DARK))
+        item_dialog.btn_item_select.setIcon(QIcon(ICON_SEARCH_LIST_LIGHT if is_light_theme else ICON_SEARCH_LIST_DARK))
         # Name (BT-153)
         item_dialog.le_item_name.setText("")
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
@@ -775,6 +801,84 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         set_spin_box_read_only(item_dialog.dsb_item_net_amount, 0.0)
         # Gesamtpreis (Brutto)
         set_spin_box_read_only(item_dialog.dsb_item_gross_price, 0.0)
+
+    def item_select_article(self, item_index: int) -> None:
+        """!
+        @brief Open article selection dialog and fill the selected article into the item fields.
+        @param item_index : Index of the item to fill.
+        """
+        dialog = ArticleSelectDialog(self.ui, select_mode=True)
+        if dialog.exec() == QDialog.DialogCode.Accepted and dialog.selected_article is not None:
+            article = dialog.selected_article
+            item_dialog = self.item_widgets[item_index]
+            item_dialog.le_item_name.setText(str(article[EArticleFields.NAME]))
+            item_dialog.le_item_id.setText(str(article[EArticleFields.ARTICLE_ID]))
+            item_dialog.pte_item_description.setPlainText(str(article[EArticleFields.DESCRIPTION]))
+            vat_rate = float(article[EArticleFields.VAT_RATE])
+            if vat_rate > 0:
+                item_dialog.dsb_item_vat_rate.setValue(vat_rate)
+            set_combo_box_value(item_dialog.combo_item_vat_code, str(article[EArticleFields.VAT_CODE]), VAT_CODE)
+            set_combo_box_value(item_dialog.combo_item_quantity_unit, str(article[EArticleFields.QUANTITY_UNIT]), UNIT)
+            net_price = float(article[EArticleFields.NET_UNIT_PRICE])
+            item_dialog.dsb_item_net_unit_price.setValue(net_price)
+            item_dialog.dsb_item_gross_unit_price.setValue(round(net_price * (1 + vat_rate / 100), 2))
+
+    def _init_deposit_widget(self) -> None:
+        """!
+        @brief Create the deposit item and tracking widget at the bottom of the positions.
+        """
+        # create the deposit invoice item
+        deposit_item = Ui_InvoiceItemData()
+        deposit_container = QWidget()
+        deposit_item.setupUi(deposit_container)
+        self.ui_invoice_data.item_layout.addWidget(deposit_container)
+        deposit_item.groupBox.setTitle(DEPOSIT_POSITION_NAME)
+        deposit_item.le_item_name.setText(DEPOSIT_POSITION_NAME)
+        deposit_item.dsb_item_quantity.setValue(1)
+        deposit_item.dsb_item_quantity.setReadOnly(True)
+        deposit_item.dsb_item_vat_rate.setValue(19.0)
+        deposit_item.dsb_item_net_unit_price.setReadOnly(True)
+        deposit_item.dsb_item_gross_unit_price.setReadOnly(True)
+        deposit_item.btn_delete.setVisible(False)
+        deposit_item.btn_up.setVisible(False)
+        deposit_item.btn_down.setVisible(False)
+        deposit_item.btn_item_select.setVisible(False)
+        deposit_item.line_charge.hide()
+        self.update_item_expand_status(deposit_item, self.cb_extended.isChecked())
+        # hide tax amount, total net and total gross with their € symbols
+        deposit_item.dsb_item_vat_amount.setVisible(False)
+        deposit_item.lbl_item_vat_amount.setVisible(False)
+        deposit_item.lbl_item_vat_amount_symbol.setVisible(False)
+        deposit_item.dsb_item_net_amount.setVisible(False)
+        deposit_item.lbl_item_net_amount.setVisible(False)
+        deposit_item.lbl_item_net_amount_symbol.setVisible(False)
+        deposit_item.dsb_item_gross_price.setVisible(False)
+        deposit_item.lbl_item_gross_price.setVisible(False)
+        deposit_item.lbl_item_gross_price_symbol.setVisible(False)
+        # hide article id on deposit position
+        deposit_item.lbl_item_id.setVisible(False)
+        deposit_item.le_item_id.setVisible(False)
+
+        # store as special deposit item (not in item_widgets to avoid index conflicts)
+        self.deposit_item = deposit_item
+        self.deposit_container = deposit_container
+
+        # create deposit tracking widget below the item fields
+        self.deposit_widget = DepositWidget(
+            self.ui, deposit_item,
+            on_total_changed=self.update_total_data
+        )
+        # insert the deposit grid into the deposit item's groupbox
+        deposit_item.groupBox.layout().addWidget(self.deposit_widget.widget)
+
+        # recalculate gross when vat rate changes
+        deposit_item.dsb_item_vat_rate.valueChanged.connect(lambda: self.deposit_widget._update_total())
+
+        # connect auto-calculate button with item_widgets reference
+        self.deposit_widget.btn_auto_calc.clicked.disconnect()
+        self.deposit_widget.btn_auto_calc.clicked.connect(
+            lambda: self.deposit_widget.auto_calculate(self.item_widgets)
+        )
 
     def item_price_changed(self, item_index: int, gross_changed: None | bool) -> None:
         """!
@@ -862,7 +966,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.ui_invoice_data.item_layout.removeWidget(widget)
         widget.setParent(None)
         total_index = len(self.item_widgets)
-        if total_index <= 2:
+        min_items = 0 if self.is_beverage_mode else 1
+        if total_index <= min_items + 1:
             self.ui_invoice_data.btn_remove_item.setEnabled(False)
         self.update_all_index_callbacks()
         self.update_total_data()
@@ -1070,8 +1175,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         item_dialog.lbl_item_vat_code.setVisible(is_visible)
         item_dialog.combo_item_vat_code.setVisible(is_visible)
         # Artikel-Nr. (BT-155)
-        item_dialog.lbl_item_id.setVisible(is_visible)
-        item_dialog.le_item_id.setVisible(is_visible)
+        item_dialog.lbl_item_id.setVisible(is_visible or self.is_beverage_mode)
+        item_dialog.le_item_id.setVisible(is_visible or self.is_beverage_mode)
         # Startdatum (BT-134)
         item_dialog.lbl_item_billing_period_start.setVisible(is_visible)
         item_dialog.de_item_billing_period_start.setVisible(is_visible)
@@ -1360,6 +1465,8 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         if selected_path:
             self.ui.model.set_last_path(os.path.dirname(selected_path))
             data = self.read_ui_data_to_json()
+            # remove deposit position from JSON export
+            data["items"] = [item for item in data.get("items", []) if not item.get("isDeposit", False)]
             fill_invoice_data(data)
             write_json_file(selected_path, data)
 
@@ -1614,7 +1721,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             data_item["vatRate"] = vat_rate
             vat_code = item_dialog.combo_item_vat_code.currentData() if is_extended else "S"  # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
             data_item["vatCode"] = vat_code
-            data_item["id"] = item_dialog.le_item_id.text() if is_extended else ""  # Artikel-Nr. (BT-155)
+            data_item["id"] = item_dialog.le_item_id.text() if (is_extended or self.is_beverage_mode) else ""  # Artikel-Nr. (BT-155)
             is_date_used = is_extended and item_dialog.cb_item_billing_period.isChecked()
             data_item["billingPeriodStart"] = item_dialog.de_item_billing_period_start.date().toString(DATE_FORMAT_XINVOICE) if is_date_used else ""  # Startdatum (BT-134)
             data_item["billingPeriodEnd"] = item_dialog.de_item_billing_period_end.date().toString(DATE_FORMAT_XINVOICE) if is_date_used else ""  # Enddatum (BT-135)
@@ -1643,6 +1750,27 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
                         "exemptionReasonCode": tax_widget.combo_exemption_reason_code.currentData()  # Code für Befreiungsgrund (BT-121)
                     }
                     data_taxes[vat_key] = vat_value
+
+        # deposit position
+        has_deposit_entries = hasattr(self, 'deposit_widget') and any(
+            r.sb_delivered.value() > 0 or r.sb_returned.value() > 0 for r in self.deposit_widget.rows
+        )
+        if hasattr(self, 'deposit_item') and has_deposit_entries:
+            deposit_data: dict[str, Any] = {}
+            deposit_data["name"] = self.deposit_item.le_item_name.text()
+            deposit_data["vatRate"] = self.deposit_item.dsb_item_vat_rate.value()
+            deposit_data["vatCode"] = "S"
+            deposit_data["id"] = ""
+            deposit_data["billingPeriodStart"] = ""
+            deposit_data["billingPeriodEnd"] = ""
+            deposit_data["orderPosition"] = ""
+            deposit_data["description"] = self.deposit_item.pte_item_description.toPlainText()
+            deposit_data["quantity"] = 1
+            deposit_data["quantityUnit"] = "H87"
+            deposit_data["netUnitPrice"] = self.deposit_item.dsb_item_net_unit_price.value()
+            deposit_data["basisQuantity"] = 1
+            deposit_data["isDeposit"] = True
+            data_items.append(deposit_data)
 
         if is_extended:
             # Nachlässe

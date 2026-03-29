@@ -16,6 +16,8 @@ log = logging.getLogger(__title__)
 
 MAX_DOCUMENT_CHARS = 10000
 MIN_OCR_TEXT = 20  # OCR integration in PDF requires this length, otherwise use Tesseract
+MAX_PDF_PAGES = 10  # Maximum pages for PDF text extraction
+MAX_OCR_PAGES = 3  # Maximum pages for OCR text extraction
 
 
 class InvoiceData(BaseModel):
@@ -90,9 +92,9 @@ def get_ai_document_text(file_path: str) -> str:
     @param file_path : path to the PDF file.
     @return extracted document text.
     """
-    text = get_pdf_text(file_path)
+    text = get_pdf_text(file_path, max_pages=MAX_PDF_PAGES)
     if len(text) < MIN_OCR_TEXT:
-        text = extract_text_with_ocr(file_path)
+        text = extract_text_with_ocr(file_path, max_pages=MAX_OCR_PAGES)
         if len(text) < MIN_OCR_TEXT:
             text = ""
     return text

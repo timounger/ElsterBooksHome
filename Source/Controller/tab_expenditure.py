@@ -12,6 +12,7 @@ from Source.version import __title__
 from Source.Util.app_data import KEY_EXPENDITURE_COLUMN
 from Source.Controller.dialog_receipt import EReceiptType
 from Source.Controller.tab_receipt_base import TabReceiptBase
+from Source.Controller.table_filter import RECEIPT_ROW_DESCRIPTION
 from Source.Model.expenditure import read_expenditure, EXPENDITURE_FILE_PATH, export_expenditure, delete_expenditure, clean_expenditure
 from Source.Model.expenditure import check_paid_expenditure
 if TYPE_CHECKING:
@@ -40,7 +41,8 @@ class TabExpenditure(TabReceiptBase):
                          delete_func=delete_expenditure,
                          clean_func=clean_expenditure,
                          check_paid_func=check_paid_func,
-                         date_right_align=False)
+                         date_right_align=False,
+                         table_filter_kwargs={"pre_sort_idx": RECEIPT_ROW_DESCRIPTION.index("Handelspartner")})
         # Alias for backward compatibility with external references
         self.ui_expenditure = self.table_filter
 

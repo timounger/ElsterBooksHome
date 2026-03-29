@@ -11,7 +11,7 @@ from typing import NamedTuple, Callable, TYPE_CHECKING, Any
 from enum import Enum
 
 from PyQt6 import QtWidgets
-from PyQt6.QtCore import Qt, QDate, QPoint, QObject, QEvent, QModelIndex
+from PyQt6.QtCore import Qt, QDate, QPoint, QObject, QEvent, QModelIndex, QSortFilterProxyModel
 from PyQt6.QtWidgets import QHeaderView, QAbstractItemView, QTabWidget, QMenu, QLabel
 from PyQt6.QtGui import QIcon, QMouseEvent, QShortcut, QKeySequence, QAction, QStandardItemModel, QStandardItem
 
@@ -86,6 +86,25 @@ class DropFilter(QObject):
         return False
 
 
+class NumericSortProxy(QSortFilterProxyModel):
+    """!
+    @brief Proxy model that sorts by UserRole (numeric) when available, otherwise by DisplayRole.
+    """
+
+    def lessThan(self, left: QModelIndex, right: QModelIndex) -> bool:
+        """!
+        @brief Compare two items for sorting.
+        @param left : left model index.
+        @param right : right model index.
+        @return True if left is less than right.
+        """
+        left_sort = left.data(Qt.ItemDataRole.UserRole)
+        right_sort = right.data(Qt.ItemDataRole.UserRole)
+        if left_sort is not None and right_sort is not None:
+            return left_sort < right_sort
+        return super().lessThan(left, right)
+
+
 class CellData(NamedTuple):
     """!
     @brief Container for table cell data.
@@ -94,6 +113,7 @@ class CellData(NamedTuple):
     icon: str | None = None
     right_align: bool = False
     is_date: bool = False
+    sort_value: float | None = None
 
 
 class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
@@ -146,7 +166,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         self.shortcut_finde = QShortcut(QKeySequence("Ctrl+F"), tab)
         self.shortcut_finde.activated.connect(self.input_filter.setFocus)
         self.shortcut_esc = QShortcut(QKeySequence("Esc"), tab)
-        self.shortcut_esc.activated.connect(lambda: self.set_filter(None))
+        self.shortcut_esc.activated.connect(lambda: self.reset_filter_clicked(None))
         if btn_1_cb is not None:
             self.shortcut_new = QShortcut(QKeySequence("Ctrl+N"), tab)
             self.shortcut_new.activated.connect(btn_1_cb)
@@ -199,6 +219,7 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         # filter input dialog
         self.input_filter.setPlaceholderText('Suchtext eingeben (Strg+F)')
         self.input_filter.returnPressed.connect(self.enter_pressed)
+        self.input_filter.textChanged.connect(self._on_filter_text_changed)
         self.input_filter.setClearButtonEnabled(True)
 
         # clear filter label
@@ -323,17 +344,6 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
             attach_icon = ICON_ATTACH_LIGHT if self.ui.model.monitor.is_light_theme() else ICON_ATTACH_DARK
         return attach_icon
 
-    def check_entry_relevant(self, data: list[CellData]) -> bool:
-        """!
-        @brief Returns True if the row matches the active filter.
-        @param data : Row data to check against the active filter.
-        @return Whether the entry matches the filter.
-        """
-        if self.active_filter:
-            filter_text = self.active_filter.lower()
-            return any(filter_text in str(item.text).lower() for item in data[:-1])  # exclude UID
-        return True
-
     def update_table(self, table_data: list[list[CellData]] | None = None) -> None:
         """!
         @brief Updates the table model, applies filters, resizing, sorting, and column visibility.
@@ -350,35 +360,45 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         model = QStandardItemModel()  # set again to delete old entries before set new
         self.model = model
         model.setColumnCount(len(self.table_header))
-        table.setModel(model)
+        proxy = NumericSortProxy()
+        proxy.setSourceModel(model)
+        proxy.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        proxy.setFilterKeyColumn(-1)  # search all columns
+        self.proxy_model = proxy
+        table.setModel(proxy)
 
         table.setAlternatingRowColors(True)
 
-        # insert items
-        idx = 0
+        # insert all items
         for data in self.table_data:
-            if self.check_entry_relevant(data):
-                items = []
-                for i, cell_data in enumerate(data):
-                    text = cell_data.text
-                    if text is not None:
-                        if len(text) < 50:
-                            text = text.replace("\n", " ")
-                    item = QStandardItem(text)
-                    if cell_data.icon is not None:
-                        item.setIcon(QIcon(cell_data.icon))
-                    alignment = Qt.AlignmentFlag.AlignRight if cell_data.right_align else Qt.AlignmentFlag.AlignLeft
-                    item.setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
-                    if cell_data.is_date:
-                        item.setData(QDate.fromString(cell_data.text, DATE_FORMAT), Qt.ItemDataRole.DisplayRole)
-                    items.append(item)
-                model.appendRow(items)
-                idx += 1
+            items = []
+            for cell_data in data:
+                text = cell_data.text
+                if text is not None:
+                    if len(text) < 50:
+                        text = text.replace("\n", " ")
+                item = QStandardItem(text)
+                if cell_data.icon is not None:
+                    item.setIcon(QIcon(cell_data.icon))
+                alignment = Qt.AlignmentFlag.AlignRight if cell_data.right_align else Qt.AlignmentFlag.AlignLeft
+                item.setTextAlignment(alignment | Qt.AlignmentFlag.AlignVCenter)
+                if cell_data.is_date:
+                    item.setData(QDate.fromString(cell_data.text, DATE_FORMAT), Qt.ItemDataRole.DisplayRole)
+                if cell_data.sort_value is not None:
+                    item.setData(cell_data.sort_value, Qt.ItemDataRole.UserRole)
+                items.append(item)
+            model.appendRow(items)
 
-        if self.active_filter:
-            if idx == 0:
+        # apply current filter
+        filter_text = self.input_filter.text()
+        if filter_text:
+            proxy.setFilterFixedString(filter_text)
+            self.lbl_reset_filter.setEnabled(True)
+            visible = proxy.rowCount()
+            total = model.rowCount()
+            if visible == 0:
                 color = "red"
-            elif len(self.table_data) == idx:
+            elif visible == total:
                 color = "green"
             else:
                 color = "orange"
@@ -440,15 +460,22 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         """!
         @brief Filters table on Enter pressed in search box.
         """
-        text = self.input_filter.text()
-        self.set_filter(text)
+        self._apply_filter(self.input_filter.text())
+
+    def _on_filter_text_changed(self, text: str) -> None:
+        """!
+        @brief Auto-filter as the user types.
+        @param text : current input text.
+        """
+        self._apply_filter(text)
 
     def reset_filter_clicked(self, _event: QMouseEvent) -> None:
         """!
         @brief Reset the search filter and show all table rows.
         @param _event : Mouse click event.
         """
-        self.set_filter(None)
+        self.input_filter.clear()
+        self._apply_filter("")
 
     def set_search_border(self, color: str | None) -> None:
         """!
@@ -460,16 +487,23 @@ class TableFilter(QtWidgets.QWidget, Ui_TableFilter):
         else:
             self.input_filter.setStyleSheet(f"border: 2px solid {color};")
 
-    def set_filter(self, filter_text: str | None) -> None:
+    def _apply_filter(self, filter_text: str) -> None:
         """!
-        @brief Activates or clears the text filter and refreshes the table.
+        @brief Apply filter text to the proxy model.
         @param filter_text : Filter text to apply.
         """
+        self.proxy_model.setFilterFixedString(filter_text)
         if filter_text:
-            self.active_filter = filter_text
             self.lbl_reset_filter.setEnabled(True)
+            visible = self.proxy_model.rowCount()
+            total = self.model.rowCount()
+            if visible == 0:
+                color = "red"
+            elif visible == total:
+                color = "green"
+            else:
+                color = "orange"
         else:
-            self.active_filter = None
-            self.input_filter.clear()
             self.lbl_reset_filter.setEnabled(False)
-        self.update_table()
+            color = None
+        self.set_search_border(color)

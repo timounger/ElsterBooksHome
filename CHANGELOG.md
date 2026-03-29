@@ -9,7 +9,19 @@
 | 🚀 Verbesserungen | Optimierungen, Performance, Reworks      |
 | 📚 Dokumentation  | Änderungen an Dokumentation & Texten     |
 
-## [v0.5.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.5.0) latest
+## [v0.6.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.6.0) latest
+
+- ✨ Artikel Vorlagen erstellbar
+- ✨ Getränkehändler-Modus für Leergut
+- 🔧 Theme Fix
+- 🔧 Negative Beträge in Spin Box möglich
+- 🚀 Seitenzahl bei Texterkennung begrenzen
+- 🚀 Kontaktvorlage durchsuchbar
+- 🚀 Spalte nach Betrag sortierbar
+- 🚀 Qt Suchfunktion verwenden statt manuell neu in Tabelle zu schreiben
+- 🚀 Nuitka Build möglich
+
+## [v0.5.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.5.0) Release 06.03.2026
 
 - ✨ Gemini von Google als KI für intelligente Belegerkennung verfügbar
 - 🔧 Verwendungszweck (BT-83) wird nicht mehr importiert, um das Überschreiben des Rechnungsnummern-Patterns zu vermeiden

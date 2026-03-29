@@ -5,15 +5,16 @@
 
 # Project information
 site_name: ElsterBooks
-site_url: https://github.com/timounger/ElsterBooksHome
+site_url: https://timounger.github.io/ElsterBooksHome
 site_author: Timo Unger
 site_description: >-
-  Buchhaltungssoftware
+  ElsterBooks – Buchhaltungssoftware für Kleinunternehmer und Selbstständige.
+  EÜR-Erstellung, Rechnungen, E-Rechnungen (ZUGFeRD/XRechnung), KI-gestützte Belegerkennung und ELSTER-Schnittstelle.
 
 # Repository
 repo_name: timounger/ElsterBooksHome
 repo_url: https://github.com/timounger/ElsterBooksHome
-edit_uri: blob/main/docs # TODO
+edit_uri: blob/main/docs
 
 # Copyright
 copyright: Copyright &copy; 2023-2026 Timo Unger
@@ -52,14 +53,14 @@ theme:
       scheme: elsterbooks
       toggle:
         icon: material/weather-sunny
-        name: In den Dunkel Modus wechseln
+        name: In den Dunkelmodus wechseln
     - media: "(prefers-color-scheme: dark)" # Dark Mode
       scheme: slate
       primary: black
       accent: indigo
       toggle:
         icon: material/weather-night
-        name: In den System Standard Modus wechseln
+        name: In den Systemstandard wechseln
   font:
     text: Roboto
     code: Roboto Mono
@@ -91,7 +92,7 @@ extra:
   #  provider: google
   #  property: !ENV GOOGLE_ANALYTICS_KEY
   social:
-    - icon: material/web
+    - icon: fontawesome/brands/github
       link: https://github.com/timounger/ElsterBooksHome
 
 extra_css:
@@ -129,8 +130,8 @@ markdown_extensions:
   - pymdownx.magiclink:
       normalize_issue_symbols: true
       repo_url_shorthand: true
-      user: squidfunk
-      repo: mkdocs-material
+      user: timounger
+      repo: ElsterBooksHome
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.snippets:

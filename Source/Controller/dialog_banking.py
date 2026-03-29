@@ -101,6 +101,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.btn_paid_check.clicked.connect(self.confirm_btn_validate_payments)
 
         self.setWindowTitle("Bankverbindung")
+        self.btn_connect.setFocus()
 
         self.show()
         self.exec()
@@ -215,6 +216,7 @@ class BankingDialog(QDialog, Ui_DialogBanking):
                         self.combo_accounts.setCurrentIndex(i)
                 if accounts:
                     self.btn_get_transactions.setEnabled(True)
+                    self.btn_get_transactions.setFocus()
                 # tan mechanism
                 tan_mechanisms = self.fin_ts.get_tan_mechanism()
                 self.combo_tan_mechanisms.clear()
@@ -235,15 +237,18 @@ class BankingDialog(QDialog, Ui_DialogBanking):
         self.fin_ts.iban = iban
         self.fin_ts.tan_mechanism = tan_mechanism
 
-        _success, success_text = self.fin_ts.get_and_create_transaction()
+        success, success_text = self.fin_ts.get_and_create_transaction()
 
         self.pte_text.setPlainText(success_text)
+        if success:
+            self.btn_paid_check.setFocus()
 
     def confirm_btn_validate_payments(self) -> None:
         """!
         @brief Validate payments by comparing stored transactions with income and expenditure entries.
         """
         transactions = self.fin_ts.get_transactions()
-        self.ui.tab_income.check_for_paid(transactions)
-        self.ui.tab_expenditure.check_for_paid(transactions)
-        self.ui.set_status("Zahlungen wurden überprüft und zugeordnet")
+        matched_income = self.ui.tab_income.check_for_paid(transactions)
+        matched_expenditure = self.ui.tab_expenditure.check_for_paid(transactions)
+        total = matched_income + matched_expenditure
+        self.ui.set_status(f"{total} Zahlungen zugeordnet ({matched_income} Einnahmen, {matched_expenditure} Ausgaben)")

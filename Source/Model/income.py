@@ -87,7 +87,7 @@ def get_income_files(path: str) -> list[str]:
     return get_file_names_in_folder(os.path.join(path, INCOME_FILE_PATH))
 
 
-def check_paid_income(path: str, transactions: list[Transaction], validate_only: bool = False) -> None:
+def check_paid_income(path: str, transactions: list[Transaction], validate_only: bool = False) -> int:
     """!
     @brief Check and match income payments against bank transactions.
     @param path : data directory path.
@@ -95,6 +95,7 @@ def check_paid_income(path: str, transactions: list[Transaction], validate_only:
     @param validate_only : True to only validate existing matches, False to update payment dates.
     """
     today = datetime.now()
+    matched_count = 0
     incomes = read_income(path)
     for data in incomes:
         bar_paid = data[EReceiptFields.BAR]
@@ -123,3 +124,5 @@ def check_paid_income(path: str, transactions: list[Transaction], validate_only:
                 if payment_date_high:
                     data[EReceiptFields.PAYMENT_DATE] = payment_date_high.strftime(DATE_FORMAT_JSON)
                     export_income(path, False, data, data[EReceiptFields.ID])
+                    matched_count += 1
+    return matched_count

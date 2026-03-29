@@ -33,7 +33,7 @@ else:
 from PyQt6.QtCore import QSettings, QByteArray  # pylint: disable=wrong-import-position
 from PyQt6.QtGui import QActionGroup, QAction  # pylint: disable=wrong-import-position
 
-from Source.version import __title__, __author__, running_as_exe  # pylint: disable=wrong-import-position
+from Source.version import __title__, __author__, running_as_exe, BUILD_NUITKA  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 # autopep8: on
@@ -47,10 +47,14 @@ if sys.stderr is None:
 log = logging.getLogger(__title__)
 
 if running_as_exe():
-    CREATE_GIT_PATH = "."
-    REL_PATH = "Data"
-    TOOLS_FOLDER = "Tools"
-    EXPORT_PATH = "Export"
+    if BUILD_NUITKA:
+        _EXE_DIR = os.path.dirname(os.path.abspath(sys.executable))
+    else:
+        _EXE_DIR = "."
+    CREATE_GIT_PATH = _EXE_DIR
+    REL_PATH = os.path.join(_EXE_DIR, "Data")
+    TOOLS_FOLDER = os.path.join(_EXE_DIR, "Tools")
+    EXPORT_PATH = os.path.join(_EXE_DIR, "Export")
 else:
     CREATE_GIT_PATH = "../"
     REL_PATH = "../Data"
@@ -64,7 +68,10 @@ def resource_path(relative_path: str) -> str:
     @param relative_path : the relative path to a file or directory.
     @return absolute path to the resource.
     """
-    base_path = getattr(sys, "_MEIPASS", os.path.abspath("../"))
+    if BUILD_NUITKA:
+        base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    else:
+        base_path = getattr(sys, "_MEIPASS", os.path.abspath("../"))
     full_path = os.path.join(base_path, relative_path)
     log.debug("Resource Path (relative %s): %s", relative_path, full_path)
     return full_path
@@ -384,6 +391,8 @@ KEY_INVOICE_OPTION = "invoice_option"
 DEFAULT_INVOICE_OPTION = EInvoiceOption.ZUGFERD
 KEY_QR_CODE = "qr_code"
 DEFAULT_QR_CODE = False
+KEY_BEVERAGE_MODE = "beverage_mode"
+DEFAULT_BEVERAGE_MODE = False
 
 KEY_CONTACTS_COLUMN = "contacts"
 KEY_DOCUMENT_COLUMN = "document"
@@ -747,6 +756,34 @@ def read_qr_code_settings() -> bool:
     finally:
         handle.endGroup()
     return qr_code
+
+
+def write_beverage_mode(enabled: bool) -> None:
+    """!
+    @brief Writes the beverage dealer mode setting to persistent storage.
+    @param enabled : True to enable beverage dealer mode.
+    """
+    handle = get_settings_handle()
+    handle.beginGroup(SECTION_SETTINGS)
+    handle.setValue(KEY_BEVERAGE_MODE, enabled)
+    handle.endGroup()
+
+
+def read_beverage_mode() -> bool:
+    """!
+    @brief Reads the beverage dealer mode setting from persistent storage.
+    @return True if beverage dealer mode is enabled.
+    """
+    handle = get_settings_handle()
+    try:
+        handle.beginGroup(SECTION_SETTINGS)
+        enabled = bool(get_registry_value(handle, KEY_BEVERAGE_MODE) == "true")
+    except Exception as e:
+        log.debug("Beverage mode not found, using default values (%s)", str(e))
+        enabled = DEFAULT_BEVERAGE_MODE
+    finally:
+        handle.endGroup()
+    return enabled
 
 
 def write_table_column(key: str, config: dict[str, bool]) -> None:
