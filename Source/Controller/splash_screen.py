@@ -11,14 +11,14 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt
 
-from Source.version import __title__, __version__
+from Source.version import APP_NAME, __version__
 from Source.version import BUILD_NAME
 from Source.Util.app_data import IMG_SPLASH
 from Source.Views.dialogs.dialog_splash_ui import Ui_SplashScreen
 
 MIN_SPLASH_SCREEN_TIME = 2.0  # minimum splash screen time in s
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def create_splash_screen() -> QDialog:
@@ -33,7 +33,7 @@ def create_splash_screen() -> QDialog:
     ui_splash = Ui_SplashScreen()
     ui_splash.setupUi(splash)
     ui_splash.lbl_icon_placeholder.setPixmap(QPixmap(IMG_SPLASH))
-    ui_splash.lbl_productName.setText(__title__)
+    ui_splash.lbl_productName.setText(APP_NAME)
     ui_splash.lbl_version.setText(f"v{__version__}")
 
     # set color black anyway to be visible on Windows 11

@@ -13,14 +13,13 @@ import darkdetect
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QDialog  # pylint: disable=unused-import
 
-from Source.version import __title__
 from Source.Util.app_data import ETheme, DEFAULT_WIN_WIDTH, DEFAULT_WIN_HEIGHT, read_window_state, write_window_state, \
     read_theme_settings, write_theme_settings, ICON_THEME_LIGHT, ICON_THEME_DARK, ICON_HELP_LIGHT, ICON_HELP_DARK, ICON_APP, \
     ICON_GITHUB_LIGHT, ICON_GITHUB_DARK
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class MonitorScale:

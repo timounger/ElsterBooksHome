@@ -9,6 +9,15 @@
 | 🚀 Verbesserungen | Optimierungen, Performance, Reworks      |
 | 📚 Dokumentation  | Änderungen an Dokumentation & Texten     |
 
+## [v0.6.1](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.6.1) latest
+
+- 🔧 Umsatzsteuererklärung/Voranmeldung auf ganze Euro runden
+- 🔧 PDF wird nach öffnen dem Schließen wieder freigegeben
+- 🔧 GIT Repo crash fix
+- 🔧 Gemini Modell update
+- 🚀 ZUGFeRD Schema Update auf Version 2.5
+- 🚀 Fokus auf Widgets beim scrollen entfernt (kein anhalten mehr auf dem Element)
+
 ## [v0.6.0](https://github.com/timounger/ElsterBooksHome/releases/tag/v0.6.0) latest
 
 - ✨ Artikel Vorlagen erstellbar

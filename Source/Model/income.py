@@ -11,12 +11,11 @@ from typing import Any
 from datetime import datetime, timedelta
 from fints.client import Transaction
 
-from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import add_receipt, read_json_files, remove_receipt, EReceiptFields, \
     read_json_file, validate_data, RECEIPT_TEMPLATE, get_file_names_in_folder, clean_data, DATE_FORMAT_JSON
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 INCOME_FOLDER = "income"
 INCOME_FILE_PATH = os.path.join(INCOME_FOLDER, "files")
@@ -93,6 +92,7 @@ def check_paid_income(path: str, transactions: list[Transaction], validate_only:
     @param path : data directory path.
     @param transactions : list of bank transactions to match against.
     @param validate_only : True to only validate existing matches, False to update payment dates.
+    @return Number of matched transactions.
     """
     today = datetime.now()
     matched_count = 0

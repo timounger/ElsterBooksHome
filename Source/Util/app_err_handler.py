@@ -16,13 +16,12 @@ from types import TracebackType
 from PyQt6.QtWidgets import QMessageBox, QApplication
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from Source.version import __title__
 from Source.Util.app_data import clear_settings
 
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 B_CLOSE_WITH_REPAIR_DIALOG = False
 

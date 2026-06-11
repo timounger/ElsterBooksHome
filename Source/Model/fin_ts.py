@@ -22,14 +22,13 @@ from fints.hhd.flicker import terminal_flicker_unix
 
 from PyQt6.QtWidgets import QMessageBox, QInputDialog, QPlainTextEdit
 
-from Source.version import __title__
 from Source.Util.app_data import EXPORT_PATH, FINTS_INSTITUTE_FILE
 from Source.Util.openpyxl_util import XLSCreator, NUMBER_FORMAT_EUR, NUMBER_FORMAT_DATETIME, COLOR_RED
 from Source.Model.data_handler import DATE_FORMAT_JSON, delete_file
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 GUI_INPUT = True
 WRITE_SESSION_DATA = False

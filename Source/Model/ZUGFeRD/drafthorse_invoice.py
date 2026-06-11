@@ -26,7 +26,6 @@ from drafthorse.models.references import AdditionalReferencedDocument
 from drafthorse.models.payment import PaymentMeans
 from drafthorse.pdf import attach_xml
 
-from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH, run_subprocess
 from Source.Model.data_handler import DATE_FORMAT_XML, delete_file
 from Source.Model.ZUGFeRD.drafthorse_data import EN_16931
@@ -35,10 +34,10 @@ from Source.Model.contacts import EContactFields, CONTACT_ADDRESS_FIELD, CONTACT
 from Source.Model.company import ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_CONTACT_FIELD, \
     COMPANY_PAYMENT_FIELD, COMPANY_DEFAULT_FIELD
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
-FACTURE_X_EN16931_SCHEMA_FILE = "3_Factur-X_1.08_EN16931/FACTUR-X_EN16931.xsd"
-FACTURE_X_EXTENDED_SCHEMA_FILE = "4_Factur-X_1.08_EXTENDED/FACTUR-X_EXTENDED.xsd"
+FACTURE_X_EN16931_SCHEMA_FILE = "3_Factur-X_1.09_EN16931/Factur-X_1.09_EN16931.xsd"
+FACTURE_X_EXTENDED_SCHEMA_FILE = "4_Factur-X_1.09_EXTENDED/Factur-X_1.09_EXTENDED.xsd"
 
 TAX_TYPE = "VAT"  # fixed value
 TAX_CODE = "FC"

@@ -8,7 +8,6 @@
 import logging
 from typing import TYPE_CHECKING
 
-from Source.version import __title__
 from Source.Util.app_data import KEY_EXPENDITURE_COLUMN
 from Source.Controller.dialog_receipt import EReceiptType
 from Source.Controller.tab_receipt_base import TabReceiptBase
@@ -18,7 +17,7 @@ from Source.Model.expenditure import check_paid_expenditure
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class TabExpenditure(TabReceiptBase):

@@ -10,14 +10,13 @@ import logging
 import enum
 from typing import Any
 
-from Source.version import __title__
 from Source.Model.data_handler import read_json_files, add_json, delete_data, fill_data, \
     get_file_name, set_general_json_data
 
 ARTICLE_FOLDER = "articles"
 ARTICLE_TYPE = "article"
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 JSON_VERSION_ARTICLE = "01.00.00"
 

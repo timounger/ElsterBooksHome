@@ -8,11 +8,10 @@
 import logging
 from pydantic import BaseModel
 
-from Source.version import __title__
 from Source.Model.data_handler import is_date_format, MONTH_NAMES, get_pdf_text
 from Source.Model.ocr_recognition import extract_text_with_ocr
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 MAX_DOCUMENT_CHARS = 10000
 MIN_OCR_TEXT = 20  # OCR integration in PDF requires this length, otherwise use Tesseract

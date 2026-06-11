@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import QApplication  # pylint: disable=wrong-import-positio
 from PyQt6.QtCore import QSharedMemory, QTimer  # pylint: disable=wrong-import-position
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from Source.version import __title__, __version__  # pylint: disable=wrong-import-position
+from Source.version import APP_NAME, __version__  # pylint: disable=wrong-import-position
 from Source.Util.app_data import DEFAULT_LOG_LEVEL, ICON_APP  # pylint: disable=wrong-import-position
 from Source.Util.app_err_handler import UncaughtHook  # pylint: disable=wrong-import-position
 from Source.Util.app_log import LogConfig  # pylint: disable=wrong-import-position
@@ -24,7 +24,7 @@ from Source.Controller.main_window import MainWindow  # pylint: disable=wrong-im
 from Source.Controller.splash_screen import create_splash_screen, MIN_SPLASH_SCREEN_TIME  # pylint: disable=wrong-import-position
 # autopep8: on
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def start_application() -> QApplication:
@@ -41,7 +41,7 @@ def start_application() -> QApplication:
     # Set custom Windows app user model ID (taskbar icon)
     try:
         from ctypes import windll  # only exists on windows. # pylint: disable=import-outside-toplevel
-        app_id = f"{__title__}.{__version__}"
+        app_id = f"{APP_NAME}.{__version__}"
         log.debug("Setting explicit app user model ID: %s", app_id)
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(app_id)
     except ImportError:
@@ -81,7 +81,7 @@ def start_application() -> QApplication:
 
 if __name__ == "__main__":
     # Prevent multiple instance
-    shared_memory = QSharedMemory(__title__)  # need to use as global variable
+    shared_memory = QSharedMemory(APP_NAME)  # need to use as global variable
     if not shared_memory.create(1):
         sys.exit("Another instance is already running")
 

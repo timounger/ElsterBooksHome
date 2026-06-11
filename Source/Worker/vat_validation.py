@@ -12,9 +12,7 @@ from zeep import Client
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from Source.version import __title__
-
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 # Rules for valid VAT IDs: https://de.wikipedia.org/wiki/Umsatzsteuer-Identifikationsnummer
 VAT_PATTERNS = {

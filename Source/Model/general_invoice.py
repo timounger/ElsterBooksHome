@@ -17,7 +17,7 @@ import qrcode
 
 from PyQt6.QtWidgets import QMessageBox
 
-from Source.version import __title__
+from Source.version import APP_NAME
 from Source.Util.app_data import EXPORT_PATH, LOGO_ZUGFERD, EInvoiceOption
 from Source.Util.openpyxl_util import XLSCreator
 from Source.Model.data_handler import get_file_name, convert_xlsx_to_pdf, delete_file, \
@@ -27,7 +27,7 @@ from Source.Model.ZUGFeRD.drafthorse_data import INVOICE_TYPE, CURRENCY, \
 from Source.Model.ZUGFeRD.drafthorse_import import create_value_description
 from Source.Model.ZUGFeRD.drafthorse_invoice import add_xml_to_pdf, create_factur_xml, convert_json_to_drafthorse_doc, fill_invoice_data
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 FONT_NAME = "LiberationSans"
 COLOR_LIGHT_GREY = "F2F2F2"
@@ -190,7 +190,7 @@ def convert_json_to_invoice(invoice_data: dict[str, Any], invoice_option: EInvoi
             ws.add_image(img, 'H1')
         if needs_zugferd:
             ws.add_image(Image(LOGO_ZUGFERD), f"A{row}")
-            xls_creator.set_cell(ws, row, 2, f"invoice by {__title__}", bold=True, italic=True)
+            xls_creator.set_cell(ws, row, 2, f"invoice by {APP_NAME}", bold=True, italic=True)
         ws.row_dimensions[row].height = 19
         row += 3
         # title

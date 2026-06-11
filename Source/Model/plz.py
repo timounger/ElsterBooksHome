@@ -9,11 +9,10 @@
 import os
 import logging
 
-from Source.version import __title__
 from Source.Util.app_data import TOOLS_FOLDER
 from Source.Model.data_handler import read_json_file, JSON_TYPE
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 PLZ_FILE = os.path.join(TOOLS_FOLDER, f"plz{JSON_TYPE}")

@@ -6,24 +6,30 @@
 """
 
 import sys
+from importlib import metadata
+
+# Project-specific constants
+APP_NAME = "ElsterBooks"  # lookup key for importlib.metadata
+GITHUB_OWNER = "timounger"
+GITHUB_REPO = "ElsterBooksHome"
+HOMEPAGE_URL = f"https://{GITHUB_OWNER}.github.io/{GITHUB_REPO}"
+REPO_URL = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}"
+REPO_ISSUE_URL = f"{REPO_URL}/issues"
+
+# Standard package metadata
+_META = metadata.metadata(APP_NAME)
+APP_DESCRIPTION = _META["Summary"]
+__author__ = _META["Author"]
+__license__ = _META["License"]
+__version__ = _META["Version"]
+__copyright__ = f"Copyright © 2023-2026 {__author__}"
 
 # Version
-VERSION_MAJOR = 0  # Major changes, breaks API compatibility (e.g. incompatible changes)
-VERSION_MINOR = 6  # Minor changes, API compatible (e.g. new feature)
-VERSION_PATCH = 0  # Bug fixes
-VERSION_BUILD = 0  # Build number (0 = release, >0 = pre-release)
-
-# Project information
-__title__ = "ElsterBooks"
-__description__ = "Buchhaltungssoftware"
-__author__ = "Timo Unger"
-__owner__ = "timounger"
-__repo__ = "ElsterBooksHome"
-__copyright__ = f"Copyright © 2023-2026 {__author__}"
-__license__ = "GNU General Public License"
-__website__ = f"https://{__owner__}.github.io/{__repo__}"
-__home__ = f"https://github.com/{__owner__}/{__repo__}"
-__issue__ = f"{__home__}/issues"
+_VERSION_PARTS = __version__.split(".")
+VERSION_MAJOR = int(_VERSION_PARTS[0])  # Major changes, breaks API compatibility (e.g. incompatible changes)
+VERSION_MINOR = int(_VERSION_PARTS[1])  # Minor changes, API compatible (e.g. new feature)
+VERSION_PATCH = int(_VERSION_PARTS[2])  # Bug fixes
+VERSION_BUILD = int(_VERSION_PARTS[3]) if len(_VERSION_PARTS) > 3 else 0  # Build number (0 = release, >0 = pre-release)
 
 # Build configuration
 if VERSION_BUILD == 0:
@@ -32,7 +38,8 @@ if VERSION_BUILD == 0:
 else:
     BUILD_PRERELEASE = True
     __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}.{VERSION_BUILD}"
-BUILD_NUITKA = True  # True: Nuitka; False: PyInstaller
+
+BUILD_NUITKA = False  # True: Nuitka; False: PyInstaller
 
 BUILD_NAME: str | None = None  # Name of current build depending on feature flags
 

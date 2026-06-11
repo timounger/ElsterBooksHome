@@ -10,13 +10,12 @@ CLAUDE.md
 /Source/plugins
 
 # Documentation
+/Documentation/CRA/sbom.cdx.json
 /Documentation/DoxygenCreator/doxygen-*.windows.x64.bin.zip
 /Documentation/DoxygenCreator/doxygen.exe
 /Documentation/DoxygenCreator/libclang.dll
 /Documentation/DoxygenCreator/plantuml.jar
 /Documentation/DoxygenCreator/Output_Doxygen
-/Documentation/Installation/installed_packages.txt
-/Documentation/Installation/PackageInfos.xlsx
 /Documentation/docs/_assets/images/app.ico
 /Documentation/docs/_assets/images/favicon.ico
 /Documentation/docs/_assets/images/splash.gif
@@ -34,7 +33,7 @@ CLAUDE.md
 /Resources/Tools
 
 # Test
-/Test/TestData
+/tools/TestData
 
 # Data
 /Export

@@ -13,13 +13,12 @@ import markdown
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt
 
-from Source.version import __title__
 from Source.Util.app_data import HELP_PATH
 from Source.Views.dialogs.dialog_help_ui import Ui_HelpDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def create_help_dialog(ui: "MainWindow") -> QDialog:

@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QFileDialog
 
-from Source.version import __title__
 from Source.Util.app_log import LogConfig
 from Source.Util.app_data import read_last_dir, write_last_dir, write_output_path_settings, read_output_path_settings, \
     DEFAULT_LAST_PATH, REL_PATH, read_ai_type
@@ -25,7 +24,7 @@ from Source.Worker.mistral_ai import MistralAI
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 WRITE_TEST_FILE_NAME = "_write_test.txt"
 

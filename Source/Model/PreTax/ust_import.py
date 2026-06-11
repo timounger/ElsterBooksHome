@@ -9,10 +9,9 @@ import logging
 from typing import Any
 import fitz  # PyMuPDF
 
-from Source.version import __title__
 from Source.Model.data_handler import EReceiptFields, EReceiptGroup, fill_data, RECEIPT_TEMPLATE, convert_amount
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def check_ust(pdf_path: str) -> bool:

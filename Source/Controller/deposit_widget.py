@@ -12,14 +12,13 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QGroupBox, QGridLayout, \
     QLabel, QSpinBox, QPushButton, QDoubleSpinBox, QComboBox
 
-from Source.version import __title__
 from Source.Model.article import EArticleFields, read_articles
 
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
     from Source.Views.widgets.invoice_item_data_ui import Ui_InvoiceItemData
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class DepositRow:
@@ -91,7 +90,7 @@ class DepositRow:
     def _on_suggestion_selected(self, _index: int) -> None:
         """!
         @brief Auto-fill deposit value when a suggestion is selected from the combo box.
-        @param index : selected combo box index.
+        @param _index : selected combo box index.
         """
         data = self.combo_container.currentData()
         if data and data in self._suggestions:

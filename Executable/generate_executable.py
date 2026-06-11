@@ -19,12 +19,12 @@ from Executable.generate_git_version import generate_git_version_file  # pylint:
 from Executable.generate_version_file import generate_version_file  # pylint: disable=wrong-import-position
 from Executable.check_included_packages import check_included_packages  # pylint: disable=wrong-import-position
 
-from Source.version import __title__, __version__, __description__, __copyright__, BUILD_NUITKA  # pylint: disable=wrong-import-position
+from Source.version import APP_NAME, __version__, APP_DESCRIPTION, __copyright__, BUILD_NUITKA  # pylint: disable=wrong-import-position
 from Source.Util.colored_log import init_console_logging  # pylint: disable=wrong-import-position
-# from Test.py_preprocessor import CONFIG_DEFINES  # pylint: disable=wrong-import-position
+# from tools.py_preprocessor import CONFIG_DEFINES  # pylint: disable=wrong-import-position
 # autopep8: on
 
-log = logging.getLogger("GenerateExecutable")
+log = logging.getLogger(__name__)
 init_console_logging(logging.INFO)
 
 WORKPATH = "build"
@@ -70,7 +70,6 @@ EXCLUDE_MODULES = [
     "mccabe",
     "isort",
     "dill",
-    "tomli",
     "tomlkit",
     "platformdirs",
     "pathspec",
@@ -87,7 +86,6 @@ EXCLUDE_MODULES = [
     "mkdocs_puml",
     "ghp_import",
     "babel",
-    "Markdown",
     "mergedeep",
     "pyyaml_env_tag",
     "watchdog",
@@ -210,7 +208,7 @@ if __name__ == "__main__":
     source_file = "../Source/app.py"
 
     if BUILD_NUITKA:
-        command = [r"..\.venv\Scripts\python", "-m", "nuitka"]
+        command = [sys.executable, "-m", "nuitka"]
         command.append("--standalone")
         command.append("--onefile")  # Disabled for debugging
         command.append("--remove-output")
@@ -220,16 +218,16 @@ if __name__ == "__main__":
 
         # Windows specific
         command.append("--windows-console-mode=disable")  # disable or attach
-        command.append(f"--windows-icon-from-ico=..\\Resources\\app.ico")
+        command.append("--windows-icon-from-ico=..\\Resources\\app.ico")
         command.append(f"--windows-file-version={__version__}")
         command.append(f"--windows-product-version={__version__}")
         command.append(f"--windows-company-name={__copyright__.replace('©', '(c)')}")
-        command.append(f"--windows-product-name={__title__}")
-        command.append(f"--windows-file-description={__title__} - {__description__}")
+        command.append(f"--windows-product-name={APP_NAME}")
+        command.append(f"--windows-file-description={APP_NAME} - {APP_DESCRIPTION}")
 
         # Output
         command.append(f"--output-dir={OUTPUT_DIR}")
-        command.append(f"--output-filename={__title__}.exe")
+        command.append(f"--output-filename={APP_NAME}.exe")
 
         # Include data
         command.extend(get_flag_list("include-data-dir", INCLUDE_DATA_DIRS))
@@ -242,6 +240,9 @@ if __name__ == "__main__":
 
         # Excluded modules
         command.extend(get_flag_list("nofollow-import-to", EXCLUDE_MODULES))
+
+        # Include distribution metadata for importlib.metadata.version()
+        command.append(f"--include-distribution-metadata={APP_NAME}")
 
         # Exclude unused Qt modules to reduce size
         command.append("--noinclude-qt-translations")
@@ -296,14 +297,15 @@ if __name__ == "__main__":
         if result.stdout:
             log.info(result.stdout)
     else:
-        command = [r"..\.venv\Scripts\python", "-m", "PyInstaller", "--clean"]
+        command = [sys.executable, "-m", "PyInstaller", "--clean"]
         command.extend(["--paths", "..\\"])
         command.extend(get_type_list("add-data", add_data))
         command.extend(["--icon", "..\\Resources\\app.ico"])
         command.extend(["--version-file", f"{WORKPATH}\\{VERSION_FILE_NAME}"])
         command.extend(get_type_list("hidden-import", HIDDEN_IMPORT))
+        command.extend(["--copy-metadata", APP_NAME])  # so importlib.metadata.version() works in the exe
         command.extend(get_type_list("exclude-module", EXCLUDE_MODULES))
-        command.extend(["--name", __title__])
+        command.extend(["--name", APP_NAME])
         command.extend(["--onefile", "--noconsole", "--noupx"])
         command.extend(["--distpath", OUTPUT_DIR])
         command.extend(["--workpath", WORKPATH])
@@ -337,7 +339,7 @@ if __name__ == "__main__":
         ret_value = 1
     else:
         if not BUILD_NUITKA:
-            spec_file = f"{__title__}.spec"
+            spec_file = f"{APP_NAME}.spec"
             if os.path.exists(spec_file):
                 os.remove(spec_file)
             if os.path.exists(WORKPATH):

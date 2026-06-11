@@ -12,14 +12,13 @@ from typing import TYPE_CHECKING, Any
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import Qt
 
-from Source.version import __title__
 from Source.Util.app_data import thread_dialog
 from Source.Model.data_handler import tortoise_git_check_for_mod, TORTOISE_GIT_EXE
 from Source.Views.dialogs.dialog_commit_ui import Ui_CommitDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class CommitDialog(QDialog, Ui_CommitDialog):

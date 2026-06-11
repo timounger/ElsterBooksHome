@@ -10,13 +10,12 @@ import logging
 import enum
 from typing import Any
 
-from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import read_json_files, get_file_names_in_folder, validate_data, read_json_file, \
     set_general_json_data, fill_data, get_file_name, add_json, add_appendix, get_date_title, delete_data, PDF_TYPE, \
     clean_data
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 JSON_VERSION_DOCUMENT = "01.00.00"
 

@@ -15,7 +15,6 @@ from PyQt6.QtCore import Qt, QDate, QPoint, QObject, QEvent, QModelIndex, QSortF
 from PyQt6.QtWidgets import QHeaderView, QAbstractItemView, QTabWidget, QMenu, QLabel
 from PyQt6.QtGui import QIcon, QMouseEvent, QShortcut, QKeySequence, QAction, QStandardItemModel, QStandardItem
 
-from Source.version import __title__
 from Source.Util.app_data import ICON_ATTACH_LIGHT, ICON_ATTACH_DARK, ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, \
     ICON_DELETE_LIGHT, ICON_DELETE_DARK, IMG_DROP_FILE, write_table_column, read_table_column, ICON_CONFIG_LIGHT, ICON_CONFIG_DARK, \
     open_explorer, ICON_OPEN_FOLDER_LIGHT, ICON_OPEN_FOLDER_DARK, ICON_INVOICE_LIGHT, ICON_INVOICE_DARK
@@ -49,7 +48,7 @@ DEFAULT_COLUMN_STATUS = {
     "E-Mail": True
 }
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class DropFilter(QObject):

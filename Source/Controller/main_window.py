@@ -13,7 +13,7 @@ from PyQt6.QtGui import QIcon, QCloseEvent
 from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtCore import QTimer
 
-from Source.version import __title__, __issue__
+from Source.version import APP_NAME, REPO_ISSUE_URL
 from Source.version import BUILD_NAME
 from Source.Util.app_data import write_window_state, ETab, group_menu, \
     ICON_HELP_LIGHT, ICON_HELP_DARK, ETheme, read_last_tab, write_last_tab, \
@@ -37,7 +37,7 @@ from Source.Model.data_handler import check_git_changes, commit_all_changes
 from Source.Model.update_service import get_tool_update_status, is_newer_version
 from Source.Worker.update_downloader import delete_temp_update_files
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 STATUS_TEXT_TIME = 3000
 STATUS_HIGHLIGHT_TEXT_TIME = 5000
@@ -66,7 +66,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.init_phase = True
         self.warning_active = False
         self.setupUi(self)
-        self.setWindowTitle(__title__)
+        self.setWindowTitle(APP_NAME)
         self.dialog_help = create_help_dialog(self)
 
         # Init settings
@@ -99,7 +99,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # help
         self.action_help.triggered.connect(self.show_help_dialog)
         self.action_about_app.triggered.connect(lambda: AboutDialog(self))
-        self.action_support.triggered.connect(lambda: webbrowser.open(__issue__))
+        self.action_support.triggered.connect(lambda: webbrowser.open(REPO_ISSUE_URL))
 
         # Set tabs
         self.tab_settings = TabSettings(self, ETab.SETTINGS)  # call settings first -> used in other tabs

@@ -12,11 +12,10 @@ import requests
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from Source.version import __title__
 from Source.Util.app_data import TOOLS_FOLDER
 from Source.Model.data_handler import delete_file
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 DOWNLOAD_TIMEOUT = 5  # timeout for tool download
 TOOLS_DOWNLOAD_LINK = "https://github.com/timounger/ElsterBooksTools/releases/download/latest/Tools.zip"

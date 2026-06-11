@@ -9,14 +9,13 @@
 import logging
 from google import genai
 
-from Source.version import __title__
 from Source.Util.app_data import read_gemini_api_key, read_gemini_model, write_gemini_model, write_gemini_api_key
 from Source.Model.ai_data import InvoiceData, create_user_message, validate_answer
 from Source.Worker.base_ai import BaseAIWorker
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash-lite"  # possible models ["gemini-2.0-flash-lite", "gemini-3-flash-preview"]
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite"  # Possible models see https://ai.google.dev/gemini-api/docs/models?hl=de
 
 
 class GeminiAI(BaseAIWorker):

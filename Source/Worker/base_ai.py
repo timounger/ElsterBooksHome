@@ -11,10 +11,9 @@ from typing import Callable
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from Source.version import __title__
 from Source.Model.ai_data import InvoiceData, get_ai_document_text, EMPTY_INVOICE_DATA
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class BaseAIWorker(QThread):
@@ -84,7 +83,6 @@ class BaseAIWorker(QThread):
         """!
         @brief Query the AI model with document text.
         @param text : document text to parse for invoice data.
-        @return Parsed invoice data or None on failure.
         """
 
     def run(self) -> None:

@@ -10,15 +10,15 @@ import logging
 from typing import Any, TYPE_CHECKING
 
 from PyQt6 import QtWidgets
-from PyQt6.QtCore import QDate, Qt, QObject, QEvent
+from PyQt6.QtCore import QDate, Qt
 from PyQt6.QtGui import QIcon, QPixmap, QAction
 from PyQt6.QtWidgets import QWidget, QDialog, QFileDialog, QVBoxLayout, QPushButton, QHBoxLayout, QMessageBox, QComboBox, QCompleter
 
-from Source.version import __title__
+from Source.version import APP_NAME
 from Source.Util.app_data import EInvoiceOption, ETheme, ICON_EXCEL_LIGHT, ICON_EXCEL_DARK, ICON_SEARCH_LIST_LIGHT, ICON_SEARCH_LIST_DARK, \
     ICON_CROSS_RED, ICON_ARROW_UP_LIGHT, ICON_ARROW_UP_DARK, ICON_ARROW_DOWN_LIGHT, ICON_ARROW_DOWN_DARK, \
     ICON_PDF_LIGHT, ICON_PDF_DARK, ICON_XML_LIGHT, ICON_XML_DARK, ICON_ZUGFERD_LIGHT, ICON_ZUGFERD_DARK, thread_dialog, \
-    write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, try_load_plugin, function_accepts_params, \
+    write_invoice_option, read_invoice_option, write_qr_code_settings, read_qr_code_settings, load_plugins, function_accepts_params, \
     read_beverage_mode
 from Source.Views.dialogs.dialog_invoice_general_ui import Ui_DialogInvoice
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
@@ -46,7 +46,7 @@ from Source.Controller.deposit_widget import DepositWidget
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 MAX_POSITIONS = 100
 DEPOSIT_POSITION_NAME = "Pfand-Ausgleich"
@@ -134,24 +134,13 @@ def config_invoice_type_btn(dialog: Any) -> None:
             dialog.action_create_zugferd.triggered.connect(lambda: dialog.create_invoice(EInvoiceOption.ZUGFERD))
 
 
-class WheelBlocker(QObject):
+def disable_wheel(widget: QWidget) -> None:
     """!
-    @brief Event filter that suppresses mouse wheel events.
-           This class can be installed on widgets to prevent the mouse wheel from
-           triggering scrolling or value changes (for example on QComboBox,
-           QSpinBox, or scrollable widgets).
+    @brief Disable mouse wheel events on a widget to prevent accidental value changes.
+    @param widget : widget to disable wheel events on.
     """
-
-    def eventFilter(self, obj: QObject | None, event: QEvent | None) -> bool:
-        """!
-        @brief Filters events and blocks mouse wheel events.
-        @param obj : Pointer to the object that generated the event.
-        @param event : The event object being processed.
-        @return True if the event is handled (mouse wheel events are ignored); False if event processed normally.
-        """
-        if event is not None and event.type() == QEvent.Type.Wheel:
-            return True   # ignore scroll
-        return super().eventFilter(obj, event)
+    widget.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+    widget.wheelEvent = lambda event: event.ignore()
 
 
 class InvoiceDialog(QDialog, Ui_DialogInvoice):
@@ -171,7 +160,6 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         self.ui = ui
         self.due_days_changed = False  # True=due days changed; False=due date changed
         self.invoice_number = InvoiceNumber(ui)
-        self.blocker = WheelBlocker()
         self.item_widgets: list[Ui_InvoiceItemData] = []
         self.discounts_widgets: list[Ui_InvoiceDiscountsData] = []
         self.surcharges_widgets: list[Ui_InvoiceSurchargesData] = []
@@ -216,6 +204,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
     def ui_invoice_data(self) -> Ui_InvoiceData:
         """!
         @brief Access invoice data UI, asserting it has been initialized.
+        @return Invoice data UI instance.
         """
         assert self._ui_invoice_data is not None
         return self._ui_invoice_data
@@ -357,31 +346,31 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Rechnungsnummer (BT-1)
         dialog.le_invoice_number.setText("")  # updated by set invoice date later
         # Rechnungsdatum (BT-2)
-        dialog.de_invoice_date.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_invoice_date)
         dialog.de_invoice_date.setDate(actual_date)
         dialog.de_invoice_date.dateChanged.connect(self.on_invoice_data_changed)
         self.on_invoice_data_changed(actual_date)
         # Code für den Rechnungstyp (BT-3)
-        dialog.combo_invoice_type.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_invoice_type)
         set_combo_box_items(dialog.combo_invoice_type, "380", INVOICE_TYPE)
         # Code für die Rechnungswährung (BT-5)
-        dialog.combo_currency.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_currency)
         set_combo_box_items(dialog.combo_currency, "EUR", CURRENCY)
         # Fälligkeitsdatum der Zahlung (BT-9)
-        dialog.de_due_date.installEventFilter(self.blocker)
-        dialog.sb_due_days.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_due_date)
+        disable_wheel(dialog.sb_due_days)
         dialog.de_due_date.setDate(actual_date.addDays(self.default_payment_days))
         dialog.sb_due_days.setValue(self.default_payment_days)
         dialog.de_due_date.dateChanged.connect(lambda: self.due_date_changed(False))
         dialog.sb_due_days.valueChanged.connect(lambda: self.due_date_changed(True))
         # Tatsächliches Lieferdatum (BT-72)
-        dialog.de_deliver_date.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_deliver_date)
         dialog.de_deliver_date.setDate(actual_date)
         # Anfangsdatum des Rechnungszeitraums (BT-73)
-        dialog.de_accounting_date_from.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_accounting_date_from)
         dialog.de_accounting_date_from.setDate(actual_date)
         # Enddatum des Rechnungszeitraums (BT-74)
-        dialog.de_accounting_date_to.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_accounting_date_to)
         dialog.de_accounting_date_to.setDate(actual_date)
         # Käuferreferenz (BT-10)
         dialog.le_buyer_reference.setText("")
@@ -394,11 +383,11 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Auftragsnummer (BT-14)
         dialog.le_assignment_number.setText("")
         # Wareneingangsmeldung (BT-15)
-        dialog.de_receiving_advice_referenced_document.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_receiving_advice_referenced_document)
         dialog.le_receiving_referenced_document.setText("")
         dialog.de_receiving_advice_referenced_document.setDate(actual_date)
         # Versandanzeige (BT-16)
-        dialog.de_despatch_advice_referenced_document.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_despatch_advice_referenced_document)
         dialog.le_despatch_advice_referenced_document.setText("")
         dialog.de_despatch_advice_referenced_document.setDate(actual_date)
         # Ausschreibung/Los (BT-17)
@@ -408,7 +397,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Buchungskonto des Käufers (BT-19)
         dialog.le_booking_account_buyer.setText("")
         # Rechnungsreferenz (BT-25, BT-26)
-        dialog.de_invoice_reference.installEventFilter(self.blocker)
+        disable_wheel(dialog.de_invoice_reference)
         dialog.le_booking_account_buyer.setText("")  # ID (BT-25)
         dialog.de_invoice_reference.setDate(actual_date)  # Datum (BT-26)
         # Freitext zur Rechnung (BT-22)
@@ -449,7 +438,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Verkäuferanschrift (BT-37)
         dialog.le_seller_city.setText(company_address[ECompanyFields.CITY])
         # Ländercode der Verkäuferanschrift (BT-40)
-        dialog.combo_seller_country.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_seller_country)
         set_combo_box_items(dialog.combo_seller_country, company_address[ECompanyFields.COUNTRY], COUNTRY_CODE)
         # Kontaktstelle des Verkäufers (BT-41)
         contact_name = f"{company_contact[ECompanyFields.FIRST_NAME]} {company_contact[ECompanyFields.LAST_NAME]}"
@@ -486,7 +475,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Käuferanschrift (BT-52)
         dialog.le_buyer_city.setText("")
         # Ländercode der Käuferanschrift (BT-55)
-        dialog.combo_buyer_country.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_buyer_country)
         set_combo_box_items(dialog.combo_buyer_country, "DE", COUNTRY_CODE)
         # Kontaktstelle des Käufers (BT-56)
         dialog.le_buyer_contact_name.setText("")
@@ -496,7 +485,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         dialog.le_buyer_contact_phone.setText("")
 
         # Code für die Zahlungsart PAYMENT_METHOD (BT-81)
-        dialog.combo_payment_method.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_payment_method)
         set_combo_box_items(dialog.combo_payment_method, "58", PAYMENT_METHOD)
         # Name des Zahlungskontos (BT-85)
         dialog.le_account_holder.setText(company_payment[ECompanyFields.BANK_OWNER])
@@ -526,7 +515,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Stadt der Lieferanschrift (BT-77)
         dialog.le_deliver_city.setText("")
         # Ländercode der Lieferanschrift (BT-80)
-        dialog.combo_deliver_country.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_deliver_country)
         set_combo_box_items(dialog.combo_deliver_country, "DE", COUNTRY_CODE)
         # Stadt der Lieferanschrift (BT-79)
         dialog.le_deliver_region.setText("")
@@ -544,10 +533,10 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Rechnungsgesamtbetrag einschließlich Umsatzsteuer (BT-112)
         set_spin_box_read_only(dialog.dsb_sum_gross, 0.0)
         # Vorauszahlungsbetrag (BT-113)
-        dialog.dsb_paid_amount.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_paid_amount)
         dialog.dsb_paid_amount.setValue(0.0)
         # Rundungsbetrag (BT-114)
-        dialog.dsb_rounded_amount.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_rounded_amount)
         dialog.dsb_rounded_amount.setValue(0.0)
         # Fälliger Zahlungsbetrag (BT-115)
         set_spin_box_read_only(dialog.dsb_amount_due, 0.0)
@@ -757,20 +746,20 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Name (BT-153)
         item_dialog.le_item_name.setText("")
         # Umsatzsteuersatz für den in Rechnung gestellten Artikel (BT-152)
-        item_dialog.dsb_item_vat_rate.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.dsb_item_vat_rate)
         item_dialog.dsb_item_vat_rate.setValue(self.default_tax_rate)
         # Code der Umsatzsteuerkategorie des in Rechnung gestellten Artikels (BT-151)
-        item_dialog.combo_item_vat_code.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.combo_item_vat_code)
         set_combo_box_items(item_dialog.combo_item_vat_code, "S", VAT_CODE)
         # Artikel-Nr. (BT-155)
         item_dialog.le_item_id.setText("")
         # Startdatum (BT-134)
-        item_dialog.de_item_billing_period_start.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.de_item_billing_period_start)
         item_dialog.de_item_billing_period_start.setDate(actual_date)
         item_dialog.de_item_billing_period_start.setEnabled(False)
         item_dialog.lbl_item_billing_period_start.setEnabled(False)
         # Enddatum (BT-135)
-        item_dialog.de_item_billing_period_end.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.de_item_billing_period_end)
         item_dialog.de_item_billing_period_end.setDate(actual_date)
         item_dialog.de_item_billing_period_end.setEnabled(False)
         item_dialog.lbl_item_billing_period_end.setEnabled(False)
@@ -781,19 +770,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Artikelbeschreibung (BT-154)
         item_dialog.pte_item_description.setPlainText("")
         # Menge (BT-129)
-        item_dialog.dsb_item_quantity.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.dsb_item_quantity)
         item_dialog.dsb_item_quantity.setValue(1)
         # Einheit (BT-130) UNIT
-        item_dialog.combo_item_quantity_unit.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.combo_item_quantity_unit)
         set_combo_box_items(item_dialog.combo_item_quantity_unit, "H87", UNIT)
         # Einzelpreis (Netto) (BT-146)
-        item_dialog.dsb_item_net_unit_price.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.dsb_item_net_unit_price)
         item_dialog.dsb_item_net_unit_price.setValue(0.0)
         # Einzelpreis (Brutto)
-        item_dialog.dsb_item_gross_unit_price.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.dsb_item_gross_unit_price)
         item_dialog.dsb_item_gross_unit_price.setValue(0.0)
         # Basismenge zum Artikelpreis (BT-149)
-        item_dialog.dsb_item_basis_quantity.installEventFilter(self.blocker)
+        disable_wheel(item_dialog.dsb_item_basis_quantity)
         item_dialog.dsb_item_basis_quantity.setValue(1)
         # Steuerbetrag
         set_spin_box_read_only(item_dialog.dsb_item_vat_amount, 0.0)
@@ -1071,19 +1060,19 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         @param reason_codes : Reason codes.
         """
         # Grundbetrag (BT-93) (BT-100)
-        dialog.dsb_basis_amount.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_basis_amount)
         set_spin_box_read_only(dialog.dsb_basis_amount, 0.0)
         # Prozent (BT-94) (BT-101)
-        dialog.dsb_percent.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_percent)
         dialog.dsb_percent.setValue(0)
         # Betrag (Netto) (BT-92) (BT-99)
-        dialog.dsb_net_amount.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_net_amount)
         dialog.dsb_net_amount.setValue(0.0)
         # Steuersatz (BT-96) (BT-103)
-        dialog.dsb_vat_rate.installEventFilter(self.blocker)
+        disable_wheel(dialog.dsb_vat_rate)
         dialog.dsb_vat_rate.setValue(self.default_tax_rate)
         # Steuerkategorie (BT-95) (BT-102)
-        dialog.combo_vat_code.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_vat_code)
         set_combo_box_items(dialog.combo_vat_code, "S", VAT_CODE)
         # Betrag Brutto
         set_spin_box_read_only(dialog.dsb_gross_amount, 0.0)
@@ -1098,7 +1087,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Grund (BT-97) (BT-104)
         dialog.le_reason.setText("")
         # Code des Grundes (BT-98) (BT-105)
-        dialog.combo_reason_code.installEventFilter(self.blocker)
+        disable_wheel(dialog.combo_reason_code)
         set_combo_box_items(dialog.combo_reason_code, "", reason_codes)
 
     def discount_price_changed(self, discount_index: int, percent_changed: bool | None) -> None:
@@ -1203,7 +1192,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         # Befreiungsgrund (BT-120)
         tax_dialog.le_exemption_reason.setText("")
         # Code für Befreiungsgrund (BT-121)
-        tax_dialog.combo_exemption_reason_code.installEventFilter(self.blocker)
+        disable_wheel(tax_dialog.combo_exemption_reason_code)
         set_combo_box_items(tax_dialog.combo_exemption_reason_code, "", EXEMPTION_REASON_CODE)
 
     def set_tax_data(self, tax_dialog: Ui_InvoiceTaxData, tax_data: dict[str, Any]) -> None:
@@ -1457,7 +1446,7 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
         """!
         @brief Handle export button click.
         """
-        default_filename = f"{__title__}-Rechnung{JSON_TYPE}"
+        default_filename = f"{APP_NAME}-Rechnung{JSON_TYPE}"
         default_path = os.path.join(self.ui.model.get_last_path(), default_filename)
         selected_path, _ = QFileDialog.getSaveFileName(parent=self.ui, caption="Speichern unter",
                                                        directory=default_path,
@@ -1556,14 +1545,15 @@ class InvoiceDialog(QDialog, Ui_DialogInvoice):
             write_qr_code_settings(create_qr_code)
             custom_invoice = False
             if not custom_invoice:
-                plugin = try_load_plugin("custom_invoice", "plugins/custom_invoice.py")
-                if plugin and hasattr(plugin, "create_custom_invoice"):
-                    func = plugin.create_custom_invoice
-                    if function_accepts_params(func, invoice_data, invoice_option, create_qr_code):
-                        func(invoice_data, invoice_option, create_qr_code)
-                        custom_invoice = True
-                    else:
-                        QMessageBox.warning(self, "Plugin Hinweis", "Dein verwendetes Plugin wird nicht mehr unterstützt.\nEine Rechnung im Standardformat wird erstellt!")
+                for plugin in load_plugins():
+                    if hasattr(plugin, "create_custom_invoice"):
+                        func = plugin.create_custom_invoice
+                        if function_accepts_params(func, invoice_data, invoice_option, create_qr_code):
+                            func(invoice_data, invoice_option, create_qr_code)
+                            custom_invoice = True
+                            break
+                        QMessageBox.warning(self, "Plugin Hinweis",
+                                            f"Plugin '{plugin.__name__}' wird nicht mehr unterstützt.\nEine Rechnung im Standardformat wird erstellt!")
             if not custom_invoice:
                 create_general_invoice(invoice_data, invoice_option, create_qr_code)
 

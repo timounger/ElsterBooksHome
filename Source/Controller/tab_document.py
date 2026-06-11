@@ -12,7 +12,6 @@ from typing import TYPE_CHECKING
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
 
-from Source.version import __title__
 from Source.Util.app_data import KEY_DOCUMENT_COLUMN
 from Source.Controller.table_filter import TableFilter, CellData, ATTACH
 from Source.Controller.dialog_document import DocumentDialog
@@ -21,7 +20,7 @@ from Source.Model.data_handler import PDF_FILE_TYPES, find_file, INVOICE_FILE_EX
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 ROW_DESCRIPTION = ["Datum", ATTACH, "Beschreibung", "ID"]
 ATTACH_IDX = ROW_DESCRIPTION.index(ATTACH)

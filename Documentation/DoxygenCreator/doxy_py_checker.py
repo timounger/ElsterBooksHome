@@ -11,7 +11,7 @@ import argparse
 import ast
 import astunparse
 
-log = logging.getLogger("DoxyPyChecker")
+log = logging.getLogger(__name__)
 
 DEFAULT_PATH = "./"
 IGNORE_PARAMS = ["self", "cls"]

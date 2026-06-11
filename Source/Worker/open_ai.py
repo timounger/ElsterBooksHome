@@ -10,12 +10,11 @@ import logging
 import openai
 from openai import AuthenticationError
 
-from Source.version import __title__
 from Source.Util.app_data import read_gpt_api_key, read_gpt_model, write_gpt_model, write_gpt_api_key
 from Source.Model.ai_data import InvoiceData, create_user_message, validate_answer
 from Source.Worker.base_ai import BaseAIWorker
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 DEFAULT_GPT_MODEL = "gpt-4o-mini"  # possible models ["gpt-4o-mini", "gpt-4o-2024-08-06"]
 

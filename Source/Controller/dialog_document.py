@@ -12,7 +12,6 @@ from typing import Any, TYPE_CHECKING
 from PyQt6.QtWidgets import QDialog
 from PyQt6.QtCore import QDate
 
-from Source.version import __title__
 from Source.Util.app_data import thread_dialog
 from Source.Views.dialogs.dialog_document_ui import Ui_DialogDocument
 from Source.Model.document import remove_document, add_document, EDocumentFields, DOCUMENT_TEMPLATE
@@ -20,7 +19,7 @@ from Source.Model.data_handler import DATE_FORMAT, get_file_name_content
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class DocumentDialog(QDialog, Ui_DialogDocument):

@@ -12,7 +12,7 @@ import os
 import logging
 import git
 
-log = logging.getLogger("GenerateGitVersion")
+log = logging.getLogger(__name__)
 
 GIT_VERSION_FILE_NAME = "git_version.py"
 

@@ -11,12 +11,11 @@ import subprocess
 import enum
 from ollama import chat
 
-from Source.version import __title__
 from Source.Util.app_data import run_subprocess, read_ollama_model, write_ollama_model
 from Source.Model.ai_data import InvoiceData, create_user_message, validate_answer
 from Source.Worker.base_ai import BaseAIWorker
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class EOllamaModel(str, enum.Enum):

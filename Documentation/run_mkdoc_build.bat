@@ -7,6 +7,6 @@ copy "..\Resources\splash.gif" "docs\_assets\images\splash.gif"
 copy "..\Resources\InvoiceImage\zugferd.svg" "docs\_assets\images\zugferd.svg"
 
 rmdir /S /Q public
-..\.venv\Scripts\mkdocs build
+poetry run mkdocs build
 
 pause

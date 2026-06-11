@@ -11,6 +11,6 @@ copy "..\Resources\favicon.ico" "docs\_assets\images\favicon.ico"
 copy "..\Resources\splash.gif" "docs\_assets\images\splash.gif"
 copy "..\Resources\InvoiceImage\zugferd.svg" "docs\_assets\images\zugferd.svg"
 
-..\.venv\Scripts\mkdocs serve
+poetry run mkdocs serve
 
 pause

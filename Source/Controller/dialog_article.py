@@ -14,7 +14,6 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QPushButton, QLab
     QDoubleSpinBox, QPlainTextEdit, QComboBox, QGroupBox, QGridLayout, QMessageBox, \
     QTabWidget, QWidget
 
-from Source.version import __title__
 from Source.Util.app_data import read_beverage_mode
 from Source.Model.article import EArticleFields, ARTICLE_TEMPLATE, read_articles, add_article, remove_article
 from Source.Model.company import ECompanyFields, COMPANY_BOOKING_FIELD
@@ -25,7 +24,7 @@ from Source.Controller.table_filter import TableFilter, CellData
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 ARTICLE_ROW_DESCRIPTION = ["Artikel-Nr.", "Name", "Netto-Preis", "Einheit", "USt.-%", "Gebinde", "Pfand", "ID"]
@@ -37,13 +36,13 @@ class ArticleSelectDialog(QDialog):
     @brief Dialog for selecting an article template to fill into an invoice item.
     """
 
-    def __init__(self, ui: "MainWindow", select_mode: bool = False, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, ui: "MainWindow", select_mode: bool = False) -> None:
         """!
         @brief Initialize article selection dialog.
         @param ui : main window reference.
         @param select_mode : True for article selection (invoice), False for management only (settings).
         """
-        super().__init__(parent=ui, *args, **kwargs)
+        super().__init__(parent=ui)
         self.ui = ui
         self.select_mode = select_mode
         self.selected_article: dict[EArticleFields, Any] | None = None
@@ -158,13 +157,19 @@ class ArticleSelectDialog(QDialog):
 
     def _on_double_click_select(self, _row: int, _col: int, _value: str) -> None:
         """!
-        @brief Handle double-click in select mode — accept the selection.
+        @brief Handle double-click in select mode - accept the selection.
+        @param _row : clicked row index.
+        @param _col : clicked column index.
+        @param _value : value of clicked cell.
         """
         self._accept_selection()
 
     def _on_double_click_edit(self, _row: int, _col: int, _value: str) -> None:
         """!
-        @brief Handle double-click in manage mode — open edit dialog.
+        @brief Handle double-click in manage mode - open edit dialog.
+        @param _row : clicked row index.
+        @param _col : clicked column index.
+        @param _value : value of clicked cell.
         """
         self._edit_article()
 
@@ -210,13 +215,14 @@ class ArticleEditDialog(QDialog):
     """
 
     def __init__(self, ui: "MainWindow", article: dict[EArticleFields, Any] | None = None,
-                 *args: Any, **kwargs: Any) -> None:
+                 parent: QWidget | None = None) -> None:
         """!
         @brief Initialize article edit dialog.
         @param ui : main window reference.
         @param article : existing article data for editing, or None for new article.
+        @param parent : parent widget.
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(parent=parent)
         self.ui = ui
         self.article = article
         self.uid = article[EArticleFields.ID] if article else None

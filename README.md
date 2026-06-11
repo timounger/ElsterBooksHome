@@ -39,7 +39,7 @@ ElsterBooks unterstützt Sie bei der elektronischen Buchführung für Ihr Untern
 
 Im Tool kann über das Menüband (`Hilfe` → `Hilfe anzeigen`) die Hilfe zur Bedienung und Konfiguration aufgerufen werden.
 
-Ausführliche Dokumentation auf der [Homepage](https://timounger.github.io/ElsterBooksHome/)
+Ausführliche Dokumentation auf der [Homepage](https://timounger.github.io/ElsterBooksHome)
 
 ## 🐞 Bugs & 🚀 Verbesserungen
 

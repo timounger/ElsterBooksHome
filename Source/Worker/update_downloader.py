@@ -10,16 +10,16 @@ import requests
 
 from PyQt6.QtCore import QThread, pyqtSignal
 
-from Source.version import __title__, __owner__, __repo__
+from Source.version import APP_NAME, GITHUB_OWNER, GITHUB_REPO
 from Source.Util.app_data import open_subprocess
 from Source.Model.data_handler import delete_file
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 DOWNLOAD_TIMEOUT = 5  # timeout for tool download
-BASIS_VERSION_FILE = f"{__title__}.exe"
-NEW_VERSION_FILE = f"_temp_new_{__title__}.exe"
-OLD_VERSION_FILE = f"_temp_old_{__title__}.exe"
+BASIS_VERSION_FILE = f"{APP_NAME}.exe"
+NEW_VERSION_FILE = f"_temp_new_{APP_NAME}.exe"
+OLD_VERSION_FILE = f"_temp_old_{APP_NAME}.exe"
 UPDATER_SCRIPT = "_temp_updater.bat"
 
 
@@ -65,7 +65,7 @@ class UpdateDownloader(QThread):
         @return True if download succeeded, False otherwise.
         """
         success = False
-        url = f"https://github.com/{__owner__}/{__repo__}/releases/download/{self.latest_version}/{__title__}.exe"
+        url = f"https://github.com/{GITHUB_OWNER}/{GITHUB_REPO}/releases/download/{self.latest_version}/{APP_NAME}.exe"
         # download update
         try:
             response = requests.get(url, stream=True, timeout=DOWNLOAD_TIMEOUT)

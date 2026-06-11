@@ -10,9 +10,9 @@ import logging
 import re
 from bs4 import BeautifulSoup
 
-from Source.version import __title__
+from Source.version import APP_NAME
 
-log = logging.getLogger("CheckIncludedPackages")
+log = logging.getLogger(__name__)
 
 # List of third party packages that may be contained in the PyInstaller executable.
 # Has to be manually extended if a new package gets added to the tool.
@@ -120,7 +120,7 @@ ALLOWED_THIRD_PARTY_PACKAGES = [
     "qrcode",
 ]
 
-RELATIVE_PATH = fr"build\{__title__}\xref-{__title__}.html"
+RELATIVE_PATH = fr"build\{APP_NAME}\xref-{APP_NAME}.html"
 
 
 def check_included_packages() -> list[str]:
@@ -137,7 +137,7 @@ def check_included_packages() -> list[str]:
     regex_third_party_name = re.compile(r"(?<=site-packages\/).*", re.IGNORECASE)
     regex_builtin = re.compile(r"\.venv\/lib\/.*.py", re.IGNORECASE)
     regex_builtin_name = re.compile(r"(?<=lib\/).*", re.IGNORECASE)
-    regex_own_packs = re.compile(fr"{__title__}\/.*")
+    regex_own_packs = re.compile(fr"{APP_NAME}\/.*")
 
     # read PyInstaller modulegraph cross reference HTML
     with open(RELATIVE_PATH, mode="r", encoding="utf-8") as html_file:

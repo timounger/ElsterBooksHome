@@ -17,23 +17,24 @@ from openpyxl.drawing.image import Image
 from openpyxl.utils import get_column_letter
 from openpyxl.chart import BarChart, Reference
 
-from Source.version import __title__, __description__, __version__, __copyright__
+from Source.version import APP_NAME, APP_DESCRIPTION, __version__, __copyright__
 from Source.Util.app_data import get_computer_name
 from Source.Util.openpyxl_util import XLSCreator, NUMBER_FORMAT_EUR, NUMBER_FORMAT_PERCENT, NUMBER_FORMAT_DATETIME, \
-    COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_GREY
+    NUMBER_FORMAT_EUR_INT, COLOR_YELLOW, COLOR_RED, COLOR_GREEN, COLOR_GREY
 from Source.Model.company import LOGO_BRIEF_PATH, ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_BOOKING_FIELD
 from Source.Model.data_handler import EReceiptFields, EReceiptGroup, MONTHS_IN_YEAR, \
     DATE_FORMAT_JSON, DATE_TIME_FORMAT, MONTH_NAMES_SHORT, is_date_format, calc_vat_rate
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 TOOL_INFO_NAME = "ToolInfo"
 
 UST_REGULATION_DAYS = 10  # 10 days limit for pretax: verrechnete Umsatzsteuer (Die Regelung zum 10- Tageszeitraum nach § 11 Abs. 2 Satz 2 EStG ist zu beachten.)
 
 FONT_SIZE = 11
+FONT_SIZE_SMALL = 9
 FONT_NAME = "Calibri"
 
 
@@ -274,6 +275,8 @@ class ExportReport:
                 vat_rate_breakdown[vat_rate] = 0  # create empty vat to know present rates for sort
         vat_rate_breakdown_sorted = dict(sorted(vat_rate_breakdown.items(), key=lambda item: item[0], reverse=True))
 
+        relevant_data.sort(key=lambda e: datetime.strptime(e[self.date_field], DATE_FORMAT_JSON) if e[self.date_field] else datetime.min)
+
         receipt_idx = 0
         row = receipt_idx
         for entry in relevant_data:
@@ -414,7 +417,7 @@ class ExportReport:
                 xls_creator.set_cell(worksheet, row, 2, tax_method)
                 row += 2
                 # income
-                xls_creator.set_cell(worksheet, row, 1, "Steuerpflichtige Umsätze")
+                xls_creator.set_cell(worksheet, row, 1, "Steuerpflichtige Umsätze", underline="single")
                 xls_creator.set_cell(worksheet, row, sum_row - 2, "Bemessungsgrundlage")
                 xls_creator.set_cell(worksheet, row, sum_row, "Steuer")
                 tax_sum_row_start = row + 1
@@ -423,13 +426,13 @@ class ExportReport:
                     row += 1
                     tax_sum_row_end = row
                     net_value_cell = f"{get_column_letter(column_number)}{row_number}"
-                    tax_value_cell = f"{get_column_letter(column_number + 1)}{row_number}"
                     xls_creator.set_cell(worksheet, row, 1, f"zum Steuersatz von {vat_rate} Prozent")
-                    xls_creator.set_cell(worksheet, row, sum_row - 1, f"={EReportSheet.INCOME.value}!{net_value_cell}", number_format=NUMBER_FORMAT_EUR)
-                    xls_creator.set_cell(worksheet, row, sum_row, f"={EReportSheet.INCOME.value}!{tax_value_cell}", number_format=NUMBER_FORMAT_EUR)
+                    xls_creator.set_cell(worksheet, row, sum_row - 1, f"=INT({EReportSheet.INCOME.value}!{net_value_cell})", number_format=NUMBER_FORMAT_EUR_INT)
+                    net_col_letter = get_column_letter(sum_row - 1)
+                    xls_creator.set_cell(worksheet, row, sum_row, f"={net_col_letter}{row}*{vat_rate}/100", number_format=NUMBER_FORMAT_EUR)
                 # out tax
                 row += 2
-                xls_creator.set_cell(worksheet, row, 1, "Abziehbare Vorsteuerbeträge")
+                xls_creator.set_cell(worksheet, row, 1, "Abziehbare Vorsteuerbeträge", underline="single")
                 row += 1
                 pre_tax_other_row = row
                 xls_creator.set_cell(worksheet, row, 1, "Vorsteuerbeträge aus Rechnungen von anderen Unternehmern")
@@ -438,22 +441,36 @@ class ExportReport:
                 tax_name = "Umsatzsteuer-Vorauszahlung / Überschuss (Steuer)" if (self.report_type == EReportType.UST_PRE) else "Umsatzsteuer"
                 row += 2
                 ust_row = row
-                xls_creator.set_cell(worksheet, row, 1, tax_name)
+                is_ust_pre = self.report_type == EReportType.UST_PRE
+                xls_creator.set_cell(worksheet, row, 1, tax_name, bold=is_ust_pre)
                 xls_creator.set_cell(worksheet, row, sum_row,
                                      f"=SUM({sum_row_letter}{tax_sum_row_start}:{sum_row_letter}{tax_sum_row_end})-{sum_row_letter}{pre_tax_other_row}",
-                                     number_format=NUMBER_FORMAT_EUR)
+                                     number_format=NUMBER_FORMAT_EUR, bold=is_ust_pre)
                 if self.report_type == EReportType.UST:
                     row += 2
                     ust_already_row = row
                     xls_creator.set_cell(worksheet, row, 1, "Bereits entrichtete Vorsteuerbeträge")
                     xls_creator.set_cell(worksheet, row, sum_row, f"={EReportSheet.PRE_TAX.value}!J{self.pre_tax_sum_row}", number_format=NUMBER_FORMAT_EUR)
                     row += 2
-                    xls_creator.set_cell(worksheet, row, 1, "Noch an die Finanzkasse zu entrichten")
-                    xls_creator.set_cell(worksheet, row, sum_row, f"=({sum_row_letter}{ust_row}-{sum_row_letter}{ust_already_row})", number_format=NUMBER_FORMAT_EUR)
+                    xls_creator.set_cell(worksheet, row, 1, "Noch an die Finanzkasse zu entrichten", bold=True)
+                    xls_creator.set_cell(worksheet, row, sum_row, f"=({sum_row_letter}{ust_row}-{sum_row_letter}{ust_already_row})", number_format=NUMBER_FORMAT_EUR, bold=True)
             case EReportType.EUR | EReportType.GUV:
                 sum_row = 3
                 sum_row_letter = get_column_letter(sum_row)
                 special_groups = [EReceiptGroup.UST_VA, EReceiptGroup.UST]  # write special groups at end
+                elster_col = sum_row + 1
+                elster_income: dict[str, int] = {
+                    EReceiptGroup.UST_VA.value: 18,
+                    EReceiptGroup.COLLECTED_VAT.value: 17,
+                }
+                elster_expenditure: dict[str, int] = {
+                    EReceiptGroup.TRAVEL_EXPENSES.value: 71,
+                    EReceiptGroup.HOMEOFFICE_FLAT.value: 66,
+                    EReceiptGroup.UST_VA.value: 58,
+                    EReceiptGroup.PAID_INPUT_TAX.value: 57,
+                }
+                if self.report_type == EReportType.EUR:
+                    xls_creator.set_cell(worksheet, row, elster_col, "Anlage EÜR Zeile", align="right", font_size=FONT_SIZE_SMALL)
                 # income
                 xls_creator.set_cell(worksheet, row, 1, "1. Betriebseinnahmen (einschl. steuerfreier Betriebseinnahmen)", bold=True)
                 row += 1
@@ -462,9 +479,13 @@ class ExportReport:
                 for income_group, income_net in income_groups_sorted.items():
                     xls_creator.set_cell(worksheet, row, 1, income_group)
                     xls_creator.set_cell(worksheet, row, sum_row, income_net, number_format=NUMBER_FORMAT_EUR)
+                    if self.report_type == EReportType.EUR and income_group in elster_income:
+                        xls_creator.set_cell(worksheet, row, elster_col, elster_income[income_group], align="right", font_size=FONT_SIZE_SMALL)
                     row += 1
-                xls_creator.set_cell(worksheet, row, 1, "Vereinnahmte Umsatzsteuer")
+                xls_creator.set_cell(worksheet, row, 1, EReceiptGroup.COLLECTED_VAT.value)
                 xls_creator.set_cell(worksheet, row, sum_row, f"={EReportSheet.INCOME.value}!L{self.income_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                if self.report_type == EReportType.EUR:
+                    xls_creator.set_cell(worksheet, row, elster_col, elster_income[EReceiptGroup.COLLECTED_VAT.value], align="right", font_size=FONT_SIZE_SMALL)
                 row += 1
                 income_sum_overview_row = row
                 xls_creator.set_cell(worksheet, row, 1, "Summe", bold=True)
@@ -478,9 +499,13 @@ class ExportReport:
                 for expenditure_group, expenditure_net in expenditure_groups_sorted.items():
                     xls_creator.set_cell(worksheet, row, 1, expenditure_group)
                     xls_creator.set_cell(worksheet, row, sum_row, expenditure_net, number_format=NUMBER_FORMAT_EUR)
+                    if self.report_type == EReportType.EUR and expenditure_group in elster_expenditure:
+                        xls_creator.set_cell(worksheet, row, elster_col, elster_expenditure[expenditure_group], align="right", font_size=FONT_SIZE_SMALL)
                     row += 1
-                xls_creator.set_cell(worksheet, row, 1, "Gezahlte Vorsteuerbeträge")
+                xls_creator.set_cell(worksheet, row, 1, EReceiptGroup.PAID_INPUT_TAX.value)
                 xls_creator.set_cell(worksheet, row, sum_row, f"={EReportSheet.EXPENDITURE.value}!L{self.expenditure_sum_row}", number_format=NUMBER_FORMAT_EUR)
+                if self.report_type == EReportType.EUR:
+                    xls_creator.set_cell(worksheet, row, elster_col, elster_expenditure[EReceiptGroup.PAID_INPUT_TAX.value], align="right", font_size=FONT_SIZE_SMALL)
                 row += 1
                 expenditure_sum_overview_row = row
                 xls_creator.set_cell(worksheet, row, 1, "Summe", bold=True)
@@ -626,8 +651,8 @@ class ExportReport:
         ws.sheet_state = "hidden"
         create_time = datetime.now().strftime(DATE_TIME_FORMAT)
         xls_creator.set_cell(ws, 1, 1, f"This export was generated on {create_time} with:")
-        xls_creator.set_cell(ws, 3, 1, __title__, bold=True)
-        xls_creator.set_cell(ws, 4, 1, __description__)
+        xls_creator.set_cell(ws, 3, 1, APP_NAME, bold=True)
+        xls_creator.set_cell(ws, 4, 1, APP_DESCRIPTION)
         xls_creator.set_cell(ws, 5, 1, f"Version: {__version__}")
         xls_creator.set_cell(ws, 6, 1, __copyright__)
         xls_creator.set_cell(ws, 8, 1, f"Device name: {get_computer_name()}")

@@ -21,14 +21,14 @@ from subprocess import CompletedProcess
 import re
 import fitz  # PyMuPDF
 
-from Source.version import __title__
+from Source.version import APP_NAME
 from Source.Util.app_data import ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE, ICON_CIRCLE_WHITE, \
     REL_PATH, TOOLS_FOLDER, run_subprocess, open_subprocess, CREATE_GIT_PATH
 if TYPE_CHECKING:
     from Source.Controller.tab_receipt_base import TabReceiptBase
 # autopep8: on
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 ###########################
 ##      Tools Paths      ##
@@ -90,6 +90,10 @@ class EReceiptGroup(str, enum.Enum):
     """
     UST_VA = "Umsatzsteuer-Voranmeldung"
     UST = "Umsatzsteuererklärung"
+    TRAVEL_EXPENSES = "Fahrtkosten"
+    HOMEOFFICE_FLAT = "Homeoffice-Pauschale"
+    COLLECTED_VAT = "Vereinnahmte Umsatzsteuer"
+    PAID_INPUT_TAX = "Gezahlte Vorsteuerbeträge"
 
 
 RECEIPT_GROUP = {
@@ -735,20 +739,17 @@ def git_cmd(param: list[str]) -> CompletedProcess[str]:
 
 def get_git_repo() -> bool:
     """!
-    @brief Get Git repository with configuration.
-    @return True if using Git CMD, or False if no repository.
+    @brief Check if portable Git is available and a repository exists.
+    @return True if Git is available and a repository exists in the data path.
     """
-    if os.path.isfile(PORTABLE_GIT_EXE):
-        try:
-            _result = git_cmd(["--version"])
-        except Exception:
-            has_repo = False
-        else:
-            has_repo = True
-    else:
-        has_repo = False
-
-    return has_repo
+    git_dir = os.path.join(os.path.abspath(CREATE_GIT_PATH), ".git")
+    if not os.path.isfile(PORTABLE_GIT_EXE) or not os.path.exists(git_dir):
+        return False
+    try:
+        _result = git_cmd(["--version"])
+    except Exception:
+        return False
+    return True
 
 
 def git_rename(old_file_path: str, new_file_path: str) -> None:
@@ -816,8 +817,27 @@ def commit_all_changes(commit_message: str) -> None:
     """
     repo = get_git_repo()
     if repo:
-        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "add", "--all"])  # "-u" for only untracked  --all for all
-        _result = git_cmd(["-C", os.path.abspath(REL_PATH), "commit", "-m", commit_message])
+        ensure_git_config()
+        repo_path = os.path.abspath(REL_PATH)
+        _result = git_cmd(["-C", repo_path, "add", "--all"])  # "-u" for only untracked  --all for all
+        try:
+            git_cmd(["-C", repo_path, "commit", "-m", commit_message])
+        except subprocess.CalledProcessError as e:
+            log.error("Git commit failed: %s", e)
+
+
+def ensure_git_config() -> None:
+    """!
+    @brief Ensure Git user config is set in the repository.
+    """
+    repo_path = os.path.abspath(CREATE_GIT_PATH)
+    try:
+        result = git_cmd(["-C", repo_path, "config", "user.name"])
+        if not result.stdout.strip():
+            raise subprocess.CalledProcessError(1, "git config")
+    except subprocess.CalledProcessError:
+        git_cmd(["-C", repo_path, "config", "user.name", APP_NAME])
+        git_cmd(["-C", repo_path, "config", "user.email", f"{APP_NAME}@local"])
 
 
 def create_repo() -> bool:
@@ -828,6 +848,7 @@ def create_repo() -> bool:
     repo = get_git_repo()
     if not repo:  # create only if not exists
         _result = git_cmd(["-C", CREATE_GIT_PATH, "init"])
+        ensure_git_config()
         success = True
     else:
         success = False

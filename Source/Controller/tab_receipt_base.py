@@ -13,7 +13,6 @@ from fints.client import Transaction
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
 
-from Source.version import __title__
 from Source.Controller.table_filter import TableFilter, CellData, RECEIPT_ROW_DESCRIPTION, ATTACH_IDX, DESCRIPTION_IDX, \
     DATE_IDX
 from Source.Controller.dialog_receipt import ReceiptDialog, EReceiptType
@@ -23,7 +22,7 @@ from Source.Model.company import ECompanyFields, COMPANY_DEFAULT_FIELD
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class TabReceiptBase:

@@ -14,7 +14,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QPixmap, QCloseEvent
 from PyQt6.QtWidgets import QDialog, QLineEdit, QFileDialog
 
-from Source.version import __title__
 from Source.Util.app_data import EAiType, write_ai_type, thread_dialog
 from Source.Util.app_data import ICON_OLLAMA_LIGHT, ICON_OLLAMA_DARK, ICON_OPEN_AI_LIGHT, ICON_OPEN_AI_DARK, \
     ICON_GEMINI, ICON_MISTRAL  # pylint: disable=wrong-import-position
@@ -32,7 +31,7 @@ from Source.Worker.ollama_ai import DEFAULT_OLLAMA_MODEL  # pylint: disable=wron
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def parse_number(text: str) -> float | int | None:

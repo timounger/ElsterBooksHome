@@ -14,9 +14,9 @@ from PyInstaller.utils.win32.versioninfo import VSVersionInfo, FixedFileInfo, St
 
 if __name__ == "__main__":
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from Source.version import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILD, __title__, __description__, __version__, __copyright__  # pylint: disable=wrong-import-position
+from Source.version import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILD, APP_NAME, APP_DESCRIPTION, __version__, __copyright__  # pylint: disable=wrong-import-position
 
-log = logging.getLogger("GenerateVersionFile")
+log = logging.getLogger(__name__)
 # autopep8: on
 
 version_info = VSVersionInfo(
@@ -44,10 +44,10 @@ version_info = VSVersionInfo(
                 StringTable(
                     "040904E4",
                     [
-                        StringStruct("FileDescription", f"{__title__} - {__description__}"),
+                        StringStruct("FileDescription", f"{APP_NAME} - {APP_DESCRIPTION}"),
                         StringStruct("FileVersion", __version__),
                         StringStruct("LegalCopyright", __copyright__),
-                        StringStruct("ProductName", __title__),
+                        StringStruct("ProductName", APP_NAME),
                         StringStruct("ProductVersion", __version__)
                     ])
             ]),

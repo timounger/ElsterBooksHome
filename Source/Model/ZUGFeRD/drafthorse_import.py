@@ -17,7 +17,6 @@ from PyQt6.QtCore import QDate, Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QAbstractSpinBox, QComboBox, QDateEdit, QSpinBox, QDoubleSpinBox, \
     QPlainTextEdit, QLineEdit, QLabel
 
-from Source.version import __title__
 from Source.Model.data_handler import convert_to_de_date, DATE_FORMAT_XML, EReceiptFields, fill_data, RECEIPT_TEMPLATE, XML_TYPE
 from Source.Model.ZUGFeRD.drafthorse_data import INVOICE_TYPE, CURRENCY, COUNTRY_CODE, PAYMENT_METHOD, \
     VAT_CODE, UNIT, ALLOWANCE_REASON_CODE, EXEMPTION_REASON_CODE, CHARGE_REASON_CODE
@@ -30,7 +29,7 @@ from Source.Views.widgets.invoice_surcharges_data_ui import Ui_InvoiceSurcharges
 from Source.Views.widgets.invoice_tax_data_ui import Ui_InvoiceTaxData
 from Source.Views.widgets.invoice_data_ui import Ui_InvoiceData
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 ###########################
 ##    Set Widget Utils   ##

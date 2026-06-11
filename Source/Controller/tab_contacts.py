@@ -12,7 +12,6 @@ import re
 from PyQt6.QtCore import QUrl, Qt
 from PyQt6.QtGui import QDesktopServices
 
-from Source.version import __title__
 from Source.Util.app_data import ICON_CONTACT_LIGHT, ICON_CONTACT_DARK, KEY_CONTACTS_COLUMN
 from Source.Controller.table_filter import TableFilter, CellData
 from Source.Controller.dialog_contact import ContactDialog, EMAIL_REGEX
@@ -23,7 +22,7 @@ from Source.Model.company import ECompanyFields, COMPANY_ADDRESS_FIELD, COMPANY_
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 EMAIL = "E-Mail"
 ROW_DESCRIPTION = ["Handelspartner", "Kontaktperson", "Straße", "PLZ", "Ort", EMAIL, "ID"]

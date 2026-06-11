@@ -10,12 +10,11 @@ import enum
 import logging
 from typing import Any
 
-from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import read_json_file, validate_data, read_json_files, \
     add_json, fill_data, set_general_json_data
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 JSON_VERSION_COMPANY = "02.03.00"
 
@@ -133,7 +132,7 @@ COMPANY_TEMPLATE = {
     COMPANY_BOOKING_FIELD: {
         ECompanyFields.SMALL_BUSINESS_REGULATION: False,  # True: no UST; False: regular with UST
         ECompanyFields.PROFIT_CALCULATION_CAPITAL: False,  # True: GUV; False: EUR
-        ECompanyFields.AGREED_COST: True,  # True: vereinbarte Entgeld; False: Vereinnahme Entgeld
+        ECompanyFields.AGREED_COST: True,  # True: vereinbarte Entgelt; False: Vereinnahme Entgelt
         ECompanyFields.TAX_RATES: DEFAULT_TAX_RATES  # list with typical tax rates. first used as default
     },
     COMPANY_DEFAULT_FIELD: {

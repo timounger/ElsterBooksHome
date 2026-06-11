@@ -10,12 +10,12 @@ import logging
 import requests
 from packaging.version import Version, InvalidVersion
 
-from Source.version import __title__, __version__, __owner__, __repo__
+from Source.version import __version__, GITHUB_OWNER, GITHUB_REPO
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 REQUEST_TIMEOUT = 5
-UPDATE_API_URL = f"https://api.github.com/repos/{__owner__}/{__repo__}/releases/latest"
+UPDATE_API_URL = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/releases/latest"
 
 
 def is_newer_version(current_version: str, latest_version: str) -> bool:

@@ -18,7 +18,6 @@ from PyQt6.QtPdf import QPdfDocument
 from PyQt6.QtPdfWidgets import QPdfView
 from PyQt6 import sip
 
-from Source.version import __title__
 from Source.Util.app_data import ICON_SEARCH_LIST_LIGHT, ICON_SEARCH_LIST_DARK, EAiType, thread_dialog, \
     ICON_ARROW_LEFT_LIGHT, ICON_ARROW_LEFT_DARK, ICON_ARROW_RIGHT_LIGHT, ICON_ARROW_RIGHT_DARK, ICON_WARNING, \
     DocView, read_last_doc_view, write_last_doc_view
@@ -38,7 +37,7 @@ from Source.Model.ai_data import InvoiceData
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class EReceiptType(str, enum.Enum):
@@ -277,12 +276,12 @@ class ReceiptDialog(QDialog, Ui_DialogReceipt):
         self.le_group.addAction(action, QLineEdit.ActionPosition.TrailingPosition)
         self.show()
         self.exec()
+        # Release Windows file handle on PDF
+        self.pdf_view.setDocument(None)
+        self.pdf_document.close()
+        sip.delete(self.pdf_document)
         # Execute pending delete after dialog is closed
         if self._pending_delete and self.uid is not None:
-            # Destroy C++ QPdfDocument object to release Windows file handle
-            self.pdf_view.setDocument(None)
-            self.pdf_document.close()
-            sip.delete(self.pdf_document)
             match self.receipt_type:
                 case EReceiptType.INCOME:
                     delete_income(self.ui.model.data_path, self.uid)

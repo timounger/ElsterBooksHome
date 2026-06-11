@@ -28,8 +28,8 @@
       "type": "debugpy",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "request": "launch",
-      "program": "${workspaceFolder}/Test/py_preprocessor.py",
-      "cwd": "${workspaceFolder}/Test",
+      "program": "${workspaceFolder}/tools/py_preprocessor.py",
+      "cwd": "${workspaceFolder}/tools",
       "args": [],
       "console": "integratedTerminal",
       "justMyCode": false
@@ -39,8 +39,8 @@
       "type": "debugpy",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "request": "launch",
-      "program": "${workspaceFolder}/Test/create_demo_data.py",
-      "cwd": "${workspaceFolder}/Test",
+      "program": "${workspaceFolder}/tools/create_demo_data.py",
+      "cwd": "${workspaceFolder}/tools",
       "args": [],
       "console": "integratedTerminal",
       "justMyCode": false
@@ -50,8 +50,8 @@
       "type": "debugpy",
       "python": "${workspaceFolder}/.venv/Scripts/python.exe",
       "request": "launch",
-      "program": "${workspaceFolder}/Test/doxygen_to_google_doc.py",
-      "cwd": "${workspaceFolder}/Test",
+      "program": "${workspaceFolder}/tools/doxygen_to_google_doc.py",
+      "cwd": "${workspaceFolder}/tools",
       "args": [],
       "console": "integratedTerminal",
       "justMyCode": false

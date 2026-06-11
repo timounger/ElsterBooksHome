@@ -8,7 +8,6 @@
 import logging
 from typing import Any, TYPE_CHECKING
 
-from Source.version import __title__
 from Source.Util.app_data import KEY_INCOME_COLUMN, ICON_INVOICE_LIGHT, ICON_INVOICE_DARK
 from Source.Controller.table_filter import INVOICE_NUMBER_IDX
 from Source.Controller.dialog_receipt import EReceiptType
@@ -19,7 +18,7 @@ from Source.Model.income import check_paid_income
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class TabIncome(TabReceiptBase):

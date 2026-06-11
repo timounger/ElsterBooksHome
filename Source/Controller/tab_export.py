@@ -17,7 +17,6 @@ import fitz  # PyMuPDF
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtWidgets import QFileDialog
 
-from Source.version import __title__
 from Source.Util.app_data import EXPORT_PATH, REL_PATH, open_explorer, GIT_IGNORE_FILE, CREATE_GIT_PATH, \
     ICON_OPEN_FOLDER_LIGHT, ICON_OPEN_FOLDER_DARK, ICON_GIT_COMMIT, ICON_GIT_PULL, ICON_GIT_PUSH, ICON_CREATE_REPO
 from Source.Model.data_handler import PDF_FILE_TYPES, MONTH_NAMES, create_repo, check_git_changes, commit_all_changes, \
@@ -31,7 +30,7 @@ from Source.Controller.dialog_banking import BankingDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 NO_SPEC = "Keine Angabe"
 QUARTER_NAMES = ["I. Kalendervierteljahr", "II. Kalendervierteljahr", "III. Kalendervierteljahr", "IV. Kalendervierteljahr"]

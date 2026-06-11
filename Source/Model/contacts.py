@@ -10,7 +10,6 @@ import logging
 import enum
 from typing import Any
 
-from Source.version import __title__
 from Source.Util.app_data import SCHEMATA_PATH
 from Source.Model.data_handler import read_json_file, validate_data, read_json_files, \
     add_json, delete_data, fill_data, get_file_name, set_general_json_data
@@ -19,7 +18,7 @@ CONTACT_FOLDER = "contacts"
 CONTACT_TYPE = "contact"
 CONTACT_SCHEMA_FILE = "contact_schema.json"
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 JSON_VERSION_CONTACT = "02.00.00"
 # JSON_VERSION_CONTACT_V1 = "01.00.00" # until 22.06.2025 (changing break)

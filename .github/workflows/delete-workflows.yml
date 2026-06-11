@@ -1,93 +1,67 @@
 ---
 # ------------------------------------------------------------------------------
-# Delete Workflows
-# https://github.com/Mattraks/delete-workflow-runs
+# Delete old workflow runs via the GitHub CLI (no third-party action).
+# Doc: https://cli.github.com/manual/gh_run_delete
 # ------------------------------------------------------------------------------
 name: Delete Workflows
 
-# ------------------------------------------------------------------------------
-# Token Permission
-# ------------------------------------------------------------------------------
+# Only the actions scope is needed to list/delete workflow runs.
 permissions:
   actions: write
-  checks: none
-  contents: none
-  deployments: none
-  id-token: none
-  issues: none
-  discussions: none
-  packages: none
-  pages: none
-  pull-requests: none
-  repository-projects: none
-  security-events: none
-  statuses: none
 
-# --------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # WORKFLOW TRIGGER
-# --------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 on:
+  schedule:
+    - cron: "0 3 1 * *"  # 03:00 UTC on the 1st of every month
   workflow_dispatch:
     inputs:
-      days:
-        description: "Number of days."
+      retain_days:
+        description: "Delete runs older than this many days."
         required: true
-        default: "0"
-      minimum_runs:
-        description: "The minimum runs to keep for each workflow."
-        required: true
-        default: "0"
-      delete_workflow_pattern:
-        description: "The name or filename of the workflow. if not set then it will target all workflows."
-        required: false
-      delete_workflow_by_state_pattern:
-        description: "Remove workflow by state: active, deleted, disabled_fork, disabled_inactivity, disabled_manually"
-        required: true
-        default: "ALL"
-        type: choice
-        options:
-          - "ALL"
-          - active
-          - deleted
-          - disabled_inactivity
-          - disabled_fork
-          - disabled_manually
-      delete_run_by_conclusion_pattern:
-        description: "Remove workflow by conclusion: action_required, cancelled, failure, skipped, success"
-        required: true
-        default: "ALL"
-        type: choice
-        options:
-          - "ALL"
-          - action_required
-          - cancelled
-          - failure
-          - skipped
-          - success
+        default: "30"
       dry_run:
-        description: "Only log actions, do not perform any delete operations."
-        required: false
+        description: "Only log what would be deleted, do not delete."
         type: boolean
+        default: false
 
-# --------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # WORKFLOW JOBS
-# --------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 jobs:
   delete-runs:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Delete workflow runs
-        uses: Mattraks/delete-workflow-runs@v2
-        with:
-          token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          retain_days: ${{ github.event.inputs.days }}
-          keep_minimum_runs: ${{ github.event.inputs.minimum_runs }}
-          use_daily_retention: false
-          delete_workflow_pattern: ${{ github.event.inputs.delete_workflow_pattern }}
-          delete_workflow_by_state_pattern: ${{ github.event.inputs.delete_workflow_by_state_pattern }}
-          delete_run_by_conclusion_pattern: ${{ github.event.inputs.delete_run_by_conclusion_pattern }}
-          dry_run: ${{ github.event.inputs.dry_run }}
-          check_branch_existence: false
-          check_pullrequest_exist: false
+      - name: Delete old workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RETAIN_DAYS: ${{ github.event.inputs.retain_days || '30' }}
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+        run: |
+          set -euo pipefail
+          cutoff=$(date -u -d "-${RETAIN_DAYS} days" +%s)
+          echo "Deleting completed runs older than ${RETAIN_DAYS} days (before $(date -u -d "@$cutoff")); dry_run=${DRY_RUN}"
+          # Only completed runs can be deleted (in-progress runs return HTTP 403).
+          ids=$(gh run list --repo "$GITHUB_REPOSITORY" --limit 1000 \
+            --json databaseId,createdAt,status \
+            --jq ".[] | select(.status == \"completed\" and (.createdAt | fromdateiso8601) < $cutoff) | .databaseId")
+          if [ -z "$ids" ]; then
+            echo "No runs to delete."
+            exit 0
+          fi
+          echo "$ids" | while read -r id; do
+            [ -z "$id" ] && continue
+            if [ "$id" = "${{ github.run_id }}" ]; then
+              echo "Skip current run $id"
+              continue
+            fi
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "[dry-run] would delete run $id"
+            elif gh run delete --repo "$GITHUB_REPOSITORY" "$id"; then
+              echo "Deleted run $id"
+            else
+              echo "Could not delete run $id (skipped)"
+            fi
+          done

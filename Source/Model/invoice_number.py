@@ -12,13 +12,12 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QDate
 
-from Source.version import __title__
 from Source.Model.data_handler import EReceiptFields, DATE_FORMAT
 from Source.Model.company import COMPANY_DEFAULT_FIELD, ECompanyFields
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class SeqReset(str, enum.Enum):

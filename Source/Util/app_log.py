@@ -8,12 +8,11 @@
 import logging
 from typing import TYPE_CHECKING
 
-from Source.version import __title__
 from Source.Util.colored_log import get_format, ColorFormatter, LOG_DATE_FORMAT
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 formatter = logging.Formatter(fmt=get_format(line_no=False, threads=False), datefmt=LOG_DATE_FORMAT)
 color_formatter = ColorFormatter(line_no=True, threads=True, date_format=None)
 

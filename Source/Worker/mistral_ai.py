@@ -11,12 +11,11 @@ import json
 from pydantic import ValidationError
 from mistralai import Mistral
 
-from Source.version import __title__
 from Source.Util.app_data import read_mistral_api_key, read_mistral_model, write_mistral_model, write_mistral_api_key
 from Source.Model.ai_data import InvoiceData, create_user_message, validate_answer
 from Source.Worker.base_ai import BaseAIWorker
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 DEFAULT_MISTRAL_MODEL = "mistral-small-latest"  # possible models ["mistral-small-latest", "mistral-medium-latest"]
 

@@ -17,7 +17,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QColor, QPixmap, QFont
 from PyQt6.QtWidgets import QGraphicsSimpleTextItem
 
-from Source.version import __title__
 from Source.Model.company import LOGO_BRIEF_PATH, validate_company
 from Source.Model.data_handler import EReceiptFields, DATE_FORMAT_JSON, MONTH_NAMES_SHORT, MONTHS_IN_YEAR
 from Source.Model.income import get_income_files, validate_income
@@ -29,7 +28,7 @@ from Source.Views.tabs.tab_dashboard_ui import Ui_Dashboard
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 def round_to_nearest_integer(number: float, round_len: int = 2) -> int:

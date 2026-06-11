@@ -7,31 +7,33 @@ name: ElsterBooks CI
 
 # ------------------------------------------------------------------------------
 # Token Permission
+# Doc: https://docs.github.com/de/actions/reference/workflow-syntax-for-github-actions#permissions
 # ------------------------------------------------------------------------------
 permissions:
   actions: write
+  artifact-metadata: none
+  attestations: none
   checks: none
   contents: write
   deployments: none
-  id-token: none
-  issues: none
   discussions: none
+  id-token: none  # only write|none
+  issues: none
+  models: none  # only read|none
   packages: none
   pages: write
   pull-requests: write
   repository-projects: none
   security-events: none
   statuses: none
+  vulnerability-alerts: none  # only read|none
 
 defaults:
   run:
     shell: cmd
 
 env:
-  PYTHON_VERSION: 3.11.9
-  PYTHON_ARCH: x64
-  PYTHON_PACKAGE_INST_PATH: ./Documentation/Installation
-  PYTHON_PACKAGE_INST_FILE: install_packages.bat
+  POETRY_VIRTUALENVS_IN_PROJECT: "true"
   MKDOCSTRINGS_OUTPUT_NAME: public
   MKDOCSTRINGS_OUTPUT_PATH: ./Documentation/public
   BINARY_EXE_NAME: bin_Exe
@@ -45,7 +47,7 @@ on:
     branches:
       - test_version
     paths:
-      - "Source/version.py"
+      - "pyproject.toml"
   workflow_dispatch:  # Allows you to run this workflow manually from the Actions tab
     inputs:
       create_release:
@@ -57,20 +59,47 @@ on:
 # WORKFLOW JOBS
 # ------------------------------------------------------------------------------
 jobs:
+  check-version:
+    # Gate: on push, continue only if the version in pyproject.toml actually changed.
+    # Always runs (never skipped) so dependent jobs are not auto-skipped on workflow_dispatch.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - name: Compare version field with previous commit
+        id: diff
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          prev=$(git show HEAD~1:pyproject.toml | grep -m1 '^version' | cut -d'"' -f2 || echo "")
+          curr=$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)
+          echo "previous=$prev current=$curr"
+          if [ "$prev" != "$curr" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+  # ------------------------------------------------------------------------------
   doc-MkDocStrings:
+    needs: check-version
+    if: (github.event_name == 'push' && needs.check-version.outputs.changed == 'true')
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup Python & Poetry
+        uses: ./.github/actions/setup-python-poetry
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ env.PYTHON_ARCH }}
-      - name: Install Packages
-        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
-        run: ${{ env.PYTHON_PACKAGE_INST_FILE }}
+          groups: source,docs
       - name: Run MkDocStrings
         working-directory: ./Documentation
         run: run_mkdoc_build.bat
@@ -99,28 +128,17 @@ jobs:
           publish_dir: ${{ env.MKDOCSTRINGS_OUTPUT_PATH }}
   # ------------------------------------------------------------------------------
   build-Exe:
-    if: (github.event_name == 'push')
+    needs: check-version
+    if: (github.event_name == 'push' && needs.check-version.outputs.changed == 'true')
     runs-on: windows-latest
     timeout-minutes: 120
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - name: Setup Python & Poetry
+        uses: ./.github/actions/setup-python-poetry
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          architecture: ${{ env.PYTHON_ARCH }}
-      - name: Install Packages
-        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
-        run: ${{ env.PYTHON_PACKAGE_INST_FILE }}
-      - name: Get Package list
-        working-directory: ${{ env.PYTHON_PACKAGE_INST_PATH }}
-        run: get_package_list.bat
-      - name: Upload Package list
-        uses: actions/upload-artifact@v7
-        with:
-          name: installed_packages.txt
-          path: ./Documentation/Installation/installed_packages.txt
+          groups: source,exec
       - name: Build Executable
         working-directory: ./Executable
         run: generate_executable.bat
@@ -146,11 +164,17 @@ jobs:
       - name: Get Commit Message
         shell: bash
         run: echo "commit_message=$(git log -1 --pretty=format:"%s")" >> $GITHUB_ENV
-      - name: Get version from Python file
+      - name: Get version and prerelease status from pyproject.toml
         shell: bash
         run: |
-          version=$(python -c 'from Source.version import __version__; print(__version__)')
-          echo "file_version=${version}" >> $GITHUB_ENV
+          raw=$(grep -m1 '^version' pyproject.toml | cut -d'"' -f2)
+          IFS='.' read -r major minor patch build <<< "$raw"
+          build=${build:-0}
+          if [ "$build" = "0" ]; then
+            echo "file_version=${major}.${minor}.${patch}" >> "$GITHUB_ENV"
+          else
+            echo "file_version=${major}.${minor}.${patch}.${build}" >> "$GITHUB_ENV"
+          fi
       - name: Create tag
         shell: bash
         run: |
@@ -158,7 +182,7 @@ jobs:
           git tag "$tag_name"
           git push origin "$tag_name"
       - name: Create release and upload assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ env.file_version }}
           name: "[ElsterBooks] v${{ env.file_version }}"

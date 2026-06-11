@@ -12,10 +12,9 @@ import fitz  # PyMuPDF
 import pytesseract
 from pytesseract import image_to_string
 
-from Source.version import __title__
 from Source.Util.app_data import TOOLS_FOLDER
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 # https://github.com/tesseract-ocr/tesseract
 TESSERACT_EXE = f"{TOOLS_FOLDER}/Tesseract-OCR/tesseract.exe"

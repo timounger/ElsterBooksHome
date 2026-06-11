@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import QDialog, QVBoxLayout, QTextEdit
 from PyQt6.QtCore import Qt, QTimer, QRectF
 from PyQt6.QtSvg import QSvgRenderer
 
-from Source.version import __title__, __description__, __version__, __website__, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
+from Source.version import APP_NAME, APP_DESCRIPTION, __version__, HOMEPAGE_URL, __copyright__, __license__, GIT_SHORT_SHA, BUILD_NAME
 from Source.Util.app_data import ICON_APP, ICON_UPDATE_LIGHT, ICON_UPDATE_DARK, ICON_TICK_GREEN, ICON_CROSS_RED, thread_dialog, \
     ICON_LICENSE_LIGHT, ICON_LICENSE_DARK, LICENSE_FILE
 from Source.Views.dialogs.dialog_about_ui import Ui_AboutDialog
@@ -24,7 +24,7 @@ from Source.Worker.update_downloader import UpdateDownloader, generate_and_start
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 
 class LicenseDialog(QDialog):
@@ -89,8 +89,8 @@ class AboutDialog(QDialog, Ui_AboutDialog):
 
         self.ui.model.monitor.apply_dialog_theme(self)
 
-        self.lbl_productName.setText(__title__)
-        self.lbl_productDescription.setText(__description__)
+        self.lbl_productName.setText(APP_NAME)
+        self.lbl_productDescription.setText(APP_DESCRIPTION)
 
         if not BUILD_NAME:
             btn_text = ""
@@ -102,7 +102,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
                     btn_text = f"Update auf Version {newer_tool_version} durchführen"
                     self.update_downloader.latest_version = newer_tool_version
                 else:
-                    lbl_text = f"{__title__} ist aktuell"
+                    lbl_text = f"{APP_NAME} ist aktuell"
                     icon = ICON_TICK_GREEN
             else:
                 lbl_text = "Die Versionsaktualität konnte nicht überprüft werden."
@@ -133,7 +133,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         # Version info text
         version_info = f"Version: {__version__}"
         license_text = __license__
-        home_link = f"Home: <a href=\"{__website__}\">{__website__}</a>"
+        home_link = f"Home: <a href=\"{HOMEPAGE_URL}\">{HOMEPAGE_URL}</a>"
         if GIT_SHORT_SHA is not None:
             version_info += f"\nGit SHA: {GIT_SHORT_SHA}"
         if BUILD_NAME:
@@ -146,7 +146,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         self.lbl_home.setText(home_link)
         self.lbl_home.setOpenExternalLinks(True)
         self.imagePlaceholder.setPixmap(QPixmap(ICON_APP))
-        self.setWindowTitle(f"Über {__title__}")
+        self.setWindowTitle(f"Über {APP_NAME}")
         self.setWindowIcon(QIcon(ICON_APP))
 
         self.show()
@@ -243,7 +243,7 @@ class AboutDialog(QDialog, Ui_AboutDialog):
         if success_status:
             # buttons
             self.btn_update.show()
-            self.btn_update.setText(f"Zum Abschließen des Updates hier klicken!\n{__title__} muss anschließend manuell gestartet werden.")
+            self.btn_update.setText(f"Zum Abschließen des Updates hier klicken!\n{APP_NAME} muss anschließend manuell gestartet werden.")
             # icon
             self.lbl_update_icon.hide()
             # label

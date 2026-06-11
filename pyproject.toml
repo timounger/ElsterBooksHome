@@ -1,0 +1,135 @@
+[tool.poetry]
+name = "ElsterBooks"
+version = "0.6.1.0"
+requires-poetry = ">=2.4,<3.0"
+description = "Buchhaltungssoftware"
+authors = ["Timo Unger"]
+license = "GNU General Public License"
+readme = "README.md"
+packages = [{include = "Source"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11, <3.12"
+pip = "^26"
+requests = "^2"
+colorama = "^0"
+GitPython = "^3"
+pillow = "^12"
+
+[tool.poetry.group.source.dependencies]
+PyQt6 = "^6"
+PyQt6-Charts = "^6"
+darkdetect = "0.7.1" # <0.8.0 required by pyqtdarktheme
+pyqtdarktheme = "^2"
+jsonschema = "^4"
+PyMuPDF = "^1"
+drafthorse = "^2025"
+pytesseract = "^0"
+openai = "^2"
+mistralai = "1.5.2" # html lib conflict
+google-genai = "^2"
+ollama = "^0"
+psutil = "^7"
+pywin32 = "^311"
+zeep = "^4"
+tzdata = "^2026"
+reportlab = "^4"
+svglib = "^1"
+fints = "^5"
+qrcode = "^8"
+openpyxl = "3.1.3"  # 3.1.4 has diagram bug
+markdown = "^3" # used by dialog_about.py at runtime
+
+[tool.poetry.group.exec.dependencies]
+pyinstaller = "^6"
+beautifulsoup4 = "^4"
+# Nuitka = "^4"
+# ordered-set = "^4"
+
+[tool.poetry.group.test.dependencies]
+pip-audit = "^2"
+cyclonedx-bom = "^7" # SBOM generation (CRA)
+autopep8 = "^2"
+mypy = "^2"
+pylint = "^4"
+bandit = {extras = ["toml"], version = "^1"} # SAST: scan own source for security issues
+
+[tool.poetry.group.docs.dependencies]
+astunparse = "^1"
+mkdocs-material = "^9"
+mkdocstrings-python = "^2"
+mkdocs_puml = "2.1.0" # httpx lib conflict to install newest google-genai
+mkdocs-minify-plugin = "^0"
+mkdocs-api-autonav = "^0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pylint.main]
+fail-on = ["F", "E", "missing-module-docstring", "missing-class-docstring", "missing-function-docstring"]
+fail-under = 8.0
+jobs = 1
+py-version = 3.11
+recursive = true
+extension-pkg-allow-list = ["PyQt6", "win32crypt", "lxml.etree"]
+extension-pkg-whitelist = ["PyQt6"]
+ignore = ["Views", "Export", "Tools", ".venv"]
+
+[tool.pylint.design]
+max-args = 5
+max-attributes = 7
+max-bool-expr = 5
+max-branches = 12
+max-locals = 15
+max-parents = 7
+max-public-methods = 20
+max-returns = 6
+max-statements = 50
+min-public-methods = 2
+
+[tool.pylint.format]
+max-line-length = 100
+max-module-lines = 1000
+
+[tool.pylint."messages control"]
+disable = ["raw-checker-failed",
+           "bad-inline-option",
+           "locally-disabled",
+           "file-ignored",
+           "suppressed-message",
+           "useless-suppression",
+           "deprecated-pragma",
+           "use-symbolic-message-instead",
+           "use-implicit-booleaness-not-comparison-to-string",
+           "use-implicit-booleaness-not-comparison-to-zero",
+           "line-too-long",
+           "too-many-locals",
+           "too-many-branches",
+           "too-many-statements",
+           "too-many-instance-attributes",
+           "too-many-public-methods",
+           "too-many-arguments",
+           "too-many-lines",
+           "invalid-name",
+           "broad-exception-caught",
+           "fixme"]
+
+[tool.mypy]
+disable_error_code = ["no-untyped-call", "import-untyped"]
+ignore_missing_imports = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = "Source.Views.*"
+ignore_errors = true
+
+[tool.autopep8]
+max_line_length = 200
+in-place = true
+recursive = true
+aggressive = 3
+exclude = "../Source/Views,../Source/Export,../Source/tools"
+
+[tool.bandit]
+exclude_dirs = ["Source/Views"]  # generated PyQt UI code

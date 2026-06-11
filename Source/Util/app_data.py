@@ -33,7 +33,7 @@ else:
 from PyQt6.QtCore import QSettings, QByteArray  # pylint: disable=wrong-import-position
 from PyQt6.QtGui import QActionGroup, QAction  # pylint: disable=wrong-import-position
 
-from Source.version import __title__, __author__, running_as_exe, BUILD_NUITKA  # pylint: disable=wrong-import-position
+from Source.version import APP_NAME, __author__, running_as_exe, BUILD_NUITKA  # pylint: disable=wrong-import-position
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 # autopep8: on
@@ -44,7 +44,7 @@ if sys.stdout is None:
 if sys.stderr is None:
     sys.stderr = io.TextIOWrapper(io.BytesIO(), encoding='utf-8')
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 if running_as_exe():
     if BUILD_NUITKA:
@@ -55,11 +55,13 @@ if running_as_exe():
     REL_PATH = "Data"
     TOOLS_FOLDER = "Tools"
     EXPORT_PATH = "Export"
+    PLUGINS_PATH = "plugins"
 else:
     CREATE_GIT_PATH = "../"
     REL_PATH = "../Data"
     TOOLS_FOLDER = "../Resources/Tools"
     EXPORT_PATH = "../Export"
+    PLUGINS_PATH = "plugins"
 
 
 def resource_path(relative_path: str) -> str:
@@ -105,13 +107,10 @@ def run_subprocess(command: list[str]) -> CompletedProcess[str]:
 
 def open_subprocess(command: list[str]) -> None:
     """!
-    @brief Open a subprocess without opening a terminal window (non-blocking).
+    @brief Open a GUI subprocess non-blocking.
     @param command : command line arguments list for subprocess.Popen.
     """
-    startupinfo = subprocess.STARTUPINFO()
-    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    with subprocess.Popen(command, text=True, startupinfo=startupinfo):
-        pass
+    subprocess.Popen(command, text=True)  # pylint: disable=consider-using-with
 
 
 def get_computer_name() -> str:
@@ -162,18 +161,40 @@ def try_load_plugin(name: str, path: str) -> Any:
     @brief Try to load a Python plugin module from a file path.
     @param name : plugin module name.
     @param path : file path to the plugin module.
-    @return loaded module or None if file not found.
+    @return loaded module or None on failure.
     """
-    if os.path.isfile(path):
+    if not os.path.isfile(path):
+        return None
+    try:
         spec = importlib.util.spec_from_file_location(name, path)
         if spec and spec.loader:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-        else:
-            module = None
-    else:
-        module = None
-    return module
+            return module
+    except Exception as e:
+        log.error("Plugin '%s' konnte nicht geladen werden: %s", name, e)
+    return None
+
+
+def load_plugins(plugin_dir: str | None = None) -> list[Any]:
+    """!
+    @brief Load all plugin modules from a directory.
+    @param plugin_dir : plugin directory path (default: PLUGINS_PATH).
+    @return list of loaded plugin modules.
+    """
+    if plugin_dir is None:
+        plugin_dir = PLUGINS_PATH
+    plugins = []
+    if not os.path.isdir(plugin_dir):
+        return plugins
+    for file_name in sorted(os.listdir(plugin_dir)):
+        if file_name.endswith(".py") and not file_name.startswith("_"):
+            path = os.path.join(plugin_dir, file_name)
+            name = file_name[:-3]
+            module = try_load_plugin(name, path)
+            if module is not None:
+                plugins.append(module)
+    return plugins
 
 
 def function_accepts_params(func: Callable[..., object], *args: object) -> bool:
@@ -310,7 +331,7 @@ FINTS_INSTITUTE_FILE = resource_path("Resources/FinTS/fints_institute NEU mit BI
 
 # Settings Registry
 ORGANIZATION_NAME = __author__
-APPLICATION_NAME = __title__
+APPLICATION_NAME = APP_NAME
 SETTINGS_HANDLE = QSettings(ORGANIZATION_NAME, APPLICATION_NAME)
 
 

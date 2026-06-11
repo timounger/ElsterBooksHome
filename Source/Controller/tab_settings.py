@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING
 
 from PyQt6.QtGui import QPixmap, QFont
 
-from Source.version import __title__
 from Source.Util.app_data import EAiType, ICON_CIRCLE_WHITE, ICON_CIRCLE_GREEN, ICON_CIRCLE_RED, ICON_CIRCLE_ORANGE, \
     read_beverage_mode, write_beverage_mode
 from Source.Model.data_handler import fill_data, get_git_repo
@@ -23,7 +22,7 @@ from Source.Controller.dialog_article import ArticleSelectDialog
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 HEIGHT_OFFSET = 15
 HEIGHT_PER_LINE = 20

@@ -6,6 +6,7 @@
 """
 
 import os
+import sys
 import logging
 import subprocess
 import webbrowser
@@ -30,13 +31,14 @@ FOOTER_SUPPORT = False
 if DOXY_PY_CHECKER_SUPPORT:
     from Documentation.DoxygenCreator.doxy_py_checker import DoxyPyChecker  # pylint: disable=wrong-import-position
 
-log = logging.getLogger("DoxygenCreator")
+log = logging.getLogger(__name__)
 
 YES = "YES"
 NO = "NO"
 WARNING_FAIL = "FAIL_ON_WARNINGS"
 
-DOXYGEN_PATH = "doxygen.exe"  # required: add doxygen bin path to file path in system variables
+DOXYGEN_PATH = "doxygen.exe"  # archive member / local file name of the doxygen binary
+DOXYGEN_EXE = os.path.join(".", DOXYGEN_PATH)  # explicit local path for invocation - bypasses PATH so a different doxygen.exe on PATH is never used
 DEFAULT_OUTPUT_FOLDER = "Output_Doxygen"
 
 MAIN_FOLDER = "../../"
@@ -49,13 +51,13 @@ DOXYGEN_DLL = "libclang.dll"
 WARNING_FILE_PREFIX = "Doxygen_warnings_"
 WARNING_FILE_SUFFIX = ".log"
 INDEX_FILE = "html/index.html"
-TIMEOUT = 5  # timeout for tool download
+TIMEOUT = 60  # timeout for tool download
 
 PYTHON_PATTERN = "*.py"
 DEFAULT_FILE_PATTERNS: list[str] = []
 
 if PLANTUML_SUPPORT:
-    PLANT_UML_VERSION = "1.2026.2"
+    PLANT_UML_VERSION = "1.2026.5"
     PLANTUML_JAR_URL = f"https://github.com/plantuml/plantuml/releases/download/v{PLANT_UML_VERSION}/plantuml-{PLANT_UML_VERSION}.jar"
     PLANTUML_JAR_NAME = "plantuml.jar"
     PLANTUML_PATH = "./"  # need plantuml.jar in this folder
@@ -154,7 +156,7 @@ class DoxygenCreator:
         @brief Create default doxyfile.
         @param file_name : doxygen file name
         """
-        subprocess.call([DOXYGEN_PATH, "-g", file_name])
+        subprocess.call([DOXYGEN_EXE, "-g", file_name])
 
     def set_configuration(self, key: str, value: Any, override: bool = True) -> None:
         """!
@@ -290,7 +292,9 @@ class DoxygenCreator:
 
     def download_doxygen(self) -> None:
         """!
-        @brief Download Doxygen.
+        @brief Download the pinned Doxygen locally if not already present.
+               PATH is intentionally ignored: the local copy is always used (via DOXYGEN_EXE),
+               so a different doxygen.exe on PATH can never be picked up by mistake.
         """
         if not os.path.exists(DOXYGEN_PATH) or not os.path.exists(DOXYGEN_DLL):
             if not os.path.exists(DOXYGEN_ZIP):
@@ -302,8 +306,10 @@ class DoxygenCreator:
                             file.write(response.content)
                 except requests.Timeout:
                     log.error("Timeout for download %s!", DOXYGEN_ZIP)
+                    sys.exit(1)
                 except requests.RequestException as e:
                     log.error("Can not download %s! %s", DOXYGEN_ZIP, e)
+                    sys.exit(1)
             else:
                 log.info("%s already exist!", DOXYGEN_ZIP)
             with zipfile.ZipFile(DOXYGEN_ZIP, mode="r") as zip_ref:
@@ -339,7 +345,7 @@ class DoxygenCreator:
         @brief Generate Doxygen output depend on existing doxyfile.
         @param open_doxygen_output : [True] open output in browser; [False] only generate output
         """
-        subprocess.call([DOXYGEN_PATH, self.doxyfile_name])
+        subprocess.call([DOXYGEN_EXE, self.doxyfile_name])
 
         if open_doxygen_output:
             # open doxygen output

@@ -14,7 +14,6 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QCloseEvent
 from PyQt6.QtWidgets import QDialog
 
-from Source.version import __title__
 from Source.Util.app_data import thread_dialog
 from Source.Views.dialogs.dialog_contact_ui import Ui_DialogContact
 from Source.Model.contacts import EContactFields, add_contact, remove_contact, CONTACT_CONTACT_FIELD, \
@@ -25,7 +24,7 @@ from Source.Worker.vat_validation import VatValidation, check_vat_format, VAT_PA
 if TYPE_CHECKING:
     from Source.Controller.main_window import MainWindow
 
-log = logging.getLogger(__title__)
+log = logging.getLogger(__name__)
 
 EMAIL_REGEX = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
